@@ -138,7 +138,7 @@ html, body {
   font-weight: bold;
 }
 
-/* ================= MODAL TEMAN (FRIENDS MODAL) ================= */
+/* ================= MODAL TEMAN ================= */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -258,7 +258,6 @@ html, body {
   padding: 12px 0;
 }
 
-/* BANNER UNDANGAN */
 .invite-banner {
   position: fixed;
   top: 14px;
@@ -426,11 +425,15 @@ html, body {
   color: #fff;
 }
 
+.badge-active {
+  background: #2980b9;
+}
+
 .badge-wip {
   background: #7f8c8d;
 }
 
-/* ================= 2. LOBI SCREEN ================= */
+/* ================= 2. LOBI MULTI-GAME ================= */
 #lobby-screen {
   position: fixed;
   inset: 0;
@@ -559,7 +562,7 @@ html, body {
   width: 100%;
 }
 
-/* ================= 3. MEJA PERMAINAN MAHJONG ================= */
+/* ================= 3. MAHJONG MEJA ================= */
 #game-table {
   width: 100%;
   height: 100%;
@@ -582,7 +585,7 @@ html, body {
   cursor: pointer;
 }
 
-#header-bar {
+#header-bar, #snakes-header-bar {
   display: flex;
   gap: 4px;
   align-items: center;
@@ -591,7 +594,7 @@ html, body {
   flex-shrink: 0;
 }
 
-#status-bar {
+#status-bar, #snakes-status-bar {
   background: rgba(0, 0, 0, 0.6);
   padding: 4px 8px;
   border-radius: 12px;
@@ -897,4 +900,187 @@ html, body {
   background: #ececec;
   border-radius: 3px;
   box-shadow: 0 1px 0 #999;
+}
+
+/* ================= 4. ARENA ULAR TANGGA (SNAKES & LADDERS) ================= */
+#snakes-screen {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 6px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: #0d2818;
+}
+
+#snakes-board-container {
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1 / 1;
+  background: #143823;
+  border: 2px solid #2ecc71;
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.board-10x10 {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 2px;
+}
+
+.snakes-cell {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1px 2px;
+  font-size: 7px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.snakes-cell.cell-alt {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.snakes-cell.cell-ladder {
+  background: rgba(46, 204, 113, 0.25);
+  border: 1px dashed #2ecc71;
+}
+
+.snakes-cell.cell-snake {
+  background: rgba(231, 76, 60, 0.25);
+  border: 1px dashed #e74c3c;
+}
+
+.cell-icon {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  font-size: 8px;
+}
+
+/* Pion Pemain Ular Tangga */
+.pawns-holder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pawn {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pawn-0, .dot-red { background: #e74c3c; }
+.pawn-1, .dot-blue { background: #3498db; }
+.pawn-2, .dot-yellow { background: #f1c40f; }
+.pawn-3, .dot-green { background: #2ecc71; }
+
+/* Kontrol Dadu & Status Pemain */
+#snakes-controls {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.snakes-players-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.player-pill {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-pill.active-turn {
+  background: rgba(241, 196, 15, 0.3);
+  border: 1px solid #f1c40f;
+  font-weight: bold;
+}
+
+.p-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dice-interaction-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.dice-box {
+  width: 48px;
+  height: 48px;
+  background: #fdfdfd;
+  color: #111;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 26px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 #95a5a6, 0 6px 8px rgba(0,0,0,0.4);
+  transition: transform 0.15s;
+}
+
+.dice-box.rolling {
+  animation: dice-shake 0.4s infinite;
+}
+
+@keyframes dice-shake {
+  0% { transform: rotate(0deg) scale(1.1); }
+  25% { transform: rotate(15deg) scale(1.15); }
+  50% { transform: rotate(-15deg) scale(1.1); }
+  75% { transform: rotate(10deg) scale(1.15); }
+  100% { transform: rotate(0deg) scale(1.1); }
+}
+
+.btn-dice-roll {
+  padding: 12px 24px !important;
+  font-size: 13px !important;
 }
