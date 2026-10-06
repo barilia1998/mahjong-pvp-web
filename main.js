@@ -1,5 +1,5 @@
 // Konfigurasi Server WebSocket (bisa diganti URL Cloudflare Worker Anda)
-const WS_SERVER_URL = "wss://echo.websocket.events";
+const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 
 // Elemen Antarmuka (DOM)
 const statusBar = document.getElementById("status-bar");
