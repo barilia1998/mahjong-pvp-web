@@ -2,42 +2,17 @@
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// Elemen Lobi & Meja
-const lobbyScreen = document.getElementById("lobby-screen");
-const gameTable = document.getElementById("game-table");
-const roomBadge = document.getElementById("room-badge");
-const inputRoomCode = document.getElementById("input-room-code");
-const btnCreateRoom = document.getElementById("btn-create-room");
-const btnJoinRoom = document.getElementById("btn-join-room");
-
-// Elemen Antarmuka Meja
-const statusBar = document.getElementById("status-bar");
-const timerCount = document.getElementById("timer-count");
-const handContainer = document.getElementById("player-hand");
-const discardContainer = document.getElementById("discard-tiles");
-const handTop = document.getElementById("hand-top");
-const handLeft = document.getElementById("hand-left");
-const handRight = document.getElementById("hand-right");
-const labelTop = document.getElementById("label-top");
-const labelLeft = document.getElementById("label-left");
-const labelRight = document.getElementById("label-right");
-const labelBottom = document.getElementById("label-bottom");
-const btnPung = document.getElementById("btn-pung");
-const btnHu = document.getElementById("btn-win");
-
-// Elemen Kursi
-const seats = [
-  document.getElementById("seat-bottom"),
-  document.getElementById("seat-right"),
-  document.getElementById("seat-top"),
-  document.getElementById("seat-left")
-];
-
-// State Ruangan
+// State Aturan & Ruangan
+let currentGameMode = "HK"; // "HK" atau "RIICHI"
 let socket = null;
 let currentRoomCode = null;
 let mySeatIndex = 0;
 let isHost = false;
+
+// Skor Poin (Riichi standar: 25.000 / HK: 0 / Chips)
+let playerPoints = [25000, 25000, 25000, 25000];
+let isRiichiDeclared = false;
+let exposedMelds = [[], [], [], []]; // Melds terbuka 4 pemain
 
 // State Permainan
 let wallDeck = [];
@@ -48,6 +23,8 @@ let turnTimerInterval = null;
 let botActionTimer = null;
 let isProcessingTurn = false;
 let lastDiscardedTile = null;
+let lastDiscarderSeat = -1;
+let doraTile = null;
 
 // Koleksi Balok Mahjong
 const SUITS = [
@@ -104,35 +81,60 @@ function shuffleDeck(array) {
   return array;
 }
 
-// 1. Logika Pembuatan & Masuk Ruangan
-window.createRoom = function () {
+// 1. Logika Masuk Ruangan
+function startCreateRoom() {
+  const modeRadios = document.getElementsByName("rule-mode");
+  for (const r of modeRadios) {
+    if (r.checked) {
+      currentGameMode = r.value;
+      break;
+    }
+  }
+
   const code = Math.floor(1000 + Math.random() * 9000).toString();
   isHost = true;
   mySeatIndex = 0;
   enterRoom(code);
-};
+}
 
-window.joinRoomByInput = function () {
-  const code = (inputRoomCode.value || "").trim().toUpperCase();
+function startJoinRoom() {
+  const inputEl = document.getElementById("input-room-code");
+  const code = (inputEl ? inputEl.value : "").trim().toUpperCase();
   if (code.length < 4) {
     alert("Masukkan 4 digit kode ruangan yang valid!");
     return;
   }
   isHost = false;
   enterRoom(code);
-};
+}
 
 function enterRoom(code) {
   currentRoomCode = code;
-  roomBadge.innerText = `ROOM: ${code}`;
-  lobbyScreen.classList.add("hidden");
-  gameTable.classList.remove("hidden");
+
+  const lobby = document.getElementById("lobby-screen");
+  const table = document.getElementById("game-table");
+  const badge = document.getElementById("room-badge");
+  const ruleBadge = document.getElementById("rule-badge");
+  const doraBar = document.getElementById("dora-bar");
+
+  if (badge) badge.innerText = `ROOM: ${code}`;
+  if (ruleBadge) ruleBadge.innerText = `MODE: ${currentGameMode}`;
+  if (lobby) lobby.style.display = "none";
+  if (table) table.style.display = "flex";
+
+  if (currentGameMode === "RIICHI" && doraBar) {
+    doraBar.classList.remove("hidden");
+  }
 
   initNetwork();
 
   if (isHost) {
     wallDeck = createFullDeck();
     myHand = wallDeck.splice(0, 13);
+    if (currentGameMode === "RIICHI") {
+      doraTile = wallDeck.pop();
+      updateDoraUI();
+    }
     sortMyHand();
     renderOpponents();
     updateSeatsInfo();
@@ -141,13 +143,22 @@ function enterRoom(code) {
       moveToNextTurn(0);
     }, 1000);
   } else {
-    statusBar.innerText = `Bergabung ke ROOM ${code}. Menunggu Host...`;
+    const statusBar = document.getElementById("status-bar");
+    if (statusBar) statusBar.innerText = `Bergabung ke ROOM ${code}. Menunggu Host...`;
     renderOpponents();
   }
 }
 
-// 2. Hubungkan WebSocket
+function updateDoraUI() {
+  const doraEl = document.getElementById("dora-tile");
+  if (doraEl && doraTile) {
+    doraEl.innerText = doraTile.display;
+  }
+}
+
+// 2. Sinkronisasi WebSocket
 function initNetwork() {
+  const statusBar = document.getElementById("status-bar");
   try {
     socket = new WebSocket(WS_SERVER_URL);
 
@@ -155,7 +166,8 @@ function initNetwork() {
       sendSocketMessage({
         type: "JOIN_ROOM",
         room: currentRoomCode,
-        isHost: isHost
+        isHost: isHost,
+        mode: currentGameMode
       });
     };
 
@@ -169,11 +181,16 @@ function initNetwork() {
             sendSocketMessage({
               type: "SYNC_GAME_STATE",
               wallDeck: wallDeck,
+              doraTile: doraTile,
+              mode: currentGameMode,
               turnSeat: currentTurnSeat
             });
           }
         } else if (msg.type === "SYNC_GAME_STATE" && !isHost) {
           wallDeck = msg.wallDeck;
+          doraTile = msg.doraTile;
+          currentGameMode = msg.mode;
+          updateDoraUI();
           if (myHand.length === 0) {
             myHand = wallDeck.splice(0, 13);
             sortMyHand();
@@ -182,8 +199,15 @@ function initNetwork() {
         } else if (msg.type === "TURN_UPDATE") {
           applyTurn(msg.seat);
         } else if (msg.type === "DISCARD") {
+          lastDiscarderSeat = msg.seat;
           addDiscardTile(msg.tile);
           checkPossibleActions(msg.tile);
+        } else if (msg.type === "MELD_CLAIMED") {
+          handleOpponentMeld(msg.seat, msg.meldTiles);
+        } else if (msg.type === "RIICHI_DECLARED") {
+          playerPoints[msg.seat] -= 1000;
+          updateSeatsInfo();
+          alert(`Pemain ${msg.seat + 1} menyatakan RIICHI!`);
         } else if (msg.type === "GAME_OVER") {
           alert(`Game Selesai! Pemenang: Kursi ${msg.winnerSeat + 1}`);
           clearInterval(turnTimerInterval);
@@ -192,10 +216,10 @@ function initNetwork() {
     };
 
     socket.onerror = () => {
-      statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+      if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
     };
   } catch (err) {
-    statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+    if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
   }
 }
 
@@ -208,21 +232,27 @@ function sendSocketMessage(payload) {
 }
 
 function updateSeatsInfo() {
-  labelBottom.innerText = `Anda (Kursi 1 / Host)`;
-  labelRight.innerText = "P2 (Bot/Pemain)";
-  labelTop.innerText = "P3 (Bot/Pemain)";
-  labelLeft.innerText = "P4 (Bot/Pemain)";
+  const labelBottom = document.getElementById("label-bottom");
+  const labelRight = document.getElementById("label-right");
+  const labelTop = document.getElementById("label-top");
+  const labelLeft = document.getElementById("label-left");
+
+  if (labelBottom) labelBottom.innerText = `Anda (${playerPoints[0]} pts)`;
+  if (labelRight) labelRight.innerText = `P2 (${playerPoints[1]} pts)`;
+  if (labelTop) labelTop.innerText = `P3 (${playerPoints[2]} pts)`;
+  if (labelLeft) labelLeft.innerText = `P4 (${playerPoints[3]} pts)`;
 }
 
 // 3. Kontrol Giliran & Timer
 function startTurnTimer() {
   clearInterval(turnTimerInterval);
   turnTimeRemaining = 15;
-  timerCount.innerText = turnTimeRemaining;
+  const timerCount = document.getElementById("timer-count");
+  if (timerCount) timerCount.innerText = turnTimeRemaining;
 
   turnTimerInterval = setInterval(() => {
     turnTimeRemaining--;
-    timerCount.innerText = turnTimeRemaining;
+    if (timerCount) timerCount.innerText = turnTimeRemaining;
 
     if (turnTimeRemaining <= 0) {
       clearInterval(turnTimerInterval);
@@ -244,7 +274,15 @@ function applyTurn(seatIndex) {
     botActionTimer = null;
   }
 
+  const seats = [
+    document.getElementById("seat-bottom"),
+    document.getElementById("seat-right"),
+    document.getElementById("seat-top"),
+    document.getElementById("seat-left")
+  ];
+
   seats.forEach((seatEl, idx) => {
+    if (!seatEl) return;
     if (idx === seatIndex) {
       seatEl.classList.add("active-turn");
     } else {
@@ -254,12 +292,13 @@ function applyTurn(seatIndex) {
 
   startTurnTimer();
 
+  const statusBar = document.getElementById("status-bar");
   if (currentTurnSeat === mySeatIndex) {
-    statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
     drawTile();
     isProcessingTurn = false;
   } else {
-    statusBar.innerText = `Giliran Kursi ${currentTurnSeat + 1}...`;
+    if (statusBar) statusBar.innerText = `Giliran Kursi ${currentTurnSeat + 1}...`;
     if (isHost) {
       botActionTimer = setTimeout(() => {
         executeBotTurn(currentTurnSeat);
@@ -277,14 +316,16 @@ function moveToNextTurn(nextSeat) {
 }
 
 function executeBotTurn(seatIndex) {
+  const statusBar = document.getElementById("status-bar");
   if (wallDeck.length === 0) {
-    statusBar.innerText = "Game Selesai: Balok Habis";
+    if (statusBar) statusBar.innerText = "Game Selesai: Balok Habis";
     clearInterval(turnTimerInterval);
     return;
   }
 
   const discarded = wallDeck.pop();
   lastDiscardedTile = discarded;
+  lastDiscarderSeat = seatIndex;
   addDiscardTile(discarded);
   checkPossibleActions(discarded);
 
@@ -294,26 +335,36 @@ function executeBotTurn(seatIndex) {
   }, 1500);
 }
 
-// 4. Render & Interaksi Balok
+// 4. Render Balok & Area Terbuka
 function renderHand() {
+  const handContainer = document.getElementById("player-hand");
+  if (!handContainer) return;
+
   handContainer.innerHTML = "";
   myHand.forEach((tile, index) => {
     const tileElement = document.createElement("div");
     tileElement.className = "tile";
     tileElement.innerText = tile.display;
-    tileElement.onclick = () => {
+    tileElement.addEventListener("click", () => {
       if (currentTurnSeat === mySeatIndex) {
         discardTile(index);
       } else {
         alert("Bukan giliran Anda!");
       }
-    };
+    });
     handContainer.appendChild(tileElement);
   });
 }
 
 function renderOpponents() {
-  [handTop, handLeft, handRight].forEach((holder) => {
+  const holders = [
+    document.getElementById("hand-top"),
+    document.getElementById("hand-left"),
+    document.getElementById("hand-right")
+  ];
+
+  holders.forEach((holder) => {
+    if (!holder) return;
     holder.innerHTML = "";
     for (let i = 0; i < 13; i++) {
       const tileBack = document.createElement("div");
@@ -323,33 +374,47 @@ function renderOpponents() {
   });
 }
 
-window.sortMyHand = function () {
+function sortMyHand() {
   myHand.sort((a, b) => {
     if (a.order !== b.order) return a.order - b.order;
     return a.num - b.num;
   });
   renderHand();
-};
+}
 
 function drawTile() {
+  const statusBar = document.getElementById("status-bar");
+  const btnHu = document.getElementById("btn-win");
+  const btnRiichi = document.getElementById("btn-riichi");
+
   if (wallDeck.length === 0) {
-    statusBar.innerText = "Game Selesai: Balok Habis";
+    if (statusBar) statusBar.innerText = "Game Selesai: Balok Habis";
     clearInterval(turnTimerInterval);
     return;
   }
+
   const newTile = wallDeck.pop();
   myHand.push(newTile);
   renderHand();
 
-  if (checkMahjongWin(myHand)) {
+  // Mode Riichi: Cek apakah bisa pasang Riichi
+  if (currentGameMode === "RIICHI" && !isRiichiDeclared && exposedMelds[0].length === 0) {
+    if (checkTenpai(myHand) && btnRiichi) {
+      btnRiichi.classList.remove("hidden");
+    }
+  }
+
+  // Cek Menang Tsumo
+  if (validateWin(myHand, true) && btnHu) {
     btnHu.classList.remove("hidden");
-    statusBar.innerText = "HU! Tangan lengkap dan menang!";
+    if (statusBar) statusBar.innerText = "HU! Tangan lengkap dan menang!";
   }
 }
 
 function discardTile(index) {
   const discarded = myHand.splice(index, 1)[0];
   lastDiscardedTile = discarded;
+  lastDiscarderSeat = mySeatIndex;
 
   renderHand();
   addDiscardTile(discarded);
@@ -365,6 +430,9 @@ function discardTile(index) {
 }
 
 function addDiscardTile(tile) {
+  const discardContainer = document.getElementById("discard-tiles");
+  if (!discardContainer) return;
+
   const tileElement = document.createElement("div");
   tileElement.className = "tile discarded";
   tileElement.innerText = tile.display || tile;
@@ -372,28 +440,72 @@ function addDiscardTile(tile) {
   discardContainer.scrollTop = discardContainer.scrollHeight;
 }
 
+// 5. Logika Klaim Aksi Standar (Pung, Chow, Kong, Win)
 function checkPossibleActions(discardedTile) {
+  const btnPung = document.getElementById("btn-pung");
+  const btnChow = document.getElementById("btn-chow");
+  const btnKong = document.getElementById("btn-kong");
+  const btnHu = document.getElementById("btn-win");
+
+  // 1. Cek PUNG (2 balok sama di tangan)
   const countSame = myHand.filter((t) => t.display === discardedTile.display).length;
-  if (countSame >= 2) {
+  if (countSame >= 2 && btnPung) {
     btnPung.classList.remove("hidden");
   }
+  if (countSame === 3 && btnKong) {
+    btnKong.classList.remove("hidden");
+  }
 
+  // 2. Cek CHOW (HANYA DARI PEMAIN SEBELAH KIRI / Kursi 3)
+  const leftSeatIndex = (mySeatIndex + 3) % 4;
+  if (lastDiscarderSeat === leftSeatIndex && discardedTile.suit !== "Honor") {
+    const suit = discardedTile.suit;
+    const n = discardedTile.num;
+    const hasNum = (num) => myHand.some((t) => t.suit === suit && t.num === num);
+
+    if ((hasNum(n - 2) && hasNum(n - 1)) || (hasNum(n - 1) && hasNum(n + 1)) || (hasNum(n + 1) && hasNum(n + 2))) {
+      if (btnChow) btnChow.classList.remove("hidden");
+    }
+  }
+
+  // 3. Cek RON (Menang dari buangan lawan)
   const testHand = [...myHand, discardedTile];
-  if (checkMahjongWin(testHand)) {
+  if (validateWin(testHand, false) && btnHu) {
     btnHu.classList.remove("hidden");
   }
 }
 
 function hideActionButtons() {
-  btnPung.classList.add("hidden");
-  btnHu.classList.add("hidden");
+  const btnPung = document.getElementById("btn-pung");
+  const btnChow = document.getElementById("btn-chow");
+  const btnKong = document.getElementById("btn-kong");
+  const btnHu = document.getElementById("btn-win");
+  const btnRiichi = document.getElementById("btn-riichi");
+
+  if (btnPung) btnPung.classList.add("hidden");
+  if (btnChow) btnChow.classList.add("hidden");
+  if (btnKong) btnKong.classList.add("hidden");
+  if (btnHu) btnHu.classList.add("hidden");
+  if (btnRiichi) btnRiichi.classList.add("hidden");
 }
 
-window.claimAction = function (actionName) {
+function claimAction(actionName) {
+  if (actionName === "RIICHI") {
+    isRiichiDeclared = true;
+    playerPoints[0] -= 1000;
+    updateSeatsInfo();
+    hideActionButtons();
+    alert("RIICHI diaktifkan! Taruhan 1000 poin dipasang.");
+    sendSocketMessage({
+      type: "RIICHI_DECLARED",
+      seat: mySeatIndex
+    });
+    return;
+  }
+
   if (actionName === "HU") {
     alert("SELAMAT! ANDA MENANG (HU)!");
     clearInterval(turnTimerInterval);
-
     sendSocketMessage({
       type: "GAME_OVER",
       winnerSeat: mySeatIndex
@@ -403,25 +515,95 @@ window.claimAction = function (actionName) {
 
   if (actionName === "PUNG" && lastDiscardedTile) {
     let removed = 0;
+    const claimedTiles = [lastDiscardedTile];
     myHand = myHand.filter((tile) => {
       if (tile.display === lastDiscardedTile.display && removed < 2) {
         removed++;
+        claimedTiles.push(tile);
         return false;
       }
       return true;
     });
 
+    addExposedMeld(0, claimedTiles);
     renderHand();
-    alert(`Berhasil PUNG ${lastDiscardedTile.display}!`);
     hideActionButtons();
+    sendSocketMessage({
+      type: "MELD_CLAIMED",
+      seat: mySeatIndex,
+      meldTiles: claimedTiles
+    });
     moveToNextTurn(mySeatIndex);
   }
-};
 
-// Algoritma Validasi Kemenangan
-function checkMahjongWin(handTiles) {
-  if (handTiles.length % 3 !== 2) return false;
+  if (actionName === "CHOW" && lastDiscardedTile) {
+    // Ambil 2 keping balok pembentuk urutan terdekat
+    const suit = lastDiscardedTile.suit;
+    const n = lastDiscardedTile.num;
+    let t1 = null, t2 = null;
 
+    if (myHand.some(t => t.suit === suit && t.num === n - 1) && myHand.some(t => t.suit === suit && t.num === n + 1)) {
+      t1 = myHand.find(t => t.suit === suit && t.num === n - 1);
+      t2 = myHand.find(t => t.suit === suit && t.num === n + 1);
+    } else if (myHand.some(t => t.suit === suit && t.num === n + 1) && myHand.some(t => t.suit === suit && t.num === n + 2)) {
+      t1 = myHand.find(t => t.suit === suit && t.num === n + 1);
+      t2 = myHand.find(t => t.suit === suit && t.num === n + 2);
+    } else if (myHand.some(t => t.suit === suit && t.num === n - 2) && myHand.some(t => t.suit === suit && t.num === n - 1)) {
+      t1 = myHand.find(t => t.suit === suit && t.num === n - 2);
+      t2 = myHand.find(t => t.suit === suit && t.num === n - 1);
+    }
+
+    if (t1 && t2) {
+      myHand = myHand.filter(t => t !== t1 && t !== t2);
+      const claimedMeld = [t1, lastDiscardedTile, t2];
+      addExposedMeld(0, claimedMeld);
+      renderHand();
+      hideActionButtons();
+      sendSocketMessage({
+        type: "MELD_CLAIMED",
+        seat: mySeatIndex,
+        meldTiles: claimedMeld
+      });
+      moveToNextTurn(mySeatIndex);
+    }
+  }
+}
+
+// 6. Penataan Balok Terbuka (Meld UI)
+function addExposedMeld(seatIndex, tiles) {
+  exposedMelds[seatIndex].push(tiles);
+  const containerIds = ["melds-bottom", "melds-right", "melds-top", "melds-left"];
+  const targetEl = document.getElementById(containerIds[seatIndex]);
+  if (!targetEl) return;
+
+  const groupEl = document.createElement("div");
+  groupEl.className = "meld-group";
+  tiles.forEach((t) => {
+    const tileDiv = document.createElement("div");
+    tileDiv.className = "tile-meld";
+    tileDiv.innerText = t.display;
+    groupEl.appendChild(tileDiv);
+  });
+  targetEl.appendChild(groupEl);
+}
+
+function handleOpponentMeld(seatIndex, meldTiles) {
+  addExposedMeld(seatIndex, meldTiles);
+}
+
+// 7. Validator Kemenangan Sesuai Mode
+function validateWin(handTiles, isSelfDrawn) {
+  // Verifikasi pola dasar: 4 Melds + 1 Pair
+  if (!checkBasicMahjongStructure(handTiles)) return false;
+
+  // Jika mode Hong Kong: Semua bentuk sah menang
+  if (currentGameMode === "HK") return true;
+
+  // Jika mode Riichi: Harus punya minimal 1 Yaku
+  return checkRiichiYaku(handTiles, isSelfDrawn);
+}
+
+function checkBasicMahjongStructure(handTiles) {
   const counts = {};
   handTiles.forEach((t) => {
     const key = `${t.suit}_${t.num}`;
@@ -484,10 +666,66 @@ function canFormMelds(counts) {
   return false;
 }
 
-// Pasang Listener Langsung untuk Keandalan Mobile
-if (btnCreateRoom) {
-  btnCreateRoom.addEventListener("click", window.createRoom);
+// Cek Syarat Minimal 1 Yaku untuk Riichi
+function checkRiichiYaku(handTiles, isSelfDrawn) {
+  // Yaku 1: Riichi aktif
+  if (isRiichiDeclared) return true;
+
+  // Yaku 2: Menzenchin Tsumo (Tangan tertutup dan tarik sendiri)
+  if (isSelfDrawn && exposedMelds[0].length === 0) return true;
+
+  // Yaku 3: Tanyao (Semua balok simpel angka 2-8, tanpa ujung 1, 9, angin, atau naga)
+  const isTanyao = handTiles.every((t) => t.suit !== "Honor" && t.num >= 2 && t.num <= 8);
+  if (isTanyao) return true;
+
+  // Yaku 4: Yakuhai (Memiliki triplet balok naga: Merah, Hijau, Putih)
+  const counts = {};
+  handTiles.forEach((t) => {
+    const key = `${t.suit}_${t.num}`;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  if (counts["Honor_5"] >= 3 || counts["Honor_6"] >= 3 || counts["Honor_7"] >= 3) {
+    return true;
+  }
+
+  return false;
 }
-if (btnJoinRoom) {
-  btnJoinRoom.addEventListener("click", window.joinRoomByInput);
+
+function checkTenpai(handTiles) {
+  // Simulasi cek apakah kurang 1 balok untuk menang
+  if (handTiles.length !== 14) return false;
+  for (let i = 0; i < handTiles.length; i++) {
+    const test13 = [...handTiles];
+    test13.splice(i, 1);
+    for (const suit of SUITS) {
+      for (let n = 1; n <= 9; n++) {
+        const dummyTile = { suit: suit.name, num: n, order: suit.order, display: `${suit.symbol} ${n}` };
+        if (checkBasicMahjongStructure([...test13, dummyTile])) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
+
+// Pasang Event Listener DOM
+document.addEventListener("DOMContentLoaded", () => {
+  const btnCreate = document.getElementById("btn-create-room");
+  const btnJoin = document.getElementById("btn-join-room");
+  const btnSort = document.getElementById("btn-sort");
+  const btnRiichi = document.getElementById("btn-riichi");
+  const btnChow = document.getElementById("btn-chow");
+  const btnPung = document.getElementById("btn-pung");
+  const btnKong = document.getElementById("btn-kong");
+  const btnWin = document.getElementById("btn-win");
+
+  if (btnCreate) btnCreate.addEventListener("click", startCreateRoom);
+  if (btnJoin) btnJoin.addEventListener("click", startJoinRoom);
+  if (btnSort) btnSort.addEventListener("click", sortMyHand);
+  if (btnRiichi) btnRiichi.addEventListener("click", () => claimAction("RIICHI"));
+  if (btnChow) btnChow.addEventListener("click", () => claimAction("CHOW"));
+  if (btnPung) btnPung.addEventListener("click", () => claimAction("PUNG"));
+  if (btnKong) btnKong.addEventListener("click", () => claimAction("KONG"));
+  if (btnWin) btnWin.addEventListener("click", () => claimAction("HU"));
+});
