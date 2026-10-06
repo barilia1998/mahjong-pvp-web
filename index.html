@@ -11,33 +11,47 @@
   <div id="lobby-screen">
     <div class="lobby-card">
       <h2>Mahjong PvP</h2>
-      <p class="lobby-desc">Main bersama teman atau uji coba lawan AI</p>
+      <p class="lobby-desc">Pilih mode aturan sebelum bermain</p>
+
+      <!-- Pilihan Mode Aturan -->
+      <div class="mode-selector">
+        <label class="mode-option">
+          <input type="radio" name="rule-mode" value="HK" checked>
+          <span>Hong Kong (Kasual)</span>
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="rule-mode" value="RIICHI">
+          <span>Riichi Mahjong (Jepang)</span>
+        </label>
+      </div>
 
       <div class="lobby-section">
-        <button id="btn-create-room" class="btn btn-action w-100" onclick="createRoom()">BUAT RUANGAN BARU</button>
+        <button type="button" id="btn-create-room" class="btn btn-action w-100">BUAT RUANGAN</button>
       </div>
 
       <div class="lobby-divider"><span>ATAU</span></div>
 
       <div class="lobby-section">
-        <input type="text" id="input-room-code" placeholder="Masukkan 4 Digit Kode" maxlength="4" />
-        <button id="btn-join-room" class="btn btn-secondary w-100" onclick="joinRoomByInput()">GABUNG RUANGAN</button>
+        <input type="text" id="input-room-code" placeholder="4 DIGIT KODE" maxlength="4" autocomplete="off" />
+        <button type="button" id="btn-join-room" class="btn btn-secondary w-100">GABUNG RUANGAN</button>
       </div>
     </div>
   </div>
 
-  <!-- Area Meja Permainan -->
-  <div id="game-table" class="hidden">
-    <!-- Header: Status dan Timer -->
+  <!-- Meja Permainan -->
+  <div id="game-table" style="display: none;">
+    <!-- Header: Status, Kode Room, Mode, Timer -->
     <header id="header-bar">
       <div id="status-bar">Menghubungkan...</div>
+      <div id="rule-badge" class="badge-mode">MODE: HK</div>
       <div id="room-badge" class="badge-room">ROOM: ----</div>
       <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </header>
 
     <!-- Lawan Atas (Pemain 3) -->
     <div id="seat-top" class="player-seat">
-      <div class="player-info" id="label-top">Pemain 3</div>
+      <div class="player-info" id="label-top">Pemain 3 (25000)</div>
+      <div id="melds-top" class="melds-container"></div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
@@ -45,35 +59,45 @@
     <main id="middle-board">
       <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
-        <div class="player-info" id="label-left">P4</div>
+        <div class="player-info" id="label-left">P4<br>(25k)</div>
+        <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
-      <!-- Area Buangan -->
+      <!-- Area Kolam Buangan & Indikator Dora -->
       <div id="discard-pond">
-        <div class="section-title">Buangan</div>
+        <div id="dora-bar" class="dora-box hidden">
+          <span>DORA:</span>
+          <div id="dora-tile" class="tile discarded dora-highlight">🀇 1W</div>
+        </div>
+        <div class="section-title">Area Buangan</div>
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
       <!-- Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat side-seat">
-        <div class="player-info" id="label-right">P2</div>
+        <div class="player-info" id="label-right">P2<br>(25k)</div>
+        <div id="melds-right" class="melds-container vertical"></div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
     </main>
 
-    <!-- Tombol Aksi -->
+    <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
-      <button id="btn-sort" class="btn btn-secondary" onclick="sortMyHand()">URUTKAN</button>
-      <button id="btn-chow" class="btn btn-action hidden" onclick="claimAction('CHOW')">CHOW</button>
-      <button id="btn-pung" class="btn btn-action hidden" onclick="claimAction('PUNG')">PUNG</button>
-      <button id="btn-kong" class="btn btn-action hidden" onclick="claimAction('KONG')">KONG</button>
-      <button id="btn-win" class="btn btn-win hidden" onclick="claimAction('HU')">HU</button>
+      <button type="button" id="btn-sort" class="btn btn-secondary">URUTKAN</button>
+      <button type="button" id="btn-riichi" class="btn btn-riichi hidden">RIICHI</button>
+      <button type="button" id="btn-chow" class="btn btn-action hidden">CHOW</button>
+      <button type="button" id="btn-pung" class="btn btn-action hidden">PUNG</button>
+      <button type="button" id="btn-kong" class="btn btn-action hidden">KONG</button>
+      <button type="button" id="btn-win" class="btn btn-win hidden">HU</button>
     </div>
 
-    <!-- Tangan Pribadi (Bawah) -->
+    <!-- Tangan Pribadi Bawah -->
     <footer id="seat-bottom" class="player-seat active-turn">
-      <div class="player-info" id="label-bottom">Giliran Anda</div>
+      <div class="bottom-header">
+        <span class="player-info" id="label-bottom">Anda (25000)</span>
+        <div id="melds-bottom" class="melds-container"></div>
+      </div>
       <div id="player-hand" class="hand-grid"></div>
     </footer>
   </div>
