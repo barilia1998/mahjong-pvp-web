@@ -3,47 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Mahjong PvP Mobile</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="game-table">
-    <!-- Header Status & Timer -->
-    <div id="header-bar">
+    <!-- Header: Status dan Timer -->
+    <header id="header-bar">
       <div id="status-bar">Menghubungkan ke server...</div>
-      <div id="turn-timer" class="timer-box">Waktu: <span id="timer-count">15</span>s</div>
-    </div>
+      <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
+    </header>
 
-    <!-- Lawan Atas (Pemain 3) -->
+    <!-- Lawan Atas -->
     <div id="seat-top" class="player-seat">
       <div class="player-info" id="label-top">Pemain 3 (Atas)</div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
     <!-- Area Meja Tengah -->
-    <div id="middle-board">
-      <!-- Lawan Kiri (Pemain 4) -->
-      <div id="seat-left" class="player-seat">
+    <main id="middle-board">
+      <!-- Lawan Kiri -->
+      <div id="seat-left" class="player-seat side-seat">
         <div class="player-info" id="label-left">P4</div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
-      <!-- Area Buangan Bersama -->
+      <!-- Area Buangan -->
       <div id="discard-pond">
-        <div class="section-title">Area Buangan</div>
+        <div class="section-title">Buangan</div>
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Lawan Kanan (Pemain 2) -->
-      <div id="seat-right" class="player-seat">
+      <!-- Lawan Kanan -->
+      <div id="seat-right" class="player-seat side-seat">
         <div class="player-info" id="label-right">P2</div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
-    </div>
+    </main>
 
-    <!-- Tombol Aksi Permainan -->
+    <!-- Tombol Aksi -->
     <div id="action-controls">
       <button id="btn-sort" class="btn btn-secondary" onclick="sortMyHand()">URUTKAN</button>
       <button id="btn-chow" class="btn btn-action hidden" onclick="claimAction('CHOW')">CHOW</button>
@@ -52,13 +50,11 @@
       <button id="btn-win" class="btn btn-win hidden" onclick="claimAction('HU')">HU</button>
     </div>
 
-    <!-- Tangan Pribadi Pemain Bawah -->
-    <div id="seat-bottom" class="player-seat active-turn">
-      <div class="player-info" id="label-bottom">Giliran Anda (Sentuh balok untuk membuang)</div>
-      <div id="hand-wrapper">
-        <div id="player-hand" class="tile-row"></div>
-      </div>
-    </div>
+    <!-- Tangan Pribadi (Bawah) -->
+    <footer id="seat-bottom" class="player-seat active-turn">
+      <div class="player-info" id="label-bottom">Giliran Anda (Sentuh balok untuk buang)</div>
+      <div id="player-hand" class="hand-grid"></div>
+    </footer>
   </div>
 
   <script src="main.js"></script>
