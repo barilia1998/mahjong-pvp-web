@@ -15,7 +15,130 @@ html, body {
   color: #fff;
 }
 
-/* ================= MODAL PROFIL ================= */
+/* ================= 0. AUTENTIKASI ================= */
+#auth-screen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: radial-gradient(circle at top, #1c4b35 0%, #091a11 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  padding: 16px;
+}
+
+.auth-card {
+  background: #17422d;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 22px 18px;
+  width: 100%;
+  max-width: 330px;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+}
+
+.auth-logo {
+  font-size: 40px;
+  margin-bottom: 4px;
+}
+
+.auth-card h2 {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  color: #f1c40f;
+}
+
+.auth-subtitle {
+  font-size: 11px;
+  opacity: 0.8;
+  margin: 0 0 16px 0;
+}
+
+.btn-guest {
+  background: #27ae60;
+  color: #fff;
+  font-size: 13px;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 3px 0 #1e8449;
+}
+
+.btn-guest:active {
+  background: #219653;
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1e8449;
+}
+
+.auth-divider {
+  margin: 16px 0 12px 0;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-divider span {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #17422d;
+  padding: 0 8px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.auth-tabs {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #bdc3c7;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: #e67e22;
+  color: #fff;
+}
+
+.input-group {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  background: #fff;
+  color: #111;
+  font-weight: bold;
+}
+
+/* ================= MODAL TEMAN (FRIENDS MODAL) ================= */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -34,89 +157,130 @@ html, body {
   background: #17422d;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px 16px;
   width: 100%;
-  max-width: 320px;
+  max-width: 330px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.6);
   text-align: center;
 }
 
 .modal-card h3 {
-  margin: 0 0 14px 0;
-  font-size: 18px;
+  margin: 0 0 10px 0;
+  font-size: 17px;
   color: #f1c40f;
 }
 
-.avatar-selection {
-  margin-bottom: 14px;
-}
-
-.avatar-selection label {
-  display: block;
-  font-size: 11px;
-  opacity: 0.8;
-  margin-bottom: 6px;
-}
-
-.avatar-options {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.avatar-opt {
-  font-size: 24px;
-  cursor: pointer;
-  padding: 4px;
+.my-friend-code-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
   border-radius: 8px;
-  border: 2px solid transparent;
-  transition: transform 0.1s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  margin-bottom: 10px;
 }
 
-.avatar-opt.active {
-  border-color: #f1c40f;
-  background: rgba(241, 196, 15, 0.2);
-  transform: scale(1.15);
+.my-friend-code-box b {
+  color: #2ecc71;
 }
 
-.input-group {
+.btn-copy-id {
+  background: #2980b9;
+  border: none;
+  color: #fff;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-friend-bar {
+  display: flex;
+  gap: 6px;
   margin-bottom: 12px;
+}
+
+.add-friend-bar input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.btn-sm {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
+
+.friends-list-container {
+  max-height: 150px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.friend-info-left {
   text-align: left;
 }
 
-.input-group label {
-  display: block;
-  font-size: 11px;
-  margin-bottom: 4px;
-  opacity: 0.9;
+.friend-name-tag {
+  font-weight: bold;
+  color: #fff;
 }
 
-.input-group input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
-  color: #111;
+.friend-id-tag {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.empty-friends {
+  font-size: 11px;
+  opacity: 0.7;
+  padding: 12px 0;
+}
+
+/* BANNER UNDANGAN */
+.invite-banner {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #8e44ad;
+  border: 1px solid #9b59b6;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  z-index: 100001;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
   font-weight: bold;
 }
 
-.profile-stats-box {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 11px;
+.invite-actions {
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 14px;
-  color: #ecf0f1;
-}
-
-.modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 /* ================= 1. HUB & BAR PROFIL ================= */
@@ -144,7 +308,6 @@ html, body {
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
-  cursor: pointer;
 }
 
 .user-avatar {
@@ -170,12 +333,31 @@ html, body {
   opacity: 0.7;
 }
 
-.user-badge-level {
+.user-right-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-friends {
+  background: #2980b9;
+  border: none;
+  color: #fff;
   font-size: 10px;
-  background: #27ae60;
-  padding: 3px 8px;
-  border-radius: 10px;
   font-weight: bold;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-logout {
+  background: rgba(192, 57, 43, 0.85);
+  border: none;
+  color: #fff;
+  font-size: 10px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .hub-header {
