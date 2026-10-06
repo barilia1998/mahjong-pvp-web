@@ -55,7 +55,7 @@
     </div>
   </div>
 
-  <!-- POPUP DAFTAR TEMAN (FRIENDS MODAL) -->
+  <!-- POPUP DAFTAR TEMAN (HANYA UNTUK REGISTERED USER) -->
   <div id="friends-modal" class="modal-overlay hidden">
     <div class="modal-card">
       <h3>Daftar Teman</h3>
@@ -65,12 +65,11 @@
       </div>
 
       <div class="add-friend-bar">
-        <input type="text" id="input-friend-id" placeholder="Masukkan ID Teman (#MG-XXXX)" maxlength="10" />
+        <input type="text" id="input-friend-id" placeholder="Masukkan ID (#MG-XXXX)" maxlength="10" />
         <button type="button" class="btn btn-action btn-sm" onclick="addFriendById()">Tambah</button>
       </div>
 
       <div class="friends-list-container" id="friends-list">
-        <!-- Render dinamis teman di sini -->
         <div class="empty-friends">Belum ada teman yang ditambahkan.</div>
       </div>
 
@@ -80,7 +79,7 @@
     </div>
   </div>
 
-  <!-- NOTIFIKASI UNDANGAN TEMAN (INVITE ALERT) -->
+  <!-- NOTIFIKASI UNDANGAN TEMAN -->
   <div id="invite-notification" class="invite-banner hidden">
     <span id="invite-text">Teman mengundang Anda bermain!</span>
     <div class="invite-actions">
@@ -98,7 +97,8 @@
         <div class="user-subtitle" id="hub-account-type">Akun Tamu</div>
       </div>
       <div class="user-right-col">
-        <button type="button" class="btn-friends" onclick="openFriendsModal()">👥 Teman</button>
+        <!-- Tombol Teman: disembunyikan otomatis jika akun Guest -->
+        <button type="button" id="btn-hub-friends" class="btn-friends hidden" onclick="openFriendsModal()">👥 Teman</button>
         <button type="button" class="btn-logout" onclick="handleLogout()">Keluar 🚪</button>
       </div>
     </div>
@@ -164,10 +164,11 @@
 
       <div class="lobby-section">
         <button type="button" id="btn-create-room" class="btn btn-action w-100">BUAT RUANGAN</button>
-        <button type="button" class="btn btn-secondary w-100" onclick="openFriendsModal()">👥 UNDANG TEMAN DARI KONTAK</button>
+        <!-- Tombol Undang Teman di Lobi: hanya muncul jika bukan Guest -->
+        <button type="button" id="btn-lobby-invite" class="btn btn-secondary w-100 hidden" onclick="openFriendsModal()">👥 UNDANG TEMAN DARI KONTAK</button>
       </div>
 
-      <div class="lobby-divider"><span>ATAU</span></div>
+      <div class="lobby-divider"><span>ATAU GABUNG RUANGAN</span></div>
 
       <div class="lobby-section">
         <input type="text" id="input-room-code" placeholder="4 DIGIT KODE" maxlength="4" autocomplete="off" />
