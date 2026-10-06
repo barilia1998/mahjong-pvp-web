@@ -8,20 +8,23 @@
 </head>
 <body>
   <div id="game-table">
-    <!-- Status Server & Info Match -->
-    <div id="status-bar">Menghubungkan ke server...</div>
+    <!-- Header Status & Indikator Timer Global -->
+    <div id="header-bar">
+      <div id="status-bar">Menghubungkan ke server...</div>
+      <div id="turn-timer" class="timer-box">Waktu: <span id="timer-count">15</span>s</div>
+    </div>
 
-    <!-- Lawan Atas -->
-    <div class="player-seat seat-top">
-      <div class="player-info">Pemain 3 (Atas)</div>
+    <!-- Kursi Lawan Atas (Pemain 3 / Indeks 2) -->
+    <div id="seat-top" class="player-seat">
+      <div class="player-info" id="label-top">Pemain 3 (Atas)</div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
-    <!-- Area Tengah: Lawan Kiri, Pool Buangan, Lawan Kanan -->
+    <!-- Area Meja Tengah -->
     <div id="middle-board">
-      <!-- Lawan Kiri -->
-      <div class="player-seat seat-left">
-        <div class="player-info">Pemain 4 (Kiri)</div>
+      <!-- Kursi Lawan Kiri (Pemain 4 / Indeks 3) -->
+      <div id="seat-left" class="player-seat">
+        <div class="player-info" id="label-left">Pemain 4 (Kiri)</div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
@@ -31,9 +34,9 @@
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Lawan Kanan -->
-      <div class="player-seat seat-right">
-        <div class="player-info">Pemain 2 (Kanan)</div>
+      <!-- Kursi Lawan Kanan (Pemain 2 / Indeks 1) -->
+      <div id="seat-right" class="player-seat">
+        <div class="player-info" id="label-right">Pemain 2 (Kanan)</div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
     </div>
@@ -46,9 +49,9 @@
       <button id="btn-win" class="btn btn-win" onclick="claimAction('HU')">HU</button>
     </div>
 
-    <!-- Tangan Pribadi Pemain -->
-    <div id="player-hand-container">
-      <div class="section-title">Tangan Anda (Klik balok untuk membuang)</div>
+    <!-- Kursi Anda (Bawah / Indeks 0) -->
+    <div id="seat-bottom" class="player-seat active-turn">
+      <div class="player-info" id="label-bottom">Giliran Anda (Bawah)</div>
       <div id="player-hand" class="tile-row"></div>
     </div>
   </div>
