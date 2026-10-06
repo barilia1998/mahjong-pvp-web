@@ -348,7 +348,7 @@ function initLobbyHubSocket() {
   } catch (err) {}
 }
 
-// ================= NAVIGASI PORTAL GAME (SATU-SATUNYA DEKLARASI) =================
+// ================= NAVIGASI PORTAL GAME =================
 window.selectGame = function (gameName) {
   if (gameName === "mahjong" || gameName === "snakes") {
     activeGame = gameName;
@@ -449,6 +449,31 @@ let snakesTurnTimer = null;
 let snakesTimeRemaining = 15;
 let snakesPlayerNames = ["Anda", "P2 (Bot)", "P3 (Bot)", "P4 (Bot)"];
 
+function renderDiceFaceHTML(val) {
+  switch (val) {
+    case 1:
+      return `<span class="pip pip-center pip-red"></span>`;
+    case 2:
+      return `<span class="pip pip-tl"></span><span class="pip pip-br"></span>`;
+    case 3:
+      return `<span class="pip pip-tl"></span><span class="pip pip-center"></span><span class="pip pip-br"></span>`;
+    case 4:
+      return `<span class="pip pip-tl"></span><span class="pip pip-tr"></span><span class="pip pip-bl"></span><span class="pip pip-br"></span>`;
+    case 5:
+      return `<span class="pip pip-tl"></span><span class="pip pip-tr"></span><span class="pip pip-center"></span><span class="pip pip-bl"></span><span class="pip pip-br"></span>`;
+    case 6:
+      return `<span class="pip pip-tl"></span><span class="pip pip-tr"></span><span class="pip pip-ml"></span><span class="pip pip-mr"></span><span class="pip pip-bl"></span><span class="pip pip-br"></span>`;
+    default:
+      return `<span class="pip pip-center pip-red"></span>`;
+  }
+}
+
+function updateDiceVisual(val) {
+  const diceVisual = document.getElementById("dice-visual");
+  if (!diceVisual) return;
+  diceVisual.innerHTML = renderDiceFaceHTML(val);
+}
+
 function initSnakesBoardUI() {
   const boardEl = document.getElementById("snakes-board");
   if (!boardEl) return;
@@ -524,6 +549,7 @@ function enterSnakesRoom(code) {
   snakesPlayerNames[0] = `${currentUser.avatar} ${currentUser.nickname}`;
 
   initSnakesBoardUI();
+  updateDiceVisual(1);
   initSnakesNetwork();
   startSnakesTurn(0);
 }
@@ -572,17 +598,26 @@ function startSnakesTurn(seatIndex) {
   snakesIsRolling = false;
 
   const statusBar = document.getElementById("snakes-status-bar");
-  const rollBtn = document.getElementById("btn-roll-dice");
+  const diceWrapper = document.getElementById("dice-wrapper");
+  const diceHint = document.getElementById("dice-hint");
 
   renderAllPawns();
   startSnakesTurnTimer();
 
   if (snakesCurrentTurn === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Tekan LEMPAR DADU!";
-    if (rollBtn) rollBtn.disabled = false;
+    if (statusBar) statusBar.innerText = "Giliran Anda! Ketuk dadu di bawah:";
+    if (diceWrapper) diceWrapper.classList.add("my-turn");
+    if (diceHint) {
+      diceHint.innerText = "KETUK DADU!";
+      diceHint.style.opacity = "1";
+    }
   } else {
     if (statusBar) statusBar.innerText = `Giliran ${snakesPlayerNames[snakesCurrentTurn]} melempar dadu...`;
-    if (rollBtn) rollBtn.disabled = true;
+    if (diceWrapper) diceWrapper.classList.remove("my-turn");
+    if (diceHint) {
+      diceHint.innerText = "MENUNGGU...";
+      diceHint.style.opacity = "0.5";
+    }
 
     if (isHost && snakesCurrentTurn !== mySeatIndex) {
       setTimeout(() => {
@@ -618,18 +653,25 @@ window.handleRollDiceClick = function () {
 
 function executePlayerDiceRoll(playerSeat) {
   snakesIsRolling = true;
-  const rollBtn = document.getElementById("btn-roll-dice");
-  if (rollBtn) rollBtn.disabled = true;
-
+  const diceWrapper = document.getElementById("dice-wrapper");
   const diceVisual = document.getElementById("dice-visual");
+  const diceHint = document.getElementById("dice-hint");
+
+  if (diceWrapper) diceWrapper.classList.remove("my-turn");
   if (diceVisual) diceVisual.classList.add("rolling");
+  if (diceHint) diceHint.innerText = "MENGOCOK...";
+
+  const shuffleInterval = setInterval(() => {
+    const randomTemp = Math.floor(1 + Math.random() * 6);
+    updateDiceVisual(randomTemp);
+  }, 90);
 
   setTimeout(() => {
+    clearInterval(shuffleInterval);
     if (diceVisual) diceVisual.classList.remove("rolling");
 
     const diceValue = Math.floor(1 + Math.random() * 6);
-    const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
-    if (diceVisual) diceVisual.innerText = diceIcons[diceValue - 1];
+    updateDiceVisual(diceValue);
 
     let currentPos = snakesPositions[playerSeat];
     let nextPos = currentPos + diceValue;
@@ -651,7 +693,7 @@ function executePlayerDiceRoll(playerSeat) {
     });
 
     applyDiceRollResult(playerSeat, diceValue, nextPos);
-  }, 600);
+  }, 650);
 }
 
 function executeBotDiceRoll(botSeat) {
@@ -661,10 +703,10 @@ function executeBotDiceRoll(botSeat) {
 
 function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   const statusBar = document.getElementById("snakes-status-bar");
-  const diceVisual = document.getElementById("dice-visual");
-  const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  const diceHint = document.getElementById("dice-hint");
 
-  if (diceVisual) diceVisual.innerText = diceIcons[diceValue - 1];
+  updateDiceVisual(diceValue);
+  if (diceHint) diceHint.innerText = `ANGKA ${diceValue}`;
   if (statusBar) statusBar.innerText = `${snakesPlayerNames[playerSeat]} melempar ${diceValue}! Maju ke kotak ${finalPosition}.`;
 
   snakesPositions[playerSeat] = finalPosition;
