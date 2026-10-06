@@ -15,34 +15,34 @@ html, body {
   color: #fff;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: manipulation;
 }
 
 /* Tampilan Layar Lobi */
 #lobby-screen {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  background: rgba(10, 30, 20, 0.95);
+  background: rgba(10, 30, 20, 0.96);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 9999;
   padding: 16px;
+  pointer-events: auto;
 }
 
 .lobby-card {
   background: #1b4d36;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 24px 20px;
   border-radius: 12px;
   width: 100%;
   max-width: 320px;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
 }
 
 .lobby-card h2 {
@@ -60,11 +60,11 @@ html, body {
 .lobby-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .lobby-divider {
-  margin: 14px 0;
+  margin: 16px 0;
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -77,11 +77,11 @@ html, body {
   background: #1b4d36;
   padding: 0 8px;
   font-size: 10px;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 #input-room-code {
-  padding: 10px;
+  padding: 12px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 16px;
@@ -89,6 +89,10 @@ html, body {
   font-weight: bold;
   letter-spacing: 2px;
   text-transform: uppercase;
+  color: #111;
+  background: #fff;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .w-100 {
@@ -244,12 +248,17 @@ html, body {
 }
 
 .btn {
-  padding: 8px 12px;
-  font-size: 11px;
+  padding: 10px 14px;
+  font-size: 12px;
   font-weight: bold;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-secondary {
@@ -258,7 +267,7 @@ html, body {
 }
 
 .btn-action {
-  background: #f39c12;
+  background: #e67e22;
   color: #fff;
 }
 
