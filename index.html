@@ -7,8 +7,48 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 1. PORTAL UTAMA: PILIH BOARD GAME -->
+  <!-- MODAL EDIT PROFIL AKUN -->
+  <div id="profile-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>Profil Akun Pemain</h3>
+      <div class="avatar-selection">
+        <label>Pilih Avatar:</label>
+        <div class="avatar-options">
+          <span class="avatar-opt" onclick="selectAvatar('🀄')">🀄</span>
+          <span class="avatar-opt" onclick="selectAvatar('🐲')">🐲</span>
+          <span class="avatar-opt" onclick="selectAvatar('🐼')">🐼</span>
+          <span class="avatar-opt" onclick="selectAvatar('🐱')">🐱</span>
+          <span class="avatar-opt" onclick="selectAvatar('🦊')">🦊</span>
+          <span class="avatar-opt" onclick="selectAvatar('👑')">👑</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="input-nickname">Nama Pemain:</label>
+        <input type="text" id="input-nickname" placeholder="Nama Anda" maxlength="12" autocomplete="off" />
+      </div>
+      <div class="profile-stats-box">
+        <div>Menang: <span id="stat-wins">0</span></div>
+        <div>Total Main: <span id="stat-matches">0</span></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-action w-100" onclick="saveProfile()">SIMPAN PROFIL</button>
+        <button type="button" class="btn btn-secondary w-100" onclick="closeProfileModal()">TUTUP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. PORTAL UTAMA: BOARD GAME HUB -->
   <div id="hub-screen">
+    <!-- Bar Profil Pemain di Hub -->
+    <div class="user-bar" onclick="openProfileModal()">
+      <div class="user-avatar" id="hub-avatar">🀄</div>
+      <div class="user-info">
+        <div class="user-name" id="hub-nickname">PemainBaru</div>
+        <div class="user-subtitle">Ketuk untuk edit profil</div>
+      </div>
+      <div class="user-badge-level" id="hub-wins">🏆 0 Menang</div>
+    </div>
+
     <header class="hub-header">
       <h1>BOARD GAME HUB</h1>
       <p>Koleksi Board Game PvP Online & Offline</p>
@@ -43,7 +83,7 @@
     <div class="lobby-card">
       <button type="button" class="btn-back" onclick="backToHub()">← Kembali ke Hub</button>
       <h2>Mahjong PvP</h2>
-      <p class="lobby-desc">Sesuaikan aturan dan level bantuan</p>
+      <p class="lobby-desc">Bermain sebagai: <b id="lobby-user-tag">PemainBaru</b></p>
 
       <div class="setting-group">
         <label class="setting-title">Aturan Permainan:</label>
