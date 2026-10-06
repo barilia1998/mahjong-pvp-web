@@ -6,11 +6,11 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   height: 100dvh;
   overflow: hidden;
-  background-color: #153e2b;
+  background-color: #143d2b;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #fff;
   user-select: none;
@@ -22,29 +22,27 @@ html, body {
   width: 100%;
   height: 100%;
   height: 100dvh;
-  max-width: 600px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 6px calc(12px + env(safe-area-inset-bottom, 0px));
-  position: relative;
+  padding: 6px 6px calc(14px + env(safe-area-inset-bottom, 0px));
 }
 
+/* Header */
 #header-bar {
   display: flex;
   gap: 8px;
   align-items: center;
   justify-content: center;
   width: 100%;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 #status-bar {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.6);
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: 14px;
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
@@ -55,11 +53,12 @@ html, body {
 .timer-box {
   background: #c0392b;
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: 14px;
   font-size: 11px;
   font-weight: bold;
 }
 
+/* Kursi & Indikator Giliran */
 .player-seat {
   display: flex;
   flex-direction: column;
@@ -67,12 +66,11 @@ html, body {
   padding: 4px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  width: 100%;
+  flex-shrink: 0;
 }
 
 .player-seat.active-turn {
   background: rgba(241, 196, 15, 0.2);
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.5);
   border: 1px solid #f1c40f;
 }
 
@@ -84,39 +82,39 @@ html, body {
   text-align: center;
 }
 
+/* Area Tengah */
 #middle-board {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 2px 0;
   min-height: 0;
+  padding: 4px 0;
 }
 
-#middle-board .player-seat {
-  width: auto;
+.side-seat {
+  width: 32px;
 }
 
 #discard-pond {
   flex: 1;
-  width: 100%;
   height: 100%;
-  max-height: 180px;
+  max-height: 140px;
   background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px;
-  margin: 0 6px;
+  padding: 4px;
+  margin: 0 4px;
 }
 
 .section-title {
   font-size: 10px;
-  opacity: 0.75;
-  margin-bottom: 4px;
+  opacity: 0.7;
+  margin-bottom: 2px;
 }
 
 .discard-grid {
@@ -130,59 +128,6 @@ html, body {
   overflow-y: auto;
 }
 
-/* Balok Tangan Pemain Bawah */
-#hand-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding-bottom: 4px;
-}
-
-.tile-row {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 2px;
-  justify-content: center;
-  width: 100%;
-}
-
-.tile {
-  /* Ukuran presisi agar 14 kartu pas di 1 baris layar ponsel */
-  flex: 1 1 0;
-  max-width: 25px;
-  height: 44px;
-  background: #fdfdfd;
-  color: #111;
-  border: 1px solid #b8b8b8;
-  border-radius: 4px;
-  box-shadow: 0 3px 0 #95a5a6, 0 3px 4px rgba(0,0,0,0.3);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 9px;
-  line-height: 1.1;
-  font-weight: bold;
-  cursor: pointer;
-  user-select: none;
-  transition: transform 0.1s;
-}
-
-.tile:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #95a5a6;
-}
-
-.tile.discarded {
-  flex: none;
-  width: 22px;
-  height: 30px;
-  font-size: 8px;
-  background: #ececec;
-  box-shadow: 0 1px 0 #aaa;
-  border-radius: 3px;
-}
-
 /* Punggung Balok Lawan */
 .opponent-hand {
   display: flex;
@@ -193,12 +138,11 @@ html, body {
   background: #d35400;
   border: 1px solid #a04000;
   border-radius: 3px;
-  box-shadow: 0 1px 0 #7e3200;
 }
 
 .horizontal-back .tile-back {
-  width: 18px;
-  height: 26px;
+  width: 16px;
+  height: 22px;
 }
 
 .vertical-back {
@@ -206,27 +150,25 @@ html, body {
 }
 
 .vertical-back .tile-back {
-  width: 26px;
-  height: 15px;
+  width: 22px;
+  height: 12px;
 }
 
 /* Tombol Aksi */
 #action-controls {
   display: flex;
   gap: 6px;
-  margin-bottom: 6px;
-  width: 100%;
-  justify-content: center;
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .btn {
-  padding: 6px 12px;
+  padding: 5px 12px;
   font-size: 11px;
   font-weight: bold;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
 }
 
 .btn-secondary {
@@ -242,18 +184,54 @@ html, body {
 .btn-win {
   background: #e74c3c;
   color: #fff;
-  animation: pulse-glow 1s infinite alternate;
-}
-
-@keyframes pulse-glow {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.06);
-  }
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Tangan Pribadi: Grid 2 Baris yang Lega */
+#seat-bottom {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.hand-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.tile {
+  height: 48px;
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 0 #888888;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.tile:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #888888;
+  background: #f1f2f6;
+}
+
+.tile.discarded {
+  width: 24px;
+  height: 32px;
+  font-size: 8px;
+  background: #ececec;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 #999;
 }
