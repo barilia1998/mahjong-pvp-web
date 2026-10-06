@@ -2,8 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mahjong Web PvP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Mahjong Web PvP Mobile</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,10 +14,10 @@
     <!-- Header Status & Timer -->
     <div id="header-bar">
       <div id="status-bar">Menghubungkan ke server...</div>
-      <div id="turn-timer" class="timer-box">Waktu: <span id="timer-count">15</span>s</div>
+      <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </div>
 
-    <!-- Kursi Lawan Atas -->
+    <!-- Kursi Lawan Atas (Pemain 3) -->
     <div id="seat-top" class="player-seat">
       <div class="player-info" id="label-top">Pemain 3 (Atas)</div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
@@ -22,21 +25,21 @@
 
     <!-- Area Meja Tengah -->
     <div id="middle-board">
-      <!-- Kursi Lawan Kiri -->
+      <!-- Kursi Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat">
-        <div class="player-info" id="label-left">Pemain 4 (Kiri)</div>
+        <div class="player-info" id="label-left">P4</div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
       <!-- Area Buangan Bersama -->
       <div id="discard-pond">
-        <div class="section-title">Area Buangan</div>
+        <div class="section-title">Buangan</div>
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Kursi Lawan Kanan -->
+      <!-- Kursi Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat">
-        <div class="player-info" id="label-right">Pemain 2 (Kanan)</div>
+        <div class="player-info" id="label-right">P2</div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
     </div>
@@ -47,13 +50,15 @@
       <button id="btn-chow" class="btn btn-action hidden" onclick="claimAction('CHOW')">CHOW</button>
       <button id="btn-pung" class="btn btn-action hidden" onclick="claimAction('PUNG')">PUNG</button>
       <button id="btn-kong" class="btn btn-action hidden" onclick="claimAction('KONG')">KONG</button>
-      <button id="btn-win" class="btn btn-win hidden" onclick="claimAction('HU')">HU (MENANG!)</button>
+      <button id="btn-win" class="btn btn-win hidden" onclick="claimAction('HU')">HU</button>
     </div>
 
     <!-- Tangan Pribadi Pemain -->
     <div id="seat-bottom" class="player-seat active-turn">
-      <div class="player-info" id="label-bottom">Giliran Anda (Bawah)</div>
-      <div id="player-hand" class="tile-row"></div>
+      <div class="player-info" id="label-bottom">Giliran Anda</div>
+      <div id="hand-wrapper">
+        <div id="player-hand" class="tile-row"></div>
+      </div>
     </div>
   </div>
 
