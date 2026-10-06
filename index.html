@@ -115,7 +115,7 @@
         <div class="game-badge">Tersedia (HK / Riichi)</div>
       </div>
 
-      <!-- Game 2: Ular Tangga (Kini Aktif!) -->
+      <!-- Game 2: Ular Tangga -->
       <div class="game-card" onclick="selectGame('snakes')">
         <div class="game-icon">🎲</div>
         <div class="game-title">Ular Tangga</div>
@@ -131,7 +131,7 @@
     </div>
   </div>
 
-  <!-- 2. LOBI MULTI-GAME (MAHJONG & ULAR TANGGA) -->
+  <!-- 2. LOBI MULTI-GAME -->
   <div id="lobby-screen" class="hidden">
     <div class="lobby-card">
       <button type="button" class="btn-back" onclick="backToHub()">← Kembali ke Hub</button>
@@ -254,11 +254,11 @@
     </footer>
   </div>
 
-  <!-- 4. ARENA MEJA ULAR TANGGA (BARU!) -->
+  <!-- 4. ARENA MEJA ULAR TANGGA (DENGAN DADU KLIK INTERAKTIF) -->
   <div id="snakes-screen" class="hidden">
     <header id="snakes-header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
-      <div id="snakes-status-bar">Giliran Anda melempar dadu!</div>
+      <div id="snakes-status-bar">Giliran Anda! Ketuk dadu untuk melempar.</div>
       <div id="snakes-room-badge" class="badge-room">ROOM: ----</div>
       <div id="snakes-timer" class="timer-box"><span id="snakes-timer-count">15</span>s</div>
     </header>
@@ -268,7 +268,7 @@
       <div id="snakes-board" class="board-10x10"></div>
     </div>
 
-    <!-- Panel Kontrol & Status Pemain Ular Tangga -->
+    <!-- Panel Kontrol: Dadu Interaktif Tanpa Tombol Teks Terpisah -->
     <footer id="snakes-controls">
       <div class="snakes-players-summary">
         <div id="p-pill-0" class="player-pill active-turn">
@@ -286,10 +286,14 @@
       </div>
 
       <div class="dice-interaction-area">
-        <div id="dice-visual" class="dice-box">🎲</div>
-        <button type="button" id="btn-roll-dice" class="btn btn-action btn-dice-roll" onclick="handleRollDiceClick()">
-          LEMPAR DADU!
-        </button>
+        <!-- Wadah Dadu Interaktif 3D -->
+        <div id="dice-wrapper" class="dice-interactive-wrapper" onclick="handleRollDiceClick()">
+          <div id="dice-visual" class="dice-face face-1">
+            <!-- Pola titik dadu di-generate via CSS -->
+            <span class="pip pip-center"></span>
+          </div>
+          <div id="dice-hint" class="dice-tap-hint">KETUK DADU</div>
+        </div>
       </div>
     </footer>
   </div>
