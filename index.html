@@ -7,46 +7,100 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- MODAL EDIT PROFIL AKUN -->
-  <div id="profile-modal" class="modal-overlay hidden">
-    <div class="modal-card">
-      <h3>Profil Akun Pemain</h3>
-      <div class="avatar-selection">
-        <label>Pilih Avatar:</label>
-        <div class="avatar-options">
-          <span class="avatar-opt" onclick="selectAvatar('🀄')">🀄</span>
-          <span class="avatar-opt" onclick="selectAvatar('🐲')">🐲</span>
-          <span class="avatar-opt" onclick="selectAvatar('🐼')">🐼</span>
-          <span class="avatar-opt" onclick="selectAvatar('🐱')">🐱</span>
-          <span class="avatar-opt" onclick="selectAvatar('🦊')">🦊</span>
-          <span class="avatar-opt" onclick="selectAvatar('👑')">👑</span>
+  <!-- 0. LAYAR AUTENTIKASI AWAL -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">🎲</div>
+      <h2>Board Game Hub</h2>
+      <p class="auth-subtitle">Pilih cara masuk untuk mulai bermain</p>
+
+      <button type="button" class="btn btn-guest w-100" onclick="loginAsGuest()">
+        👤 Masuk sebagai Tamu (Guest)
+      </button>
+
+      <div class="auth-divider"><span>ATAU DENGAN EMAIL</span></div>
+
+      <div class="auth-tabs">
+        <button type="button" id="tab-login" class="tab-btn active" onclick="switchAuthTab('login')">Masuk</button>
+        <button type="button" id="tab-register" class="tab-btn" onclick="switchAuthTab('register')">Daftar Akun</button>
+      </div>
+
+      <form id="form-login" onsubmit="handleEmailLogin(event)">
+        <div class="input-group">
+          <label>Email:</label>
+          <input type="email" id="login-email" placeholder="nama@email.com" required autocomplete="email" />
         </div>
+        <div class="input-group">
+          <label>Kata Sandi:</label>
+          <input type="password" id="login-pass" placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn btn-action w-100">MASUK</button>
+      </form>
+
+      <form id="form-register" class="hidden" onsubmit="handleEmailRegister(event)">
+        <div class="input-group">
+          <label>Nama Panggilan / Nickname:</label>
+          <input type="text" id="reg-nickname" placeholder="Nama Anda" maxlength="12" required />
+        </div>
+        <div class="input-group">
+          <label>Email:</label>
+          <input type="email" id="reg-email" placeholder="nama@email.com" required autocomplete="email" />
+        </div>
+        <div class="input-group">
+          <label>Kata Sandi:</label>
+          <input type="password" id="reg-pass" placeholder="Minimal 6 karakter" minlength="6" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn btn-action w-100">BUAT AKUN BARU</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POPUP DAFTAR TEMAN (FRIENDS MODAL) -->
+  <div id="friends-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>Daftar Teman</h3>
+      <div class="my-friend-code-box">
+        <span>ID Saya: <b id="my-friend-id">#MG-0000</b></span>
+        <button type="button" class="btn-copy-id" onclick="copyMyFriendId()">Salin</button>
       </div>
-      <div class="input-group">
-        <label for="input-nickname">Nama Pemain:</label>
-        <input type="text" id="input-nickname" placeholder="Nama Anda" maxlength="12" autocomplete="off" />
+
+      <div class="add-friend-bar">
+        <input type="text" id="input-friend-id" placeholder="Masukkan ID Teman (#MG-XXXX)" maxlength="10" />
+        <button type="button" class="btn btn-action btn-sm" onclick="addFriendById()">Tambah</button>
       </div>
-      <div class="profile-stats-box">
-        <div>Menang: <span id="stat-wins">0</span></div>
-        <div>Total Main: <span id="stat-matches">0</span></div>
+
+      <div class="friends-list-container" id="friends-list">
+        <!-- Render dinamis teman di sini -->
+        <div class="empty-friends">Belum ada teman yang ditambahkan.</div>
       </div>
+
       <div class="modal-actions">
-        <button type="button" class="btn btn-action w-100" onclick="saveProfile()">SIMPAN PROFIL</button>
-        <button type="button" class="btn btn-secondary w-100" onclick="closeProfileModal()">TUTUP</button>
+        <button type="button" class="btn btn-secondary w-100" onclick="closeFriendsModal()">TUTUP</button>
       </div>
     </div>
   </div>
 
+  <!-- NOTIFIKASI UNDANGAN TEMAN (INVITE ALERT) -->
+  <div id="invite-notification" class="invite-banner hidden">
+    <span id="invite-text">Teman mengundang Anda bermain!</span>
+    <div class="invite-actions">
+      <button type="button" class="btn btn-action btn-sm" id="btn-accept-invite">Terima</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeInviteNotification()">Tolak</button>
+    </div>
+  </div>
+
   <!-- 1. PORTAL UTAMA: BOARD GAME HUB -->
-  <div id="hub-screen">
-    <!-- Bar Profil Pemain di Hub -->
-    <div class="user-bar" onclick="openProfileModal()">
+  <div id="hub-screen" class="hidden">
+    <div class="user-bar">
       <div class="user-avatar" id="hub-avatar">🀄</div>
       <div class="user-info">
-        <div class="user-name" id="hub-nickname">PemainBaru</div>
-        <div class="user-subtitle">Ketuk untuk edit profil</div>
+        <div class="user-name" id="hub-nickname">Pemain</div>
+        <div class="user-subtitle" id="hub-account-type">Akun Tamu</div>
       </div>
-      <div class="user-badge-level" id="hub-wins">🏆 0 Menang</div>
+      <div class="user-right-col">
+        <button type="button" class="btn-friends" onclick="openFriendsModal()">👥 Teman</button>
+        <button type="button" class="btn-logout" onclick="handleLogout()">Keluar 🚪</button>
+      </div>
     </div>
 
     <header class="hub-header">
@@ -83,7 +137,7 @@
     <div class="lobby-card">
       <button type="button" class="btn-back" onclick="backToHub()">← Kembali ke Hub</button>
       <h2>Mahjong PvP</h2>
-      <p class="lobby-desc">Bermain sebagai: <b id="lobby-user-tag">PemainBaru</b></p>
+      <p class="lobby-desc">Bermain sebagai: <b id="lobby-user-tag">Pemain</b></p>
 
       <div class="setting-group">
         <label class="setting-title">Aturan Permainan:</label>
@@ -110,6 +164,7 @@
 
       <div class="lobby-section">
         <button type="button" id="btn-create-room" class="btn btn-action w-100">BUAT RUANGAN</button>
+        <button type="button" class="btn btn-secondary w-100" onclick="openFriendsModal()">👥 UNDANG TEMAN DARI KONTAK</button>
       </div>
 
       <div class="lobby-divider"><span>ATAU</span></div>
@@ -123,12 +178,10 @@
 
   <!-- 3. ARENA MEJA MAHJONG -->
   <div id="game-table" class="hidden">
-    <!-- Banner Notifikasi Bantuan Newbie -->
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
-    <!-- Header Meja -->
     <header id="header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
@@ -138,23 +191,19 @@
       <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </header>
 
-    <!-- Lawan Atas (Pemain 3) -->
     <div id="seat-top" class="player-seat">
       <div class="player-info" id="label-top">Pemain 3</div>
       <div id="melds-top" class="melds-container"></div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
-    <!-- Area Meja Tengah -->
     <main id="middle-board">
-      <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
         <div class="player-info" id="label-left">P4</div>
         <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
-      <!-- Area Kolam Buangan & Indikator Dora -->
       <div id="discard-pond">
         <div id="dora-bar" class="dora-box hidden">
           <span>DORA:</span>
@@ -164,7 +213,6 @@
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat side-seat">
         <div class="player-info" id="label-right">P2</div>
         <div id="melds-right" class="melds-container vertical"></div>
@@ -172,7 +220,6 @@
       </div>
     </main>
 
-    <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
       <button type="button" id="btn-sort" class="btn btn-secondary">URUTKAN</button>
       <button type="button" id="btn-riichi" class="btn btn-riichi hidden">RIICHI</button>
@@ -183,7 +230,6 @@
       <button type="button" id="btn-skip" class="btn btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
     </div>
 
-    <!-- Tangan Pribadi Bawah -->
     <footer id="seat-bottom" class="player-seat active-turn">
       <div class="bottom-header">
         <span class="player-info" id="label-bottom">Anda</span>
