@@ -49,7 +49,6 @@ body {
   font-weight: bold;
 }
 
-/* Indikator Kursi & Giliran Aktif */
 .player-seat {
   display: flex;
   flex-direction: column;
@@ -113,7 +112,6 @@ body {
   overflow-y: auto;
 }
 
-/* Tampilan Balok Pemain */
 .tile-row {
   display: flex;
   flex-wrap: nowrap;
@@ -152,7 +150,6 @@ body {
   box-shadow: 0 2px 0 #aaa;
 }
 
-/* Punggung Balok Lawan */
 .opponent-hand {
   display: flex;
   gap: 2px;
@@ -179,7 +176,6 @@ body {
   height: 20px;
 }
 
-/* Tombol Aksi */
 #action-controls {
   display: flex;
   gap: 10px;
@@ -196,6 +192,11 @@ body {
   box-shadow: 0 3px 0 rgba(0,0,0,0.2);
 }
 
+.btn-secondary {
+  background: #34495e;
+  color: #fff;
+}
+
 .btn-action {
   background: #f39c12;
   color: #fff;
@@ -204,4 +205,20 @@ body {
 .btn-win {
   background: #e74c3c;
   color: #fff;
+  animation: pulse-glow 1s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from {
+    box-shadow: 0 0 6px #e74c3c;
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 0 16px #ff7675;
+    transform: scale(1.08);
+  }
+}
+
+.hidden {
+  display: none !important;
 }
