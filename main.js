@@ -1,31 +1,23 @@
-// Konfigurasi WebSocket
+// Konfigurasi Server Cloudflare
+const SERVER_BASE_URL = "https://mahjong-pvp-server.owning.workers.dev";
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// ================= SISTEM AKUN & AUTENTIKASI =================
+// State Akun
 let currentUser = null;
 let friendList = [];
 let pendingInviteRoom = null;
 
-function getStoredAccounts() {
-  const data = localStorage.getItem("bgh_registered_accounts");
-  return data ? JSON.parse(data) : {};
+function generateGuestFriendId() {
+  return "#GUEST-" + Math.floor(1000 + Math.random() * 9000);
 }
 
-function saveStoredAccounts(accounts) {
-  localStorage.setItem("bgh_registered_accounts", JSON.stringify(accounts));
-}
-
-function generateFriendId() {
-  return "#MG-" + Math.floor(1000 + Math.random() * 9000);
-}
-
-// 1. Masuk sebagai Tamu (Guest - Tanpa Friend ID & Tanpa Fitur Teman)
+// 1. Masuk sebagai Tamu (Offline / Guest Session)
 window.loginAsGuest = function () {
   const guestNum = Math.floor(100 + Math.random() * 900);
   currentUser = {
     id: "guest_" + Math.random().toString(36).substring(2, 8),
-    friendId: null, // Tamu tidak memiliki ID Pertemanan
+    friendId: null,
     nickname: "Tamu_" + guestNum,
     email: null,
     isGuest: true,
@@ -57,66 +49,62 @@ window.switchAuthTab = function (tab) {
   }
 };
 
-window.handleEmailRegister = function (e) {
+// 2. Registrasi Akun ke Cloudflare D1
+window.handleEmailRegister = async function (e) {
   e.preventDefault();
   const nick = document.getElementById("reg-nickname").value.trim();
   const email = document.getElementById("reg-email").value.trim().toLowerCase();
   const pass = document.getElementById("reg-pass").value;
 
-  if (nick.length < 2) {
-    alert("Nama panggilan minimal 2 karakter!");
-    return;
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pass, nickname: nick })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || "Gagal mendaftar akun!");
+      return;
+    }
+
+    currentUser = { ...data.user, isGuest: false };
+    saveCurrentSession();
+    alert(`Akun berhasil dibuat di Cloud Server! ID Anda: ${currentUser.friendId}`);
+    await fetchServerFriends();
+    openHubScreen();
+  } catch (err) {
+    alert("Gagal menghubungi server database: " + err.message);
   }
-
-  const accounts = getStoredAccounts();
-  if (accounts[email]) {
-    alert("Email ini sudah terdaftar! Silakan login di tab Masuk.");
-    switchAuthTab("login");
-    return;
-  }
-
-  accounts[email] = {
-    id: "user_" + Math.random().toString(36).substring(2, 8),
-    friendId: generateFriendId(),
-    nickname: nick,
-    email: email,
-    password: pass,
-    isGuest: false,
-    avatar: "🀄",
-    wins: 0,
-    matches: 0
-  };
-  saveStoredAccounts(accounts);
-
-  currentUser = accounts[email];
-  saveCurrentSession();
-  loadUserFriends();
-  alert(`Akun berhasil dibuat! ID Pertemanan Anda: ${currentUser.friendId}`);
-  openHubScreen();
 };
 
-window.handleEmailLogin = function (e) {
+// 3. Login Akun ke Cloudflare D1
+window.handleEmailLogin = async function (e) {
   e.preventDefault();
   const email = document.getElementById("login-email").value.trim().toLowerCase();
   const pass = document.getElementById("login-pass").value;
 
-  const accounts = getStoredAccounts();
-  const user = accounts[email];
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pass })
+    });
 
-  if (!user || user.password !== pass) {
-    alert("Email atau kata sandi tidak cocok!");
-    return;
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || "Email atau kata sandi salah!");
+      return;
+    }
+
+    currentUser = { ...data.user, isGuest: false };
+    saveCurrentSession();
+    await fetchServerFriends();
+    openHubScreen();
+  } catch (err) {
+    alert("Gagal menghubungi server database: " + err.message);
   }
-
-  if (!user.friendId) {
-    user.friendId = generateFriendId();
-    saveStoredAccounts(accounts);
-  }
-
-  currentUser = user;
-  saveCurrentSession();
-  loadUserFriends();
-  openHubScreen();
 };
 
 window.handleLogout = function () {
@@ -129,19 +117,13 @@ function saveCurrentSession() {
   localStorage.setItem("bgh_active_session", JSON.stringify(currentUser));
 }
 
-function checkAutoLogin() {
+async function checkAutoLogin() {
   const session = localStorage.getItem("bgh_active_session");
   if (session) {
     try {
       currentUser = JSON.parse(session);
       if (!currentUser.isGuest) {
-        if (!currentUser.friendId) {
-          currentUser.friendId = generateFriendId();
-          saveCurrentSession();
-        }
-        loadUserFriends();
-      } else {
-        friendList = [];
+        await fetchServerFriends();
       }
       openHubScreen();
       return;
@@ -163,8 +145,7 @@ function openHubScreen() {
   document.getElementById("hub-screen").classList.remove("hidden");
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
-  
-  // Hanya user terdaftar yang mendengarkan invite channel
+
   if (currentUser && !currentUser.isGuest) {
     initLobbyHubSocket();
   }
@@ -184,13 +165,11 @@ function updateUserHubUI() {
   if (hubNick) hubNick.innerText = currentUser.nickname;
 
   if (currentUser.isGuest) {
-    // Tampilan khusus Tamu (Guest)
     if (hubType) hubType.innerText = "Mode Tamu (Hanya Kode Room)";
     if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (Guest)`;
     if (btnHubFriends) btnHubFriends.classList.add("hidden");
     if (btnLobbyInvite) btnLobbyInvite.classList.add("hidden");
   } else {
-    // Tampilan pengguna terdaftar
     if (hubType) hubType.innerText = `ID: ${currentUser.friendId}`;
     if (myFriendIdEl) myFriendIdEl.innerText = currentUser.friendId;
     if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (${currentUser.friendId})`;
@@ -199,26 +178,21 @@ function updateUserHubUI() {
   }
 }
 
-// ================= SISTEM DAFTAR TEMAN & UNDANGAN =================
-function loadUserFriends() {
-  if (!currentUser || currentUser.isGuest) {
-    friendList = [];
-    return;
-  }
-  const key = `bgh_friends_${currentUser.friendId}`;
-  const data = localStorage.getItem(key);
-  friendList = data ? JSON.parse(data) : [];
-}
-
-function saveUserFriends() {
+// 4. Sistem Teman Tersinkron Database Cloud
+async function fetchServerFriends() {
   if (!currentUser || currentUser.isGuest) return;
-  const key = `bgh_friends_${currentUser.friendId}`;
-  localStorage.setItem(key, JSON.stringify(friendList));
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/friends?friendId=${encodeURIComponent(currentUser.friendId)}`);
+    const data = await res.json();
+    friendList = data.friends || [];
+  } catch (e) {
+    friendList = [];
+  }
 }
 
 window.openFriendsModal = function () {
   if (currentUser && currentUser.isGuest) {
-    alert("Fitur Teman hanya tersedia untuk akun terdaftar. Tamu hanya bisa bermain dengan memasukkan Kode Room.");
+    alert("Fitur Teman hanya untuk akun email terdaftar!");
     return;
   }
   updateFriendsListUI();
@@ -233,16 +207,11 @@ window.copyMyFriendId = function () {
   if (!currentUser || currentUser.isGuest) return;
   navigator.clipboard.writeText(currentUser.friendId).then(() => {
     alert(`ID ${currentUser.friendId} disalin!`);
-  }).catch(() => {
-    alert(`ID Anda: ${currentUser.friendId}`);
   });
 };
 
-window.addFriendById = function () {
-  if (currentUser && currentUser.isGuest) {
-    alert("Akun tamu tidak dapat menambah teman!");
-    return;
-  }
+window.addFriendById = async function () {
+  if (currentUser && currentUser.isGuest) return;
 
   const input = document.getElementById("input-friend-id");
   let fId = (input ? input.value : "").trim().toUpperCase();
@@ -256,22 +225,26 @@ window.addFriendById = function () {
     return;
   }
 
-  if (friendList.some(f => f.friendId === fId)) {
-    alert("Teman ini sudah ada dalam daftar!");
-    return;
+  try {
+    const res = await fetch(`${SERVER_BASE_URL}/api/add-friend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ myFriendId: currentUser.friendId, targetFriendId: fId })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Gagal menambahkan teman!");
+      return;
+    }
+
+    alert(`Berhasil menambahkan ${data.friend.nickname} (${fId})!`);
+    await fetchServerFriends();
+    updateFriendsListUI();
+    if (input) input.value = "";
+  } catch (err) {
+    alert("Gagal koneksi ke database: " + err.message);
   }
-
-  const newFriend = {
-    friendId: fId,
-    nickname: "Teman " + fId.slice(-4),
-    avatar: "👤"
-  };
-
-  friendList.push(newFriend);
-  saveUserFriends();
-  updateFriendsListUI();
-  if (input) input.value = "";
-  alert(`Berhasil menambahkan ${fId}!`);
 };
 
 function updateFriendsListUI() {
@@ -284,7 +257,7 @@ function updateFriendsListUI() {
   }
 
   container.innerHTML = "";
-  friendList.forEach((friend, idx) => {
+  friendList.forEach((friend) => {
     const item = document.createElement("div");
     item.className = "friend-item";
     item.innerHTML = `
@@ -292,27 +265,16 @@ function updateFriendsListUI() {
         <div class="friend-name-tag">${friend.avatar} ${friend.nickname}</div>
         <div class="friend-id-tag">${friend.friendId}</div>
       </div>
-      <div style="display:flex; gap:4px;">
+      <div>
         <button type="button" class="btn btn-action btn-sm" onclick="inviteFriendToPlay('${friend.friendId}')">Undang</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="removeFriend(${idx})">×</button>
       </div>
     `;
     container.appendChild(item);
   });
 }
 
-window.removeFriend = function (index) {
-  friendList.splice(index, 1);
-  saveUserFriends();
-  updateFriendsListUI();
-};
-
 window.inviteFriendToPlay = function (targetFriendId) {
-  if (currentUser && currentUser.isGuest) {
-    alert("Fitur undang teman hanya untuk akun terdaftar!");
-    return;
-  }
-
+  if (currentUser && currentUser.isGuest) return;
   if (!currentRoomCode) {
     startCreateRoom();
   }
@@ -339,7 +301,7 @@ function showInviteNotification(inviter, roomCode) {
   const acceptBtn = document.getElementById("btn-accept-invite");
 
   pendingInviteRoom = roomCode;
-  textEl.innerText = `${inviter.nickname} (${inviter.friendId}) mengundang Anda ke Room: ${roomCode}!`;
+  textEl.innerText = `${inviter.nickname} (${inviter.friendId}) mengundang ke Room: ${roomCode}!`;
 
   acceptBtn.onclick = function () {
     closeInviteNotification();
