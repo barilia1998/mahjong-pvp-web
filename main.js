@@ -2,8 +2,103 @@
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
+// ================= SISTEM AKUN & PROFIL PEMAIN =================
+let userProfile = {
+  id: "user_" + Math.random().toString(36).substring(2, 8),
+  nickname: "Pemain_" + Math.floor(100 + Math.random() * 900),
+  avatar: "🀄",
+  wins: 0,
+  matches: 0
+};
+
+let tempAvatar = "🀄";
+
+function loadUserProfile() {
+  const saved = localStorage.getItem("bgh_user_profile");
+  if (saved) {
+    try {
+      userProfile = JSON.parse(saved);
+    } catch (e) {}
+  } else {
+    saveUserProfileLocal();
+  }
+  updateProfileUI();
+}
+
+function saveUserProfileLocal() {
+  localStorage.setItem("bgh_user_profile", JSON.stringify(userProfile));
+}
+
+function updateProfileUI() {
+  const hubAvatar = document.getElementById("hub-avatar");
+  const hubNick = document.getElementById("hub-nickname");
+  const hubWins = document.getElementById("hub-wins");
+  const lobbyUserTag = document.getElementById("lobby-user-tag");
+
+  if (hubAvatar) hubAvatar.innerText = userProfile.avatar;
+  if (hubNick) hubNick.innerText = userProfile.nickname;
+  if (hubWins) hubWins.innerText = `🏆 ${userProfile.wins} Menang`;
+  if (lobbyUserTag) lobbyUserTag.innerText = `${userProfile.avatar} ${userProfile.nickname}`;
+
+  const statWins = document.getElementById("stat-wins");
+  const statMatches = document.getElementById("stat-matches");
+  const inputNick = document.getElementById("input-nickname");
+
+  if (statWins) statWins.innerText = userProfile.wins;
+  if (statMatches) statMatches.innerText = userProfile.matches;
+  if (inputNick) inputNick.value = userProfile.nickname;
+
+  highlightSelectedAvatar(userProfile.avatar);
+}
+
+function highlightSelectedAvatar(avatar) {
+  document.querySelectorAll(".avatar-opt").forEach(el => {
+    if (el.innerText.trim() === avatar) {
+      el.classList.add("active");
+    } else {
+      el.classList.remove("active");
+    }
+  });
+}
+
+window.openProfileModal = function () {
+  tempAvatar = userProfile.avatar;
+  updateProfileUI();
+  document.getElementById("profile-modal").classList.remove("hidden");
+};
+
+window.closeProfileModal = function () {
+  document.getElementById("profile-modal").classList.add("hidden");
+};
+
+window.selectAvatar = function (av) {
+  tempAvatar = av;
+  highlightSelectedAvatar(av);
+};
+
+window.saveProfile = function () {
+  const inputNick = document.getElementById("input-nickname");
+  const nick = (inputNick ? inputNick.value : "").trim();
+  if (nick.length < 2) {
+    alert("Nama panggilan minimal 2 karakter!");
+    return;
+  }
+  userProfile.nickname = nick;
+  userProfile.avatar = tempAvatar;
+  saveUserProfileLocal();
+  updateProfileUI();
+  closeProfileModal();
+};
+
+function recordMatchResult(isWin) {
+  userProfile.matches++;
+  if (isWin) userProfile.wins++;
+  saveUserProfileLocal();
+  updateProfileUI();
+}
+
 // State Navigasi Portal
-let activeGame = null; // 'mahjong', 'snakes', 'monopoly'
+let activeGame = null;
 
 // State Aturan Mahjong & Assist
 let currentGameMode = "HK";
@@ -16,6 +111,7 @@ let isHost = false;
 
 // State Data Pemain & Skor
 let playerPoints = [25000, 25000, 25000, 25000];
+let playerNames = ["Anda", "P2 (Bot)", "P3 (Bot)", "P4 (Bot)"];
 let isRiichiDeclared = false;
 let exposedMelds = [[], [], [], []];
 let botHands = [[], [], [], []];
@@ -55,27 +151,26 @@ window.selectGame = function (gameName) {
     activeGame = "mahjong";
     document.getElementById("hub-screen").classList.add("hidden");
     document.getElementById("lobby-screen").classList.remove("hidden");
+    updateProfileUI();
   } else {
     alert("Board game ini sedang dalam tahap perakitan! Silakan pilih Mahjong terlebih dahulu.");
   }
 };
 
 window.backToHub = function () {
-  // Reset timer giliran jika sedang di meja
   if (turnTimerInterval) clearInterval(turnTimerInterval);
   if (botActionTimer) clearTimeout(botActionTimer);
 
-  // Putus websocket jika aktif
   if (socket) {
     try { socket.close(); } catch (e) {}
     socket = null;
   }
 
-  // Sembunyikan layar permainan & lobi, tampilkan Hub
   document.getElementById("game-table").classList.add("hidden");
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("hub-screen").classList.remove("hidden");
   activeGame = null;
+  updateProfileUI();
 };
 
 // ================= LOGIKA LOBI MAHJONG =================
@@ -172,6 +267,8 @@ function enterRoom(code) {
   lobby.classList.add("hidden");
   table.classList.remove("hidden");
 
+  playerNames[0] = `${userProfile.avatar} ${userProfile.nickname}`;
+
   if (currentGameMode === "RIICHI" && doraBar) {
     doraBar.classList.remove("hidden");
   }
@@ -225,7 +322,11 @@ function initNetwork() {
         type: "JOIN_ROOM",
         room: currentRoomCode,
         isHost: isHost,
-        mode: currentGameMode
+        mode: currentGameMode,
+        user: {
+          nickname: userProfile.nickname,
+          avatar: userProfile.avatar
+        }
       });
     };
 
@@ -235,20 +336,27 @@ function initNetwork() {
         if (msg.room !== currentRoomCode || msg.senderId === CLIENT_ID) return;
 
         if (msg.type === "JOIN_ROOM") {
+          if (msg.user && msg.seat) {
+            playerNames[msg.seat] = `${msg.user.avatar} ${msg.user.nickname}`;
+            updateSeatsInfo();
+          }
           if (isHost) {
             sendSocketMessage({
               type: "SYNC_GAME_STATE",
               wallDeck: wallDeck,
               doraTile: doraTile,
               mode: currentGameMode,
-              turnSeat: currentTurnSeat
+              turnSeat: currentTurnSeat,
+              playerNames: playerNames
             });
           }
         } else if (msg.type === "SYNC_GAME_STATE" && !isHost) {
           wallDeck = msg.wallDeck;
           doraTile = msg.doraTile;
           currentGameMode = msg.mode;
+          if (msg.playerNames) playerNames = msg.playerNames;
           updateDoraUI();
+          updateSeatsInfo();
           if (myHand.length === 0) {
             myHand = wallDeck.splice(0, 13);
             sortMyHand();
@@ -266,10 +374,12 @@ function initNetwork() {
         } else if (msg.type === "RIICHI_DECLARED") {
           playerPoints[msg.seat] -= 1000;
           updateSeatsInfo();
-          alert(`Pemain ${msg.seat + 1} menyatakan RIICHI!`);
+          alert(`${playerNames[msg.seat]} menyatakan RIICHI!`);
         } else if (msg.type === "GAME_OVER") {
           removeLastDiscardFromPond();
-          alert(`Game Selesai! Pemenang: Kursi ${msg.winnerSeat + 1}`);
+          const isMeWin = (msg.winnerSeat === mySeatIndex);
+          recordMatchResult(isMeWin);
+          alert(`Game Selesai! Pemenang: ${playerNames[msg.winnerSeat]}`);
           clearInterval(turnTimerInterval);
         }
       } catch (e) {}
@@ -297,10 +407,10 @@ function updateSeatsInfo() {
   const labelTop = document.getElementById("label-top");
   const labelLeft = document.getElementById("label-left");
 
-  if (labelBottom) labelBottom.innerText = `Anda (${playerPoints[0]} pts)`;
-  if (labelRight) labelRight.innerText = `P2 (${playerPoints[1]} pts)`;
-  if (labelTop) labelTop.innerText = `P3 (${playerPoints[2]} pts)`;
-  if (labelLeft) labelLeft.innerText = `P4 (${playerPoints[3]} pts)`;
+  if (labelBottom) labelBottom.innerText = `${playerNames[0]} (${playerPoints[0]} pts)`;
+  if (labelRight) labelRight.innerText = `${playerNames[1]} (${playerPoints[1]} pts)`;
+  if (labelTop) labelTop.innerText = `${playerNames[2]} (${playerPoints[2]} pts)`;
+  if (labelLeft) labelLeft.innerText = `${playerNames[3]} (${playerPoints[3]} pts)`;
 }
 
 // ================= GILIRAN & TIMER =================
@@ -358,7 +468,7 @@ function applyTurn(seatIndex) {
     drawTile();
     isProcessingTurn = false;
   } else {
-    if (statusBar) statusBar.innerText = `Giliran Kursi ${currentTurnSeat + 1}...`;
+    if (statusBar) statusBar.innerText = `Giliran ${playerNames[currentTurnSeat]}...`;
     if (isHost) {
       botActionTimer = setTimeout(() => {
         executeBotTurn(currentTurnSeat);
@@ -679,6 +789,7 @@ function claimAction(actionName) {
 
     removeLastDiscardFromPond();
     hideAssistNotification();
+    recordMatchResult(true);
     alert("SELAMAT! ANDA MENANG (HU)!");
     clearInterval(turnTimerInterval);
     sendSocketMessage({
@@ -816,7 +927,8 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
     const testHand = [...botHands[seat], discardedTile];
     if (validateWin(testHand, false)) {
       removeLastDiscardFromPond();
-      alert(`Pemain ${seat + 1} (Bot) mengklaim HU untuk ${discardedTile.display}!`);
+      recordMatchResult(false);
+      alert(`${playerNames[seat]} mengklaim HU untuk ${discardedTile.display}!`);
       sendSocketMessage({
         type: "GAME_OVER",
         winnerSeat: seat
@@ -980,6 +1092,8 @@ function checkTenpai(handTiles) {
 
 // Inisialisasi Event Listener
 document.addEventListener("DOMContentLoaded", () => {
+  loadUserProfile();
+
   const btnCreate = document.getElementById("btn-create-room");
   const btnJoin = document.getElementById("btn-join-room");
   const btnSort = document.getElementById("btn-sort");
