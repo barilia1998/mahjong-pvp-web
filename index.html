@@ -3,17 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Mahjong PvP Mobile</title>
+  <title>Board Game Hub Multiplayer</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Overlay Lobi Ruangan -->
-  <div id="lobby-screen">
+  <!-- 1. PORTAL UTAMA: PILIH BOARD GAME -->
+  <div id="hub-screen">
+    <header class="hub-header">
+      <h1>BOARD GAME HUB</h1>
+      <p>Koleksi Board Game PvP Online & Offline</p>
+    </header>
+
+    <div class="game-grid">
+      <!-- Game 1: Mahjong -->
+      <div class="game-card" onclick="selectGame('mahjong')">
+        <div class="game-icon">🀄</div>
+        <div class="game-title">Mahjong PvP</div>
+        <div class="game-badge">Tersedia (HK / Riichi)</div>
+      </div>
+
+      <!-- Game 2: Ular Tangga -->
+      <div class="game-card" onclick="selectGame('snakes')">
+        <div class="game-icon">🎲</div>
+        <div class="game-title">Ular Tangga</div>
+        <div class="game-badge badge-wip">Segera Hadir</div>
+      </div>
+
+      <!-- Game 3: Monopoli -->
+      <div class="game-card" onclick="selectGame('monopoly')">
+        <div class="game-icon">🎩</div>
+        <div class="game-title">Monopoli</div>
+        <div class="game-badge badge-wip">Segera Hadir</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. LOBI MAHJONG -->
+  <div id="lobby-screen" class="hidden">
     <div class="lobby-card">
+      <button type="button" class="btn-back" onclick="backToHub()">← Kembali ke Hub</button>
       <h2>Mahjong PvP</h2>
       <p class="lobby-desc">Sesuaikan aturan dan level bantuan</p>
 
-      <!-- Pilihan Mode Aturan -->
       <div class="setting-group">
         <label class="setting-title">Aturan Permainan:</label>
         <div class="radio-row">
@@ -28,13 +59,12 @@
         </div>
       </div>
 
-      <!-- Pilihan Level Bantuan (Newbie, Beginner, Intermediate) -->
       <div class="setting-group">
-        <label class="setting-title">Tingkat Kesulitan / Assist:</label>
+        <label class="setting-title">Tingkat Bantuan (Assist):</label>
         <select id="select-assist-level" class="level-dropdown">
-          <option value="NEWBIE">Newbie (Notifikasi Lengkap & Petunjuk)</option>
-          <option value="BEGINNER" selected>Beginner (Tombol Otomatis Nyala)</option>
-          <option value="INTERMEDIATE">Intermediate (Manual 100% Tanpa Bantuan)</option>
+          <option value="NEWBIE">Newbie (Notifikasi & Petunjuk)</option>
+          <option value="BEGINNER" selected>Beginner (Tombol Auto-Nyala)</option>
+          <option value="INTERMEDIATE">Intermediate (Manual 100%)</option>
         </select>
       </div>
 
@@ -51,15 +81,16 @@
     </div>
   </div>
 
-  <!-- Meja Permainan -->
-  <div id="game-table" style="display: none;">
-    <!-- Banner Notifikasi Newbie (Popup Alert di Meja) -->
+  <!-- 3. ARENA MEJA MAHJONG -->
+  <div id="game-table" class="hidden">
+    <!-- Banner Notifikasi Bantuan Newbie -->
     <div id="assist-notify-banner" class="notify-banner hidden">
-      <span id="assist-notify-text">Peluang PUNG Tersedia!</span>
+      <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
-    <!-- Header: Status, Mode, Level, Room, Timer -->
+    <!-- Header Meja -->
     <header id="header-bar">
+      <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
       <div id="level-badge" class="badge-level">NEWBIE</div>
       <div id="rule-badge" class="badge-mode">HK</div>
@@ -69,7 +100,7 @@
 
     <!-- Lawan Atas (Pemain 3) -->
     <div id="seat-top" class="player-seat">
-      <div class="player-info" id="label-top">Pemain 3 (25000)</div>
+      <div class="player-info" id="label-top">Pemain 3</div>
       <div id="melds-top" class="melds-container"></div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
@@ -78,7 +109,7 @@
     <main id="middle-board">
       <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
-        <div class="player-info" id="label-left">P4<br>(25k)</div>
+        <div class="player-info" id="label-left">P4</div>
         <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
@@ -95,7 +126,7 @@
 
       <!-- Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat side-seat">
-        <div class="player-info" id="label-right">P2<br>(25k)</div>
+        <div class="player-info" id="label-right">P2</div>
         <div id="melds-right" class="melds-container vertical"></div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
@@ -115,7 +146,7 @@
     <!-- Tangan Pribadi Bawah -->
     <footer id="seat-bottom" class="player-seat active-turn">
       <div class="bottom-header">
-        <span class="player-info" id="label-bottom">Anda (25000)</span>
+        <span class="player-info" id="label-bottom">Anda</span>
         <div id="melds-bottom" class="melds-container"></div>
       </div>
       <div id="player-hand" class="hand-grid"></div>
