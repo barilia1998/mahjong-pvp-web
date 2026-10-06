@@ -11,18 +11,31 @@
   <div id="lobby-screen">
     <div class="lobby-card">
       <h2>Mahjong PvP</h2>
-      <p class="lobby-desc">Pilih mode aturan sebelum bermain</p>
+      <p class="lobby-desc">Sesuaikan aturan dan level bantuan</p>
 
       <!-- Pilihan Mode Aturan -->
-      <div class="mode-selector">
-        <label class="mode-option">
-          <input type="radio" name="rule-mode" value="HK" checked>
-          <span>Hong Kong (Kasual)</span>
-        </label>
-        <label class="mode-option">
-          <input type="radio" name="rule-mode" value="RIICHI">
-          <span>Riichi Mahjong (Jepang)</span>
-        </label>
+      <div class="setting-group">
+        <label class="setting-title">Aturan Permainan:</label>
+        <div class="radio-row">
+          <label class="radio-label">
+            <input type="radio" name="rule-mode" value="HK" checked>
+            <span>Hong Kong</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="rule-mode" value="RIICHI">
+            <span>Riichi</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Pilihan Level Bantuan (Newbie, Beginner, Intermediate) -->
+      <div class="setting-group">
+        <label class="setting-title">Tingkat Kesulitan / Assist:</label>
+        <select id="select-assist-level" class="level-dropdown">
+          <option value="NEWBIE">Newbie (Notifikasi Lengkap & Petunjuk)</option>
+          <option value="BEGINNER" selected>Beginner (Tombol Otomatis Nyala)</option>
+          <option value="INTERMEDIATE">Intermediate (Manual 100% Tanpa Bantuan)</option>
+        </select>
       </div>
 
       <div class="lobby-section">
@@ -40,10 +53,16 @@
 
   <!-- Meja Permainan -->
   <div id="game-table" style="display: none;">
-    <!-- Header: Status, Kode Room, Mode, Timer -->
+    <!-- Banner Notifikasi Newbie (Popup Alert di Meja) -->
+    <div id="assist-notify-banner" class="notify-banner hidden">
+      <span id="assist-notify-text">Peluang PUNG Tersedia!</span>
+    </div>
+
+    <!-- Header: Status, Mode, Level, Room, Timer -->
     <header id="header-bar">
       <div id="status-bar">Menghubungkan...</div>
-      <div id="rule-badge" class="badge-mode">MODE: HK</div>
+      <div id="level-badge" class="badge-level">NEWBIE</div>
+      <div id="rule-badge" class="badge-mode">HK</div>
       <div id="room-badge" class="badge-room">ROOM: ----</div>
       <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </header>
@@ -90,6 +109,7 @@
       <button type="button" id="btn-pung" class="btn btn-action hidden">PUNG</button>
       <button type="button" id="btn-kong" class="btn btn-action hidden">KONG</button>
       <button type="button" id="btn-win" class="btn btn-win hidden">HU</button>
+      <button type="button" id="btn-skip" class="btn btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
     </div>
 
     <!-- Tangan Pribadi Bawah -->
