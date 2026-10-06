@@ -1,4 +1,4 @@
-// Konfigurasi Server WebSocket (bisa diganti URL Cloudflare Worker Anda)
+// Konfigurasi URL WebSocket Cloudflare Worker Anda
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 
 // Elemen Antarmuka (DOM)
@@ -32,11 +32,10 @@ const HONORS = [
   { name: "Bai", symbol: "🀆" }   // Putih
 ];
 
-// 1. Fungsi Membuat dan Mengocok Tumpukan Balok
+// 1. Membuat dan Mengocok Tumpukan Balok
 function createFullDeck() {
   const deck = [];
 
-  // 3 Suit x 9 Angka x 4 Duplikat = 108 balok
   SUITS.forEach((suit) => {
     for (let num = 1; num <= suit.count; num++) {
       for (let i = 0; i < 4; i++) {
@@ -49,7 +48,6 @@ function createFullDeck() {
     }
   });
 
-  // 7 Honor Tiles x 4 Duplikat = 28 balok
   HONORS.forEach((honor, hIdx) => {
     for (let i = 0; i < 4; i++) {
       deck.push({
@@ -73,27 +71,36 @@ function shuffleDeck(array) {
 
 // 2. Logika Koneksi Real-time WebSocket
 function initNetwork() {
+  statusBar.innerText = "Menghubungkan ke server...";
+
   try {
     socket = new WebSocket(WS_SERVER_URL);
 
     socket.onopen = () => {
-      statusBar.innerText = "Terkoneksi ke Server. Game siap dimainkan!";
+      statusBar.innerText = "Terkoneksi ke Server Cloudflare (Online)";
     };
 
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === "DISCARD") {
+        if (msg.type === "CONNECTED") {
+          statusBar.innerText = msg.message;
+        } else if (msg.type === "DISCARD") {
           addDiscardTile(msg.tile);
           checkPossibleActions(msg.tile);
         }
       } catch (e) {
-        // Fallback jika menerima teks biasa non-JSON
+        // Abaikan parsing teks mentah
       }
     };
 
-    socket.onerror = () => {
-      statusBar.innerText = "Mode Offline (Visual & Logika Lokal Aktif)";
+    socket.onclose = () => {
+      statusBar.innerText = "Koneksi terputus. Menggunakan mode lokal.";
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+      statusBar.innerText = "Mode Offline (Gagal terhubung ke Cloudflare)";
     };
   } catch (err) {
     statusBar.innerText = "Mode Offline (Visual & Logika Lokal Aktif)";
@@ -122,7 +129,6 @@ function drawTile() {
   const newTile = wallDeck.pop();
   myHand.push(newTile);
   renderHand();
-  statusBar.innerText = `Giliran Anda. Pilih 1 balok untuk dibuang (Sisa balok meja: ${wallDeck.length})`;
 }
 
 // 5. Aksi Membuang Balok (Discard)
@@ -134,7 +140,7 @@ function discardTile(index) {
   addDiscardTile(discarded);
   hideActionButtons();
 
-  // Kirim data ke WebSocket
+  // Kirim data ke WebSocket Cloudflare
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
       type: "DISCARD",
@@ -142,7 +148,7 @@ function discardTile(index) {
     }));
   }
 
-  // Simulasi giliran berikutnya: tarik kartu baru otomatis setelah 1 detik
+  // Tarik kartu baru otomatis setelah 1 detik
   setTimeout(() => {
     drawTile();
   }, 1000);
@@ -162,7 +168,7 @@ function checkPossibleActions(discardedTile) {
 
   if (countSame >= 2 && btnPung) {
     btnPung.style.display = "inline-block";
-    btnPung.style.backgroundColor = "#27ae60"; // Hijau penanda aksi siap
+    btnPung.style.backgroundColor = "#27ae60";
   }
 }
 
@@ -175,7 +181,6 @@ function hideActionButtons() {
 // 8. Handler Tombol Aksi Permainan
 function claimAction(actionName) {
   if (actionName === "PUNG" && lastDiscardedTile) {
-    // Ambil 2 balok kembar dari tangan
     let removed = 0;
     myHand = myHand.filter(tile => {
       if (tile.display === lastDiscardedTile.display && removed < 2) {
@@ -203,9 +208,9 @@ function claimAction(actionName) {
 // Inisialisasi Game Baru
 function startNewGame() {
   wallDeck = createFullDeck();
-  myHand = wallDeck.splice(0, 13); // Ambil 13 balok awal
+  myHand = wallDeck.splice(0, 13);
   renderHand();
-  drawTile(); // Ambil balok ke-14 untuk memulai putaran pertama
+  drawTile();
   initNetwork();
 }
 
