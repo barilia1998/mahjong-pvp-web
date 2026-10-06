@@ -2,158 +2,353 @@
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// ================= SISTEM AKUN & PROFIL PEMAIN =================
-let userProfile = {
-  id: "user_" + Math.random().toString(36).substring(2, 8),
-  nickname: "Pemain_" + Math.floor(100 + Math.random() * 900),
-  avatar: "🀄",
-  wins: 0,
-  matches: 0
+// ================= SISTEM AKUN & AUTENTIKASI =================
+let currentUser = null;
+let friendList = [];
+let pendingInviteRoom = null;
+
+function getStoredAccounts() {
+  const data = localStorage.getItem("bgh_registered_accounts");
+  return data ? JSON.parse(data) : {};
+}
+
+function saveStoredAccounts(accounts) {
+  localStorage.setItem("bgh_registered_accounts", JSON.stringify(accounts));
+}
+
+function generateFriendId() {
+  return "#MG-" + Math.floor(1000 + Math.random() * 9000);
+}
+
+// 1. Masuk sebagai Tamu
+window.loginAsGuest = function () {
+  const guestNum = Math.floor(100 + Math.random() * 900);
+  currentUser = {
+    id: "guest_" + Math.random().toString(36).substring(2, 8),
+    friendId: generateFriendId(),
+    nickname: "Tamu_" + guestNum,
+    email: null,
+    isGuest: true,
+    avatar: "👤",
+    wins: 0,
+    matches: 0
+  };
+  saveCurrentSession();
+  loadUserFriends();
+  openHubScreen();
 };
 
-let tempAvatar = "🀄";
+window.switchAuthTab = function (tab) {
+  const tabLogin = document.getElementById("tab-login");
+  const tabRegister = document.getElementById("tab-register");
+  const formLogin = document.getElementById("form-login");
+  const formRegister = document.getElementById("form-register");
 
-function loadUserProfile() {
-  const saved = localStorage.getItem("bgh_user_profile");
-  if (saved) {
-    try {
-      userProfile = JSON.parse(saved);
-    } catch (e) {}
+  if (tab === "login") {
+    tabLogin.classList.add("active");
+    tabRegister.classList.remove("active");
+    formLogin.classList.remove("hidden");
+    formRegister.classList.add("hidden");
   } else {
-    saveUserProfileLocal();
+    tabRegister.classList.add("active");
+    tabLogin.classList.remove("active");
+    formRegister.classList.remove("hidden");
+    formLogin.classList.add("hidden");
   }
-  updateProfileUI();
-}
-
-function saveUserProfileLocal() {
-  localStorage.setItem("bgh_user_profile", JSON.stringify(userProfile));
-}
-
-function updateProfileUI() {
-  const hubAvatar = document.getElementById("hub-avatar");
-  const hubNick = document.getElementById("hub-nickname");
-  const hubWins = document.getElementById("hub-wins");
-  const lobbyUserTag = document.getElementById("lobby-user-tag");
-
-  if (hubAvatar) hubAvatar.innerText = userProfile.avatar;
-  if (hubNick) hubNick.innerText = userProfile.nickname;
-  if (hubWins) hubWins.innerText = `🏆 ${userProfile.wins} Menang`;
-  if (lobbyUserTag) lobbyUserTag.innerText = `${userProfile.avatar} ${userProfile.nickname}`;
-
-  const statWins = document.getElementById("stat-wins");
-  const statMatches = document.getElementById("stat-matches");
-  const inputNick = document.getElementById("input-nickname");
-
-  if (statWins) statWins.innerText = userProfile.wins;
-  if (statMatches) statMatches.innerText = userProfile.matches;
-  if (inputNick) inputNick.value = userProfile.nickname;
-
-  highlightSelectedAvatar(userProfile.avatar);
-}
-
-function highlightSelectedAvatar(avatar) {
-  document.querySelectorAll(".avatar-opt").forEach(el => {
-    if (el.innerText.trim() === avatar) {
-      el.classList.add("active");
-    } else {
-      el.classList.remove("active");
-    }
-  });
-}
-
-window.openProfileModal = function () {
-  tempAvatar = userProfile.avatar;
-  updateProfileUI();
-  document.getElementById("profile-modal").classList.remove("hidden");
 };
 
-window.closeProfileModal = function () {
-  document.getElementById("profile-modal").classList.add("hidden");
-};
+window.handleEmailRegister = function (e) {
+  e.preventDefault();
+  const nick = document.getElementById("reg-nickname").value.trim();
+  const email = document.getElementById("reg-email").value.trim().toLowerCase();
+  const pass = document.getElementById("reg-pass").value;
 
-window.selectAvatar = function (av) {
-  tempAvatar = av;
-  highlightSelectedAvatar(av);
-};
-
-window.saveProfile = function () {
-  const inputNick = document.getElementById("input-nickname");
-  const nick = (inputNick ? inputNick.value : "").trim();
   if (nick.length < 2) {
     alert("Nama panggilan minimal 2 karakter!");
     return;
   }
-  userProfile.nickname = nick;
-  userProfile.avatar = tempAvatar;
-  saveUserProfileLocal();
-  updateProfileUI();
-  closeProfileModal();
+
+  const accounts = getStoredAccounts();
+  if (accounts[email]) {
+    alert("Email ini sudah terdaftar! Silakan login di tab Masuk.");
+    switchAuthTab("login");
+    return;
+  }
+
+  accounts[email] = {
+    id: "user_" + Math.random().toString(36).substring(2, 8),
+    friendId: generateFriendId(),
+    nickname: nick,
+    email: email,
+    password: pass,
+    isGuest: false,
+    avatar: "🀄",
+    wins: 0,
+    matches: 0
+  };
+  saveStoredAccounts(accounts);
+
+  currentUser = accounts[email];
+  saveCurrentSession();
+  loadUserFriends();
+  alert(`Akun berhasil dibuat! ID Anda: ${currentUser.friendId}`);
+  openHubScreen();
 };
 
-function recordMatchResult(isWin) {
-  userProfile.matches++;
-  if (isWin) userProfile.wins++;
-  saveUserProfileLocal();
-  updateProfileUI();
+window.handleEmailLogin = function (e) {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim().toLowerCase();
+  const pass = document.getElementById("login-pass").value;
+
+  const accounts = getStoredAccounts();
+  const user = accounts[email];
+
+  if (!user || user.password !== pass) {
+    alert("Email atau kata sandi tidak cocok!");
+    return;
+  }
+
+  if (!user.friendId) {
+    user.friendId = generateFriendId();
+    saveStoredAccounts(accounts);
+  }
+
+  currentUser = user;
+  saveCurrentSession();
+  loadUserFriends();
+  openHubScreen();
+};
+
+window.handleLogout = function () {
+  currentUser = null;
+  localStorage.removeItem("bgh_active_session");
+  backToAuthScreen();
+};
+
+function saveCurrentSession() {
+  localStorage.setItem("bgh_active_session", JSON.stringify(currentUser));
 }
 
-// State Navigasi Portal
+function checkAutoLogin() {
+  const session = localStorage.getItem("bgh_active_session");
+  if (session) {
+    try {
+      currentUser = JSON.parse(session);
+      if (!currentUser.friendId) {
+        currentUser.friendId = generateFriendId();
+        saveCurrentSession();
+      }
+      loadUserFriends();
+      openHubScreen();
+      return;
+    } catch (e) {}
+  }
+  backToAuthScreen();
+}
+
+function backToAuthScreen() {
+  document.getElementById("auth-screen").classList.remove("hidden");
+  document.getElementById("hub-screen").classList.add("hidden");
+  document.getElementById("lobby-screen").classList.add("hidden");
+  document.getElementById("game-table").classList.add("hidden");
+}
+
+function openHubScreen() {
+  updateUserHubUI();
+  document.getElementById("auth-screen").classList.add("hidden");
+  document.getElementById("hub-screen").classList.remove("hidden");
+  document.getElementById("lobby-screen").classList.add("hidden");
+  document.getElementById("game-table").classList.add("hidden");
+  initLobbyHubSocket();
+}
+
+function updateUserHubUI() {
+  if (!currentUser) return;
+  const hubAvatar = document.getElementById("hub-avatar");
+  const hubNick = document.getElementById("hub-nickname");
+  const hubType = document.getElementById("hub-account-type");
+  const myFriendIdEl = document.getElementById("my-friend-id");
+  const lobbyUserTag = document.getElementById("lobby-user-tag");
+
+  if (hubAvatar) hubAvatar.innerText = currentUser.avatar;
+  if (hubNick) hubNick.innerText = currentUser.nickname;
+  if (hubType) hubType.innerText = `ID: ${currentUser.friendId}`;
+  if (myFriendIdEl) myFriendIdEl.innerText = currentUser.friendId;
+  if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (${currentUser.friendId})`;
+}
+
+// ================= SISTEM DAFTAR TEMAN & UNDANGAN =================
+function loadUserFriends() {
+  if (!currentUser) return;
+  const key = `bgh_friends_${currentUser.friendId}`;
+  const data = localStorage.getItem(key);
+  friendList = data ? JSON.parse(data) : [];
+}
+
+function saveUserFriends() {
+  if (!currentUser) return;
+  const key = `bgh_friends_${currentUser.friendId}`;
+  localStorage.setItem(key, JSON.stringify(friendList));
+}
+
+window.openFriendsModal = function () {
+  updateFriendsListUI();
+  document.getElementById("friends-modal").classList.remove("hidden");
+};
+
+window.closeFriendsModal = function () {
+  document.getElementById("friends-modal").classList.add("hidden");
+};
+
+window.copyMyFriendId = function () {
+  if (!currentUser) return;
+  navigator.clipboard.writeText(currentUser.friendId).then(() => {
+    alert(`ID ${currentUser.friendId} berhasil disalin ke clipboard! Bagikan ke teman Anda.`);
+  }).catch(() => {
+    alert(`ID Anda: ${currentUser.friendId}`);
+  });
+};
+
+window.addFriendById = function () {
+  const input = document.getElementById("input-friend-id");
+  let fId = (input ? input.value : "").trim().toUpperCase();
+
+  if (!fId.startsWith("#MG-")) {
+    fId = "#MG-" + fId.replace("#", "").replace("MG-", "");
+  }
+
+  if (fId === currentUser.friendId) {
+    alert("Anda tidak bisa menambahkan ID diri sendiri!");
+    return;
+  }
+
+  if (friendList.some(f => f.friendId === fId)) {
+    alert("Teman ini sudah ada dalam daftar!");
+    return;
+  }
+
+  // Tambahkan teman ke daftar kontak
+  const newFriend = {
+    friendId: fId,
+    nickname: "Teman " + fId.slice(-4),
+    avatar: "👤"
+  };
+
+  friendList.push(newFriend);
+  saveUserFriends();
+  updateFriendsListUI();
+  if (input) input.value = "";
+  alert(`Berhasil menambahkan ${fId} ke daftar teman!`);
+};
+
+function updateFriendsListUI() {
+  const container = document.getElementById("friends-list");
+  if (!container) return;
+
+  if (friendList.length === 0) {
+    container.innerHTML = '<div class="empty-friends">Belum ada teman yang ditambahkan. Masukkan ID teman di atas.</div>';
+    return;
+  }
+
+  container.innerHTML = "";
+  friendList.forEach((friend, idx) => {
+    const item = document.createElement("div");
+    item.className = "friend-item";
+    item.innerHTML = `
+      <div class="friend-info-left">
+        <div class="friend-name-tag">${friend.avatar} ${friend.nickname}</div>
+        <div class="friend-id-tag">${friend.friendId}</div>
+      </div>
+      <div style="display:flex; gap:4px;">
+        <button type="button" class="btn btn-action btn-sm" onclick="inviteFriendToPlay('${friend.friendId}')">Undang Main</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="removeFriend(${idx})">×</button>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+window.removeFriend = function (index) {
+  friendList.splice(index, 1);
+  saveUserFriends();
+  updateFriendsListUI();
+};
+
+window.inviteFriendToPlay = function (targetFriendId) {
+  if (!currentRoomCode) {
+    // Jika belum ada room, buatkan room otomatis terlebih dahulu
+    startCreateRoom();
+  }
+
+  // Kirim broadcast undangan via socket
+  sendSocketMessage({
+    type: "INVITE_FRIEND",
+    targetFriendId: targetFriendId,
+    fromUser: {
+      friendId: currentUser.friendId,
+      nickname: currentUser.nickname,
+      avatar: currentUser.avatar
+    },
+    room: currentRoomCode,
+    game: "mahjong"
+  });
+
+  alert(`Undangan room (${currentRoomCode}) berhasil dikirim ke ${targetFriendId}! Tunggu teman Anda bergabung.`);
+  closeFriendsModal();
+};
+
+function showInviteNotification(inviter, roomCode) {
+  const banner = document.getElementById("invite-notification");
+  const textEl = document.getElementById("invite-text");
+  const acceptBtn = document.getElementById("btn-accept-invite");
+
+  pendingInviteRoom = roomCode;
+  textEl.innerText = `${inviter.nickname} (${inviter.friendId}) mengundang Anda ke Room: ${roomCode}!`;
+
+  acceptBtn.onclick = function () {
+    closeInviteNotification();
+    enterRoom(pendingInviteRoom);
+  };
+
+  banner.classList.remove("hidden");
+}
+
+window.closeInviteNotification = function () {
+  document.getElementById("invite-notification").classList.add("hidden");
+  pendingInviteRoom = null;
+};
+
+// ================= WEBSOCKET GLOBAL LOBBY & MEJA =================
+let globalHubSocket = null;
+
+function initLobbyHubSocket() {
+  if (globalHubSocket) return;
+  try {
+    globalHubSocket = new WebSocket(WS_SERVER_URL);
+    globalHubSocket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === "INVITE_FRIEND" && currentUser) {
+          if (msg.targetFriendId === currentUser.friendId) {
+            showInviteNotification(msg.fromUser, msg.room);
+          }
+        }
+      } catch (e) {}
+    };
+  } catch (err) {}
+}
+
+// ================= NAVIGASI PORTAL GAME =================
 let activeGame = null;
 
-// State Aturan Mahjong & Assist
-let currentGameMode = "HK";
-let assistLevel = "BEGINNER";
-
-let socket = null;
-let currentRoomCode = null;
-let mySeatIndex = 0;
-let isHost = false;
-
-// State Data Pemain & Skor
-let playerPoints = [25000, 25000, 25000, 25000];
-let playerNames = ["Anda", "P2 (Bot)", "P3 (Bot)", "P4 (Bot)"];
-let isRiichiDeclared = false;
-let exposedMelds = [[], [], [], []];
-let botHands = [[], [], [], []];
-
-// State Permainan Meja
-let wallDeck = [];
-let myHand = [];
-let currentTurnSeat = -1;
-let turnTimeRemaining = 15;
-let turnTimerInterval = null;
-let botActionTimer = null;
-let isProcessingTurn = false;
-let lastDiscardedTile = null;
-let lastDiscarderSeat = -1;
-let lastDiscardElement = null;
-let doraTile = null;
-
-// Koleksi Balok Mahjong
-const SUITS = [
-  { name: "Wan", symbol: "🀇", order: 1, count: 9 },
-  { name: "Pin", symbol: "🀙", order: 2, count: 9 },
-  { name: "Sou", symbol: "🀐", order: 3, count: 9 }
-];
-const HONORS = [
-  { name: "Dong", symbol: "🀀", val: 1 },
-  { name: "Nan", symbol: "🀁", val: 2 },
-  { name: "Xi", symbol: "🀂", val: 3 },
-  { name: "Bei", symbol: "🀃", val: 4 },
-  { name: "Zhong", symbol: "🀄", val: 5 },
-  { name: "Fa", symbol: "🀅", val: 6 },
-  { name: "Bai", symbol: "🀆", val: 7 }
-];
-
-// ================= ROUTING / NAVIGASI PORTAL =================
 window.selectGame = function (gameName) {
   if (gameName === "mahjong") {
     activeGame = "mahjong";
     document.getElementById("hub-screen").classList.add("hidden");
     document.getElementById("lobby-screen").classList.remove("hidden");
-    updateProfileUI();
+    updateUserHubUI();
   } else {
-    alert("Board game ini sedang dalam tahap perakitan! Silakan pilih Mahjong terlebih dahulu.");
+    alert("Board game ini sedang dalam perakitan!");
   }
 };
 
@@ -170,10 +365,52 @@ window.backToHub = function () {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("hub-screen").classList.remove("hidden");
   activeGame = null;
-  updateProfileUI();
+  currentRoomCode = null;
+  updateUserHubUI();
 };
 
-// ================= LOGIKA LOBI MAHJONG =================
+// ================= LOGIKA MAHJONG MEJA =================
+let currentGameMode = "HK";
+let assistLevel = "BEGINNER";
+
+let socket = null;
+let currentRoomCode = null;
+let mySeatIndex = 0;
+let isHost = false;
+
+let playerPoints = [25000, 25000, 25000, 25000];
+let playerNames = ["Anda", "P2 (Bot)", "P3 (Bot)", "P4 (Bot)"];
+let isRiichiDeclared = false;
+let exposedMelds = [[], [], [], []];
+let botHands = [[], [], [], []];
+
+let wallDeck = [];
+let myHand = [];
+let currentTurnSeat = -1;
+let turnTimeRemaining = 15;
+let turnTimerInterval = null;
+let botActionTimer = null;
+let isProcessingTurn = false;
+let lastDiscardedTile = null;
+let lastDiscarderSeat = -1;
+let lastDiscardElement = null;
+let doraTile = null;
+
+const SUITS = [
+  { name: "Wan", symbol: "🀇", order: 1, count: 9 },
+  { name: "Pin", symbol: "🀙", order: 2, count: 9 },
+  { name: "Sou", symbol: "🀐", order: 3, count: 9 }
+];
+const HONORS = [
+  { name: "Dong", symbol: "🀀", val: 1 },
+  { name: "Nan", symbol: "🀁", val: 2 },
+  { name: "Xi", symbol: "🀂", val: 3 },
+  { name: "Bei", symbol: "🀃", val: 4 },
+  { name: "Zhong", symbol: "🀄", val: 5 },
+  { name: "Fa", symbol: "🀅", val: 6 },
+  { name: "Bai", symbol: "🀆", val: 7 }
+];
+
 function createFullDeck() {
   const deck = [];
   SUITS.forEach((suit) => {
@@ -267,7 +504,7 @@ function enterRoom(code) {
   lobby.classList.add("hidden");
   table.classList.remove("hidden");
 
-  playerNames[0] = `${userProfile.avatar} ${userProfile.nickname}`;
+  playerNames[0] = `${currentUser.avatar} ${currentUser.nickname}`;
 
   if (currentGameMode === "RIICHI" && doraBar) {
     doraBar.classList.remove("hidden");
@@ -311,7 +548,6 @@ function updateDoraUI() {
   }
 }
 
-// ================= WEBSOCKET JARINGAN =================
 function initNetwork() {
   const statusBar = document.getElementById("status-bar");
   try {
@@ -324,8 +560,9 @@ function initNetwork() {
         isHost: isHost,
         mode: currentGameMode,
         user: {
-          nickname: userProfile.nickname,
-          avatar: userProfile.avatar
+          nickname: currentUser.nickname,
+          avatar: currentUser.avatar,
+          friendId: currentUser.friendId
         }
       });
     };
@@ -377,8 +614,6 @@ function initNetwork() {
           alert(`${playerNames[msg.seat]} menyatakan RIICHI!`);
         } else if (msg.type === "GAME_OVER") {
           removeLastDiscardFromPond();
-          const isMeWin = (msg.winnerSeat === mySeatIndex);
-          recordMatchResult(isMeWin);
           alert(`Game Selesai! Pemenang: ${playerNames[msg.winnerSeat]}`);
           clearInterval(turnTimerInterval);
         }
@@ -398,6 +633,9 @@ function sendSocketMessage(payload) {
     payload.room = currentRoomCode;
     payload.senderId = CLIENT_ID;
     socket.send(JSON.stringify(payload));
+  } else if (globalHubSocket && globalHubSocket.readyState === WebSocket.OPEN) {
+    payload.senderId = CLIENT_ID;
+    globalHubSocket.send(JSON.stringify(payload));
   }
 }
 
@@ -413,7 +651,6 @@ function updateSeatsInfo() {
   if (labelLeft) labelLeft.innerText = `${playerNames[3]} (${playerPoints[3]} pts)`;
 }
 
-// ================= GILIRAN & TIMER =================
 function startTurnTimer() {
   clearInterval(turnTimerInterval);
   turnTimeRemaining = 15;
@@ -513,7 +750,6 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
-// ================= RENDER BALOK =================
 function renderHand() {
   const handContainer = document.getElementById("player-hand");
   if (!handContainer) return;
@@ -636,7 +872,6 @@ function removeLastDiscardFromPond() {
   }
 }
 
-// ================= SISTEM ASSIST 3 LEVEL =================
 function evaluateDiscardForPlayer(discardedTile) {
   const btnPung = document.getElementById("btn-pung");
   const btnChow = document.getElementById("btn-chow");
@@ -756,7 +991,6 @@ window.skipClaimAction = function () {
   if (statusBar) statusBar.innerText = "Anda memilih MELEWATKAN balok ini.";
 };
 
-// ================= EKSEKUSI KLAIM =================
 function claimAction(actionName) {
   if (!lastDiscardedTile && actionName !== "RIICHI") {
     alert("Belum ada balok buangan yang bisa diklaim!");
@@ -789,7 +1023,6 @@ function claimAction(actionName) {
 
     removeLastDiscardFromPond();
     hideAssistNotification();
-    recordMatchResult(true);
     alert("SELAMAT! ANDA MENANG (HU)!");
     clearInterval(turnTimerInterval);
     sendSocketMessage({
@@ -927,7 +1160,6 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
     const testHand = [...botHands[seat], discardedTile];
     if (validateWin(testHand, false)) {
       removeLastDiscardFromPond();
-      recordMatchResult(false);
       alert(`${playerNames[seat]} mengklaim HU untuk ${discardedTile.display}!`);
       sendSocketMessage({
         type: "GAME_OVER",
@@ -984,7 +1216,6 @@ function handleOpponentMeld(seatIndex, meldTiles) {
   addExposedMeld(seatIndex, meldTiles);
 }
 
-// ================= VALIDATOR KEMENANGAN =================
 function validateWin(handTiles, isSelfDrawn) {
   if (!checkBasicMahjongStructure(handTiles)) return false;
   if (currentGameMode === "HK") return true;
@@ -1090,9 +1321,8 @@ function checkTenpai(handTiles) {
   return false;
 }
 
-// Inisialisasi Event Listener
 document.addEventListener("DOMContentLoaded", () => {
-  loadUserProfile();
+  checkAutoLogin();
 
   const btnCreate = document.getElementById("btn-create-room");
   const btnJoin = document.getElementById("btn-join-room");
