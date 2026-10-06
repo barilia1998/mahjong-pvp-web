@@ -55,7 +55,7 @@
     </div>
   </div>
 
-  <!-- POPUP DAFTAR TEMAN (HANYA UNTUK REGISTERED USER) -->
+  <!-- POPUP DAFTAR TEMAN -->
   <div id="friends-modal" class="modal-overlay hidden">
     <div class="modal-card">
       <h3>Daftar Teman</h3>
@@ -97,7 +97,6 @@
         <div class="user-subtitle" id="hub-account-type">Akun Tamu</div>
       </div>
       <div class="user-right-col">
-        <!-- Tombol Teman: disembunyikan otomatis jika akun Guest -->
         <button type="button" id="btn-hub-friends" class="btn-friends hidden" onclick="openFriendsModal()">👥 Teman</button>
         <button type="button" class="btn-logout" onclick="handleLogout()">Keluar 🚪</button>
       </div>
@@ -116,11 +115,11 @@
         <div class="game-badge">Tersedia (HK / Riichi)</div>
       </div>
 
-      <!-- Game 2: Ular Tangga -->
+      <!-- Game 2: Ular Tangga (Kini Aktif!) -->
       <div class="game-card" onclick="selectGame('snakes')">
         <div class="game-icon">🎲</div>
         <div class="game-title">Ular Tangga</div>
-        <div class="game-badge badge-wip">Segera Hadir</div>
+        <div class="game-badge badge-active">Tersedia (2-4 Pemain)</div>
       </div>
 
       <!-- Game 3: Monopoli -->
@@ -132,39 +131,54 @@
     </div>
   </div>
 
-  <!-- 2. LOBI MAHJONG -->
+  <!-- 2. LOBI MULTI-GAME (MAHJONG & ULAR TANGGA) -->
   <div id="lobby-screen" class="hidden">
     <div class="lobby-card">
       <button type="button" class="btn-back" onclick="backToHub()">← Kembali ke Hub</button>
-      <h2>Mahjong PvP</h2>
+      <h2 id="lobby-game-title">Lobi Permainan</h2>
       <p class="lobby-desc">Bermain sebagai: <b id="lobby-user-tag">Pemain</b></p>
 
-      <div class="setting-group">
-        <label class="setting-title">Aturan Permainan:</label>
-        <div class="radio-row">
-          <label class="radio-label">
-            <input type="radio" name="rule-mode" value="HK" checked>
-            <span>Hong Kong</span>
-          </label>
-          <label class="radio-label">
-            <input type="radio" name="rule-mode" value="RIICHI">
-            <span>Riichi</span>
-          </label>
+      <!-- Pengaturan Khusus Mahjong -->
+      <div id="mahjong-settings">
+        <div class="setting-group">
+          <label class="setting-title">Aturan Mahjong:</label>
+          <div class="radio-row">
+            <label class="radio-label">
+              <input type="radio" name="rule-mode" value="HK" checked>
+              <span>Hong Kong</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="rule-mode" value="RIICHI">
+              <span>Riichi</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-title">Tingkat Bantuan (Assist):</label>
+          <select id="select-assist-level" class="level-dropdown">
+            <option value="NEWBIE">Newbie (Notifikasi & Petunjuk)</option>
+            <option value="BEGINNER" selected>Beginner (Tombol Auto-Nyala)</option>
+            <option value="INTERMEDIATE">Intermediate (Manual 100%)</option>
+          </select>
         </div>
       </div>
 
-      <div class="setting-group">
-        <label class="setting-title">Tingkat Bantuan (Assist):</label>
-        <select id="select-assist-level" class="level-dropdown">
-          <option value="NEWBIE">Newbie (Notifikasi & Petunjuk)</option>
-          <option value="BEGINNER" selected>Beginner (Tombol Auto-Nyala)</option>
-          <option value="INTERMEDIATE">Intermediate (Manual 100%)</option>
-        </select>
+      <!-- Pengaturan Khusus Ular Tangga -->
+      <div id="snakes-settings" class="hidden">
+        <div class="setting-group">
+          <label class="setting-title">Mode Papan Ular Tangga:</label>
+          <div class="radio-row">
+            <label class="radio-label">
+              <input type="radio" name="snakes-mode" value="CLASSIC" checked>
+              <span>100 Kotak Klasik</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="lobby-section">
         <button type="button" id="btn-create-room" class="btn btn-action w-100">BUAT RUANGAN</button>
-        <!-- Tombol Undang Teman di Lobi: hanya muncul jika bukan Guest -->
         <button type="button" id="btn-lobby-invite" class="btn btn-secondary w-100 hidden" onclick="openFriendsModal()">👥 UNDANG TEMAN DARI KONTAK</button>
       </div>
 
@@ -237,6 +251,46 @@
         <div id="melds-bottom" class="melds-container"></div>
       </div>
       <div id="player-hand" class="hand-grid"></div>
+    </footer>
+  </div>
+
+  <!-- 4. ARENA MEJA ULAR TANGGA (BARU!) -->
+  <div id="snakes-screen" class="hidden">
+    <header id="snakes-header-bar">
+      <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
+      <div id="snakes-status-bar">Giliran Anda melempar dadu!</div>
+      <div id="snakes-room-badge" class="badge-room">ROOM: ----</div>
+      <div id="snakes-timer" class="timer-box"><span id="snakes-timer-count">15</span>s</div>
+    </header>
+
+    <!-- Papan Ular Tangga 100 Kotak (10x10) -->
+    <div id="snakes-board-container">
+      <div id="snakes-board" class="board-10x10"></div>
+    </div>
+
+    <!-- Panel Kontrol & Status Pemain Ular Tangga -->
+    <footer id="snakes-controls">
+      <div class="snakes-players-summary">
+        <div id="p-pill-0" class="player-pill active-turn">
+          <span class="p-dot dot-red"></span><span id="p-name-0">Anda: 1</span>
+        </div>
+        <div id="p-pill-1" class="player-pill">
+          <span class="p-dot dot-blue"></span><span id="p-name-1">P2: 1</span>
+        </div>
+        <div id="p-pill-2" class="player-pill">
+          <span class="p-dot dot-yellow"></span><span id="p-name-2">P3: 1</span>
+        </div>
+        <div id="p-pill-3" class="player-pill">
+          <span class="p-dot dot-green"></span><span id="p-name-3">P4: 1</span>
+        </div>
+      </div>
+
+      <div class="dice-interaction-area">
+        <div id="dice-visual" class="dice-box">🎲</div>
+        <button type="button" id="btn-roll-dice" class="btn btn-action btn-dice-roll" onclick="handleRollDiceClick()">
+          LEMPAR DADU!
+        </button>
+      </div>
     </footer>
   </div>
 
