@@ -9,6 +9,15 @@ let friendList = [];
 let pendingInviteRoom = null;
 let pendingInviteGame = null;
 
+// Navigasi Game Aktif
+let activeGame = "mahjong"; // 'mahjong' atau 'snakes'
+
+// State Room & Jaringan
+let socket = null;
+let currentRoomCode = null;
+let mySeatIndex = 0;
+let isHost = false;
+
 function generateFriendId() {
   return "#MG-" + Math.floor(1000 + Math.random() * 9000);
 }
@@ -289,7 +298,7 @@ window.inviteFriendToPlay = function (targetFriendId) {
       avatar: currentUser.avatar
     },
     room: currentRoomCode,
-    game: activeGame || "mahjong"
+    game: activeGame
   });
 
   alert(`Undangan Room (${currentRoomCode}) dikirim ke ${targetFriendId}!`);
@@ -339,9 +348,7 @@ function initLobbyHubSocket() {
   } catch (err) {}
 }
 
-// ================= NAVIGASI PORTAL GAME =================
-let activeGame = "mahjong"; // 'mahjong' atau 'snakes'
-
+// ================= NAVIGASI PORTAL GAME (SATU-SATUNYA DEKLARASI) =================
 window.selectGame = function (gameName) {
   if (gameName === "mahjong" || gameName === "snakes") {
     activeGame = gameName;
@@ -386,11 +393,6 @@ window.backToHub = function () {
 };
 
 // ================= SISTEM ROOM UMUM =================
-let socket = null;
-let currentRoomCode = null;
-let mySeatIndex = 0;
-let isHost = false;
-
 function startCreateRoom() {
   const code = Math.floor(1000 + Math.random() * 9000).toString();
   isHost = true;
@@ -411,9 +413,7 @@ function startJoinRoom() {
 
 function enterRoom(code) {
   currentRoomCode = code;
-
-  const lobby = document.getElementById("lobby-screen");
-  lobby.classList.add("hidden");
+  document.getElementById("lobby-screen").classList.add("hidden");
 
   if (activeGame === "mahjong") {
     enterMahjongRoom(code);
@@ -442,7 +442,7 @@ const SNAKES_LADDERS_MAP = {
   17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78
 };
 
-let snakesPositions = [1, 1, 1, 1]; // Posisi 4 pemain (kotak 1 s/d 100)
+let snakesPositions = [1, 1, 1, 1];
 let snakesCurrentTurn = 0;
 let snakesIsRolling = false;
 let snakesTurnTimer = null;
@@ -454,7 +454,6 @@ function initSnakesBoardUI() {
   if (!boardEl) return;
   boardEl.innerHTML = "";
 
-  // Pola 100 kotak ular tangga (Boustrophedon dari atas ke bawah)
   for (let row = 9; row >= 0; row--) {
     const isEvenRow = (row % 2 === 0);
     for (let col = 0; col < 10; col++) {
@@ -463,10 +462,8 @@ function initSnakesBoardUI() {
       cell.className = `snakes-cell ${(row + col) % 2 === 0 ? "cell-alt" : ""}`;
       cell.id = `cell-${cellNum}`;
 
-      // Label nomor kotak
       cell.innerHTML = `<span>${cellNum}</span>`;
 
-      // Simbol Ular / Tangga
       if (SNAKES_LADDERS_MAP[cellNum]) {
         const dest = SNAKES_LADDERS_MAP[cellNum];
         if (dest > cellNum) {
@@ -478,7 +475,6 @@ function initSnakesBoardUI() {
         }
       }
 
-      // Wadah bidak pemain di dalam kotak
       const pawnsHolder = document.createElement("div");
       pawnsHolder.className = "pawns-holder";
       pawnsHolder.id = `pawns-cell-${cellNum}`;
@@ -492,10 +488,8 @@ function initSnakesBoardUI() {
 }
 
 function renderAllPawns() {
-  // Bersihkan semua pion lama
   document.querySelectorAll(".pawns-holder").forEach(el => el.innerHTML = "");
 
-  // Taruh pion masing-masing pemain
   snakesPositions.forEach((pos, playerIdx) => {
     const targetCellHolder = document.getElementById(`pawns-cell-${pos}`);
     if (targetCellHolder) {
@@ -504,14 +498,12 @@ function renderAllPawns() {
       targetCellHolder.appendChild(pawn);
     }
 
-    // Update teks ringkasan pemain di bawah
     const pNameEl = document.getElementById(`p-name-${playerIdx}`);
     if (pNameEl) {
       pNameEl.innerText = `${snakesPlayerNames[playerIdx]}: ${pos}`;
     }
   });
 
-  // Sorot giliran pemain
   for (let i = 0; i < 4; i++) {
     const pill = document.getElementById(`p-pill-${i}`);
     if (pill) {
@@ -524,7 +516,7 @@ function renderAllPawns() {
 function enterSnakesRoom(code) {
   const table = document.getElementById("snakes-screen");
   const roomBadge = document.getElementById("snakes-room-badge");
-  roomBadge.innerText = `ROOM: ${code}`;
+  if (roomBadge) roomBadge.innerText = `ROOM: ${code}`;
   table.classList.remove("hidden");
 
   snakesPositions = [1, 1, 1, 1];
@@ -533,7 +525,6 @@ function enterSnakesRoom(code) {
 
   initSnakesBoardUI();
   initSnakesNetwork();
-
   startSnakesTurn(0);
 }
 
@@ -569,10 +560,10 @@ function initSnakesNetwork() {
     };
 
     socket.onerror = () => {
-      statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+      if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
     };
   } catch (err) {
-    statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+    if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
   }
 }
 
@@ -587,13 +578,12 @@ function startSnakesTurn(seatIndex) {
   startSnakesTurnTimer();
 
   if (snakesCurrentTurn === mySeatIndex) {
-    statusBar.innerText = "Giliran Anda: Tekan LEMPAR DADU!";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Tekan LEMPAR DADU!";
     if (rollBtn) rollBtn.disabled = false;
   } else {
-    statusBar.innerText = `Giliran ${snakesPlayerNames[snakesCurrentTurn]} melempar dadu...`;
+    if (statusBar) statusBar.innerText = `Giliran ${snakesPlayerNames[snakesCurrentTurn]} melempar dadu...`;
     if (rollBtn) rollBtn.disabled = true;
 
-    // Jika giliran bot
     if (isHost && snakesCurrentTurn !== mySeatIndex) {
       setTimeout(() => {
         executeBotDiceRoll(snakesCurrentTurn);
@@ -641,17 +631,14 @@ function executePlayerDiceRoll(playerSeat) {
     const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
     if (diceVisual) diceVisual.innerText = diceIcons[diceValue - 1];
 
-    // Hitung posisi baru
     let currentPos = snakesPositions[playerSeat];
     let nextPos = currentPos + diceValue;
 
-    // Aturan Exact Landing Kotak 100
     if (nextPos > 100) {
       const overshoot = nextPos - 100;
-      nextPos = 100 - overshoot; // Memantul mundur
+      nextPos = 100 - overshoot;
     }
 
-    // Evaluasi Tangga atau Ular
     if (SNAKES_LADDERS_MAP[nextPos]) {
       nextPos = SNAKES_LADDERS_MAP[nextPos];
     }
@@ -678,12 +665,11 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   const diceIcons = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
 
   if (diceVisual) diceVisual.innerText = diceIcons[diceValue - 1];
-  statusBar.innerText = `${snakesPlayerNames[playerSeat]} melempar ${diceValue}! Maju ke kotak ${finalPosition}.`;
+  if (statusBar) statusBar.innerText = `${snakesPlayerNames[playerSeat]} melempar ${diceValue}! Maju ke kotak ${finalPosition}.`;
 
   snakesPositions[playerSeat] = finalPosition;
   renderAllPawns();
 
-  // Cek Kemenangan Kotak 100
   if (finalPosition === 100) {
     clearInterval(snakesTurnTimer);
     setTimeout(() => {
@@ -693,12 +679,11 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
     return;
   }
 
-  // Jika dapat angka 6: Giliran sekali lagi!
   const gotSix = (diceValue === 6);
   setTimeout(() => {
     snakesIsRolling = false;
     if (gotSix) {
-      statusBar.innerText = `${snakesPlayerNames[playerSeat]} dapat angka 6! Lempar dadu sekali lagi!`;
+      if (statusBar) statusBar.innerText = `${snakesPlayerNames[playerSeat]} dapat angka 6! Lempar dadu sekali lagi!`;
       startSnakesTurn(playerSeat);
     } else {
       const nextSeat = (playerSeat + 1) % 4;
