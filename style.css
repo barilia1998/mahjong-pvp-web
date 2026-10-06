@@ -6,11 +6,11 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background-color: #123824;
+  background-color: #153e2b;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #fff;
   user-select: none;
@@ -22,13 +22,13 @@ html, body {
   width: 100%;
   height: 100%;
   height: 100dvh;
-  max-width: 900px;
+  max-width: 600px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 6px;
+  padding: 8px 6px calc(12px + env(safe-area-inset-bottom, 0px));
   position: relative;
 }
 
@@ -42,14 +42,14 @@ html, body {
 }
 
 #status-bar {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   padding: 4px 12px;
   border-radius: 16px;
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75%;
+  max-width: 70%;
 }
 
 .timer-box {
@@ -67,18 +67,19 @@ html, body {
   padding: 4px;
   border-radius: 8px;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .player-seat.active-turn {
   background: rgba(241, 196, 15, 0.2);
-  box-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.5);
   border: 1px solid #f1c40f;
 }
 
 .player-info {
   font-size: 10px;
   font-weight: bold;
-  opacity: 0.85;
+  opacity: 0.9;
   margin-bottom: 2px;
   text-align: center;
 }
@@ -89,16 +90,19 @@ html, body {
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 4px 0;
+  padding: 2px 0;
   min-height: 0;
+}
+
+#middle-board .player-seat {
+  width: auto;
 }
 
 #discard-pond {
   flex: 1;
   width: 100%;
-  max-width: 320px;
   height: 100%;
-  max-height: 160px;
+  max-height: 180px;
   background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
@@ -106,12 +110,12 @@ html, body {
   flex-direction: column;
   align-items: center;
   padding: 6px;
-  margin: 0 4px;
+  margin: 0 6px;
 }
 
 .section-title {
   font-size: 10px;
-  opacity: 0.7;
+  opacity: 0.75;
   margin-bottom: 4px;
 }
 
@@ -126,49 +130,51 @@ html, body {
   overflow-y: auto;
 }
 
-/* Balok Tangan Pemain */
+/* Balok Tangan Pemain Bawah */
 #hand-wrapper {
-  width: 100vw;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  width: 100%;
   display: flex;
   justify-content: center;
-  padding: 4px 2px 2px;
-  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
 }
 
 .tile-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: 3px;
+  gap: 2px;
+  justify-content: center;
+  width: 100%;
 }
 
 .tile {
-  width: clamp(23px, 6.4vw, 38px);
-  height: clamp(34px, 9.4vw, 54px);
+  /* Ukuran presisi agar 14 kartu pas di 1 baris layar ponsel */
+  flex: 1 1 0;
+  max-width: 25px;
+  height: 44px;
   background: #fdfdfd;
   color: #111;
-  border: 1px solid #c2c2c2;
+  border: 1px solid #b8b8b8;
   border-radius: 4px;
-  box-shadow: 0 3px 0 #999, 0 4px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 0 #95a5a6, 0 3px 4px rgba(0,0,0,0.3);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-size: clamp(9px, 2.3vw, 13px);
+  font-size: 9px;
+  line-height: 1.1;
   font-weight: bold;
   cursor: pointer;
   user-select: none;
   transition: transform 0.1s;
-  flex-shrink: 0;
 }
 
 .tile:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #999;
+  box-shadow: 0 1px 0 #95a5a6;
 }
 
 .tile.discarded {
+  flex: none;
   width: 22px;
   height: 30px;
   font-size: 8px;
@@ -177,7 +183,7 @@ html, body {
   border-radius: 3px;
 }
 
-/* Balok Punggung Lawan */
+/* Punggung Balok Lawan */
 .opponent-hand {
   display: flex;
   gap: 2px;
@@ -191,8 +197,8 @@ html, body {
 }
 
 .horizontal-back .tile-back {
-  width: clamp(14px, 3.8vw, 20px);
-  height: clamp(20px, 5.5vw, 28px);
+  width: 18px;
+  height: 26px;
 }
 
 .vertical-back {
@@ -200,15 +206,17 @@ html, body {
 }
 
 .vertical-back .tile-back {
-  width: clamp(20px, 5.5vw, 28px);
-  height: clamp(14px, 3.8vw, 18px);
+  width: 26px;
+  height: 15px;
 }
 
 /* Tombol Aksi */
 #action-controls {
   display: flex;
   gap: 6px;
-  margin-bottom: 2px;
+  margin-bottom: 6px;
+  width: 100%;
+  justify-content: center;
 }
 
 .btn {
@@ -216,7 +224,7 @@ html, body {
   font-size: 11px;
   font-weight: bold;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   box-shadow: 0 2px 0 rgba(0,0,0,0.25);
 }
@@ -239,33 +247,13 @@ html, body {
 
 @keyframes pulse-glow {
   from {
-    box-shadow: 0 0 4px #e74c3c;
     transform: scale(1);
   }
   to {
-    box-shadow: 0 0 12px #ff7675;
-    transform: scale(1.05);
+    transform: scale(1.06);
   }
 }
 
 .hidden {
   display: none !important;
-}
-
-/* Penataan Khusus Mode Lanskap Layar Ponsel */
-@media (max-height: 500px) and (orientation: landscape) {
-  #game-table {
-    padding: 4px;
-  }
-  #discard-pond {
-    max-height: 110px;
-    max-width: 45%;
-  }
-  .tile {
-    height: clamp(38px, 12vh, 48px);
-    width: clamp(26px, 8vh, 34px);
-  }
-  .player-info {
-    display: none;
-  }
 }
