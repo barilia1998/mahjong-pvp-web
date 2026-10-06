@@ -108,21 +108,18 @@
     </header>
 
     <div class="game-grid">
-      <!-- Game 1: Mahjong -->
       <div class="game-card" onclick="selectGame('mahjong')">
         <div class="game-icon">🀄</div>
         <div class="game-title">Mahjong PvP</div>
         <div class="game-badge">Tersedia (HK / Riichi)</div>
       </div>
 
-      <!-- Game 2: Ular Tangga -->
       <div class="game-card" onclick="selectGame('snakes')">
         <div class="game-icon">🎲</div>
         <div class="game-title">Ular Tangga</div>
         <div class="game-badge badge-active">Tersedia (2-4 Pemain)</div>
       </div>
 
-      <!-- Game 3: Monopoli -->
       <div class="game-card" onclick="selectGame('monopoly')">
         <div class="game-icon">🎩</div>
         <div class="game-title">Monopoli</div>
@@ -138,7 +135,6 @@
       <h2 id="lobby-game-title">Lobi Permainan</h2>
       <p class="lobby-desc">Bermain sebagai: <b id="lobby-user-tag">Pemain</b></p>
 
-      <!-- Pengaturan Khusus Mahjong -->
       <div id="mahjong-settings">
         <div class="setting-group">
           <label class="setting-title">Aturan Mahjong:</label>
@@ -164,7 +160,6 @@
         </div>
       </div>
 
-      <!-- Pengaturan Khusus Ular Tangga -->
       <div id="snakes-settings" class="hidden">
         <div class="setting-group">
           <label class="setting-title">Mode Papan Ular Tangga:</label>
@@ -191,7 +186,7 @@
     </div>
   </div>
 
-  <!-- 3. ARENA MEJA MAHJONG -->
+  <!-- 3. ARENA MAHJONG -->
   <div id="game-table" class="hidden">
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
@@ -254,21 +249,21 @@
     </footer>
   </div>
 
-  <!-- 4. ARENA MEJA ULAR TANGGA (DENGAN DADU KLIK INTERAKTIF) -->
+  <!-- 4. ARENA ULAR TANGGA -->
   <div id="snakes-screen" class="hidden">
     <header id="snakes-header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
-      <div id="snakes-status-bar">Giliran Anda! Ketuk dadu untuk melempar.</div>
+      <div id="snakes-status-bar">Giliran Anda! Ketuk dadu di bawah.</div>
       <div id="snakes-room-badge" class="badge-room">ROOM: ----</div>
       <div id="snakes-timer" class="timer-box"><span id="snakes-timer-count">15</span>s</div>
     </header>
 
-    <!-- Papan Ular Tangga 100 Kotak (10x10) -->
+    <!-- Papan Ular Tangga 100 Kotak -->
     <div id="snakes-board-container">
       <div id="snakes-board" class="board-10x10"></div>
     </div>
 
-    <!-- Panel Kontrol: Dadu Interaktif Tanpa Tombol Teks Terpisah -->
+    <!-- Panel Status Pemain & Dadu Nyata -->
     <footer id="snakes-controls">
       <div class="snakes-players-summary">
         <div id="p-pill-0" class="player-pill active-turn">
@@ -286,11 +281,9 @@
       </div>
 
       <div class="dice-interaction-area">
-        <!-- Wadah Dadu Interaktif 3D -->
         <div id="dice-wrapper" class="dice-interactive-wrapper" onclick="handleRollDiceClick()">
-          <div id="dice-visual" class="dice-face face-1">
-            <!-- Pola titik dadu di-generate via CSS -->
-            <span class="pip pip-center"></span>
+          <div id="dice-visual" class="dice-cube-real">
+            <span class="pip pip-center pip-red"></span>
           </div>
           <div id="dice-hint" class="dice-tap-hint">KETUK DADU</div>
         </div>
