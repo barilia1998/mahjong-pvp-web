@@ -1,51 +1,62 @@
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
-  background-color: #1b4d3e;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #123824;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #fff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 #game-table {
-  width: 100vw;
-  height: 100vh;
-  max-width: 1000px;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: 900px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 8px 6px;
   position: relative;
 }
 
 #header-bar {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
+  justify-content: center;
+  width: 100%;
   z-index: 10;
 }
 
 #status-bar {
-  background: rgba(0, 0, 0, 0.55);
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75%;
 }
 
 .timer-box {
   background: #c0392b;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
   font-weight: bold;
 }
 
@@ -53,22 +64,22 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px;
+  padding: 4px;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .player-seat.active-turn {
-  background: rgba(241, 196, 15, 0.25);
-  box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
+  background: rgba(241, 196, 15, 0.2);
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.6);
   border: 1px solid #f1c40f;
 }
 
 .player-info {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   opacity: 0.85;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   text-align: center;
 }
 
@@ -78,78 +89,95 @@ body {
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 6px 0;
+  padding: 4px 0;
+  min-height: 0;
 }
 
 #discard-pond {
   flex: 1;
-  max-width: 420px;
-  min-height: 170px;
-  background: rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 320px;
+  height: 100%;
+  max-height: 160px;
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px;
+  padding: 6px;
+  margin: 0 4px;
 }
 
 .section-title {
-  font-size: 12px;
-  opacity: 0.75;
-  margin-bottom: 6px;
-  text-align: center;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-bottom: 4px;
 }
 
 .discard-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 3px;
   justify-content: center;
   align-content: flex-start;
   width: 100%;
-  max-height: 140px;
+  height: 100%;
   overflow-y: auto;
+}
+
+/* Balok Tangan Pemain */
+#hand-wrapper {
+  width: 100vw;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  justify-content: center;
+  padding: 4px 2px 2px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tile-row {
   display: flex;
   flex-wrap: nowrap;
-  justify-content: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .tile {
-  width: 42px;
-  height: 58px;
+  width: clamp(23px, 6.4vw, 38px);
+  height: clamp(34px, 9.4vw, 54px);
   background: #fdfdfd;
   color: #111;
   border: 1px solid #c2c2c2;
-  border-radius: 6px;
-  box-shadow: 0 4px 0 #999, 0 5px 6px rgba(0,0,0,0.3);
+  border-radius: 4px;
+  box-shadow: 0 3px 0 #999, 0 4px 4px rgba(0,0,0,0.3);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
+  font-size: clamp(9px, 2.3vw, 13px);
   font-weight: bold;
   cursor: pointer;
   user-select: none;
   transition: transform 0.1s;
+  flex-shrink: 0;
 }
 
 .tile:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 #999;
+  box-shadow: 0 1px 0 #999;
 }
 
 .tile.discarded {
-  width: 30px;
-  height: 42px;
-  font-size: 10px;
-  background: #f0f0f0;
-  box-shadow: 0 2px 0 #aaa;
+  width: 22px;
+  height: 30px;
+  font-size: 8px;
+  background: #ececec;
+  box-shadow: 0 1px 0 #aaa;
+  border-radius: 3px;
 }
 
+/* Balok Punggung Lawan */
 .opponent-hand {
   display: flex;
   gap: 2px;
@@ -158,13 +186,13 @@ body {
 .tile-back {
   background: #d35400;
   border: 1px solid #a04000;
-  border-radius: 4px;
-  box-shadow: 0 2px 0 #7e3200;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 #7e3200;
 }
 
 .horizontal-back .tile-back {
-  width: 22px;
-  height: 32px;
+  width: clamp(14px, 3.8vw, 20px);
+  height: clamp(20px, 5.5vw, 28px);
 }
 
 .vertical-back {
@@ -172,24 +200,25 @@ body {
 }
 
 .vertical-back .tile-back {
-  width: 32px;
-  height: 20px;
+  width: clamp(20px, 5.5vw, 28px);
+  height: clamp(14px, 3.8vw, 18px);
 }
 
+/* Tombol Aksi */
 #action-controls {
   display: flex;
-  gap: 10px;
-  margin-bottom: 4px;
+  gap: 6px;
+  margin-bottom: 2px;
 }
 
 .btn {
-  padding: 8px 16px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 11px;
   font-weight: bold;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25);
 }
 
 .btn-secondary {
@@ -210,15 +239,33 @@ body {
 
 @keyframes pulse-glow {
   from {
-    box-shadow: 0 0 6px #e74c3c;
+    box-shadow: 0 0 4px #e74c3c;
     transform: scale(1);
   }
   to {
-    box-shadow: 0 0 16px #ff7675;
-    transform: scale(1.08);
+    box-shadow: 0 0 12px #ff7675;
+    transform: scale(1.05);
   }
 }
 
 .hidden {
   display: none !important;
+}
+
+/* Penataan Khusus Mode Lanskap Layar Ponsel */
+@media (max-height: 500px) and (orientation: landscape) {
+  #game-table {
+    padding: 4px;
+  }
+  #discard-pond {
+    max-height: 110px;
+    max-width: 45%;
+  }
+  .tile {
+    height: clamp(38px, 12vh, 48px);
+    width: clamp(26px, 8vh, 34px);
+  }
+  .player-info {
+    display: none;
+  }
 }
