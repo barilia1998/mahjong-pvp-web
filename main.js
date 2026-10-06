@@ -20,12 +20,12 @@ function generateFriendId() {
   return "#MG-" + Math.floor(1000 + Math.random() * 9000);
 }
 
-// 1. Masuk sebagai Tamu
+// 1. Masuk sebagai Tamu (Guest - Tanpa Friend ID & Tanpa Fitur Teman)
 window.loginAsGuest = function () {
   const guestNum = Math.floor(100 + Math.random() * 900);
   currentUser = {
     id: "guest_" + Math.random().toString(36).substring(2, 8),
-    friendId: generateFriendId(),
+    friendId: null, // Tamu tidak memiliki ID Pertemanan
     nickname: "Tamu_" + guestNum,
     email: null,
     isGuest: true,
@@ -34,7 +34,7 @@ window.loginAsGuest = function () {
     matches: 0
   };
   saveCurrentSession();
-  loadUserFriends();
+  friendList = [];
   openHubScreen();
 };
 
@@ -91,7 +91,7 @@ window.handleEmailRegister = function (e) {
   currentUser = accounts[email];
   saveCurrentSession();
   loadUserFriends();
-  alert(`Akun berhasil dibuat! ID Anda: ${currentUser.friendId}`);
+  alert(`Akun berhasil dibuat! ID Pertemanan Anda: ${currentUser.friendId}`);
   openHubScreen();
 };
 
@@ -134,11 +134,15 @@ function checkAutoLogin() {
   if (session) {
     try {
       currentUser = JSON.parse(session);
-      if (!currentUser.friendId) {
-        currentUser.friendId = generateFriendId();
-        saveCurrentSession();
+      if (!currentUser.isGuest) {
+        if (!currentUser.friendId) {
+          currentUser.friendId = generateFriendId();
+          saveCurrentSession();
+        }
+        loadUserFriends();
+      } else {
+        friendList = [];
       }
-      loadUserFriends();
       openHubScreen();
       return;
     } catch (e) {}
@@ -159,7 +163,11 @@ function openHubScreen() {
   document.getElementById("hub-screen").classList.remove("hidden");
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
-  initLobbyHubSocket();
+  
+  // Hanya user terdaftar yang mendengarkan invite channel
+  if (currentUser && !currentUser.isGuest) {
+    initLobbyHubSocket();
+  }
 }
 
 function updateUserHubUI() {
@@ -169,29 +177,50 @@ function updateUserHubUI() {
   const hubType = document.getElementById("hub-account-type");
   const myFriendIdEl = document.getElementById("my-friend-id");
   const lobbyUserTag = document.getElementById("lobby-user-tag");
+  const btnHubFriends = document.getElementById("btn-hub-friends");
+  const btnLobbyInvite = document.getElementById("btn-lobby-invite");
 
   if (hubAvatar) hubAvatar.innerText = currentUser.avatar;
   if (hubNick) hubNick.innerText = currentUser.nickname;
-  if (hubType) hubType.innerText = `ID: ${currentUser.friendId}`;
-  if (myFriendIdEl) myFriendIdEl.innerText = currentUser.friendId;
-  if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (${currentUser.friendId})`;
+
+  if (currentUser.isGuest) {
+    // Tampilan khusus Tamu (Guest)
+    if (hubType) hubType.innerText = "Mode Tamu (Hanya Kode Room)";
+    if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (Guest)`;
+    if (btnHubFriends) btnHubFriends.classList.add("hidden");
+    if (btnLobbyInvite) btnLobbyInvite.classList.add("hidden");
+  } else {
+    // Tampilan pengguna terdaftar
+    if (hubType) hubType.innerText = `ID: ${currentUser.friendId}`;
+    if (myFriendIdEl) myFriendIdEl.innerText = currentUser.friendId;
+    if (lobbyUserTag) lobbyUserTag.innerText = `${currentUser.avatar} ${currentUser.nickname} (${currentUser.friendId})`;
+    if (btnHubFriends) btnHubFriends.classList.remove("hidden");
+    if (btnLobbyInvite) btnLobbyInvite.classList.remove("hidden");
+  }
 }
 
 // ================= SISTEM DAFTAR TEMAN & UNDANGAN =================
 function loadUserFriends() {
-  if (!currentUser) return;
+  if (!currentUser || currentUser.isGuest) {
+    friendList = [];
+    return;
+  }
   const key = `bgh_friends_${currentUser.friendId}`;
   const data = localStorage.getItem(key);
   friendList = data ? JSON.parse(data) : [];
 }
 
 function saveUserFriends() {
-  if (!currentUser) return;
+  if (!currentUser || currentUser.isGuest) return;
   const key = `bgh_friends_${currentUser.friendId}`;
   localStorage.setItem(key, JSON.stringify(friendList));
 }
 
 window.openFriendsModal = function () {
+  if (currentUser && currentUser.isGuest) {
+    alert("Fitur Teman hanya tersedia untuk akun terdaftar. Tamu hanya bisa bermain dengan memasukkan Kode Room.");
+    return;
+  }
   updateFriendsListUI();
   document.getElementById("friends-modal").classList.remove("hidden");
 };
@@ -201,15 +230,20 @@ window.closeFriendsModal = function () {
 };
 
 window.copyMyFriendId = function () {
-  if (!currentUser) return;
+  if (!currentUser || currentUser.isGuest) return;
   navigator.clipboard.writeText(currentUser.friendId).then(() => {
-    alert(`ID ${currentUser.friendId} berhasil disalin ke clipboard! Bagikan ke teman Anda.`);
+    alert(`ID ${currentUser.friendId} disalin!`);
   }).catch(() => {
     alert(`ID Anda: ${currentUser.friendId}`);
   });
 };
 
 window.addFriendById = function () {
+  if (currentUser && currentUser.isGuest) {
+    alert("Akun tamu tidak dapat menambah teman!");
+    return;
+  }
+
   const input = document.getElementById("input-friend-id");
   let fId = (input ? input.value : "").trim().toUpperCase();
 
@@ -218,7 +252,7 @@ window.addFriendById = function () {
   }
 
   if (fId === currentUser.friendId) {
-    alert("Anda tidak bisa menambahkan ID diri sendiri!");
+    alert("Tidak bisa menambahkan ID sendiri!");
     return;
   }
 
@@ -227,7 +261,6 @@ window.addFriendById = function () {
     return;
   }
 
-  // Tambahkan teman ke daftar kontak
   const newFriend = {
     friendId: fId,
     nickname: "Teman " + fId.slice(-4),
@@ -238,7 +271,7 @@ window.addFriendById = function () {
   saveUserFriends();
   updateFriendsListUI();
   if (input) input.value = "";
-  alert(`Berhasil menambahkan ${fId} ke daftar teman!`);
+  alert(`Berhasil menambahkan ${fId}!`);
 };
 
 function updateFriendsListUI() {
@@ -246,7 +279,7 @@ function updateFriendsListUI() {
   if (!container) return;
 
   if (friendList.length === 0) {
-    container.innerHTML = '<div class="empty-friends">Belum ada teman yang ditambahkan. Masukkan ID teman di atas.</div>';
+    container.innerHTML = '<div class="empty-friends">Belum ada teman. Masukkan ID teman di atas.</div>';
     return;
   }
 
@@ -260,7 +293,7 @@ function updateFriendsListUI() {
         <div class="friend-id-tag">${friend.friendId}</div>
       </div>
       <div style="display:flex; gap:4px;">
-        <button type="button" class="btn btn-action btn-sm" onclick="inviteFriendToPlay('${friend.friendId}')">Undang Main</button>
+        <button type="button" class="btn btn-action btn-sm" onclick="inviteFriendToPlay('${friend.friendId}')">Undang</button>
         <button type="button" class="btn btn-secondary btn-sm" onclick="removeFriend(${idx})">×</button>
       </div>
     `;
@@ -275,12 +308,15 @@ window.removeFriend = function (index) {
 };
 
 window.inviteFriendToPlay = function (targetFriendId) {
+  if (currentUser && currentUser.isGuest) {
+    alert("Fitur undang teman hanya untuk akun terdaftar!");
+    return;
+  }
+
   if (!currentRoomCode) {
-    // Jika belum ada room, buatkan room otomatis terlebih dahulu
     startCreateRoom();
   }
 
-  // Kirim broadcast undangan via socket
   sendSocketMessage({
     type: "INVITE_FRIEND",
     targetFriendId: targetFriendId,
@@ -293,7 +329,7 @@ window.inviteFriendToPlay = function (targetFriendId) {
     game: "mahjong"
   });
 
-  alert(`Undangan room (${currentRoomCode}) berhasil dikirim ke ${targetFriendId}! Tunggu teman Anda bergabung.`);
+  alert(`Undangan Room (${currentRoomCode}) dikirim ke ${targetFriendId}!`);
   closeFriendsModal();
 };
 
@@ -322,13 +358,13 @@ window.closeInviteNotification = function () {
 let globalHubSocket = null;
 
 function initLobbyHubSocket() {
-  if (globalHubSocket) return;
+  if (globalHubSocket || (currentUser && currentUser.isGuest)) return;
   try {
     globalHubSocket = new WebSocket(WS_SERVER_URL);
     globalHubSocket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === "INVITE_FRIEND" && currentUser) {
+        if (msg.type === "INVITE_FRIEND" && currentUser && !currentUser.isGuest) {
           if (msg.targetFriendId === currentUser.friendId) {
             showInviteNotification(msg.fromUser, msg.room);
           }
