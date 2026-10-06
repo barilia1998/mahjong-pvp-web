@@ -5,10 +5,10 @@ const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const statusBar = document.getElementById("status-bar");
 const handContainer = document.getElementById("player-hand");
 const discardContainer = document.getElementById("discard-tiles");
-const btnChow = document.getElementById("btn-chow") || document.querySelector("button[onclick*='CHOW']");
-const btnPung = document.getElementById("btn-pung") || document.querySelector("button[onclick*='PUNG']");
-const btnKong = document.getElementById("btn-kong") || document.querySelector("button[onclick*='KONG']");
-const btnHu = document.getElementById("btn-win") || document.querySelector("button[onclick*='HU']");
+const handTop = document.getElementById("hand-top");
+const handLeft = document.getElementById("hand-left");
+const handRight = document.getElementById("hand-right");
+const btnPung = document.getElementById("btn-pung");
 
 // State Permainan
 let socket = null;
@@ -18,21 +18,20 @@ let lastDiscardedTile = null;
 
 // Daftar Balok Mahjong Standar (Total 136 Balok)
 const SUITS = [
-  { name: "Wan", symbol: "🀇", count: 9 }, // Karakter
-  { name: "Pin", symbol: "🀙", count: 9 }, // Lingkaran
-  { name: "Sou", symbol: "🀐", count: 9 }  // Bambu
+  { name: "Wan", symbol: "🀇", count: 9 },
+  { name: "Pin", symbol: "🀙", count: 9 },
+  { name: "Sou", symbol: "🀐", count: 9 }
 ];
 const HONORS = [
-  { name: "Dong", symbol: "🀀" }, // Timur
-  { name: "Nan", symbol: "🀁" },  // Selatan
-  { name: "Xi", symbol: "🀂" },   // Barat
-  { name: "Bei", symbol: "🀃" },  // Utara
-  { name: "Zhong", symbol: "🀄" },// Merah
-  { name: "Fa", symbol: "🀅" },   // Hijau
-  { name: "Bai", symbol: "🀆" }   // Putih
+  { name: "Dong", symbol: "🀀" },
+  { name: "Nan", symbol: "🀁" },
+  { name: "Xi", symbol: "🀂" },
+  { name: "Bei", symbol: "🀃" },
+  { name: "Zhong", symbol: "🀄" },
+  { name: "Fa", symbol: "🀅" },
+  { name: "Bai", symbol: "🀆" }
 ];
 
-// 1. Membuat dan Mengocok Tumpukan Balok
 function createFullDeck() {
   const deck = [];
 
@@ -69,45 +68,37 @@ function shuffleDeck(array) {
   return array;
 }
 
-// 2. Logika Koneksi Real-time WebSocket
 function initNetwork() {
-  statusBar.innerText = "Menghubungkan ke server...";
-
   try {
     socket = new WebSocket(WS_SERVER_URL);
 
     socket.onopen = () => {
-      statusBar.innerText = "Terkoneksi ke Server Cloudflare (Online)";
+      statusBar.innerText = "Terkoneksi ke Server Meja PvP Cloudflare!";
     };
 
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === "CONNECTED") {
-          statusBar.innerText = msg.message;
-        } else if (msg.type === "DISCARD") {
+        if (msg.type === "DISCARD") {
           addDiscardTile(msg.tile);
           checkPossibleActions(msg.tile);
         }
-      } catch (e) {
-        // Abaikan parsing teks mentah
-      }
+      } catch (e) {}
     };
 
     socket.onclose = () => {
-      statusBar.innerText = "Koneksi terputus. Menggunakan mode lokal.";
+      statusBar.innerText = "Mode Offline (Visual & Logika Lokal)";
     };
 
-    socket.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-      statusBar.innerText = "Mode Offline (Gagal terhubung ke Cloudflare)";
+    socket.onerror = () => {
+      statusBar.innerText = "Mode Offline (Gagal konek server)";
     };
   } catch (err) {
-    statusBar.innerText = "Mode Offline (Visual & Logika Lokal Aktif)";
+    statusBar.innerText = "Mode Offline (Visual & Logika Lokal)";
   }
 }
 
-// 3. Render Visual Balok di Tangan
+// Render Balok Tangan Pemain
 function renderHand() {
   handContainer.innerHTML = "";
   myHand.forEach((tile, index) => {
@@ -119,7 +110,19 @@ function renderHand() {
   });
 }
 
-// 4. Aksi Menarik Balok (Draw)
+// Render Punggung Balok Lawan (13 keping per lawan)
+function renderOpponents() {
+  const opponentHolders = [handTop, handLeft, handRight];
+  opponentHolders.forEach(holder => {
+    holder.innerHTML = "";
+    for (let i = 0; i < 13; i++) {
+      const tileBack = document.createElement("div");
+      tileBack.className = "tile-back";
+      holder.appendChild(tileBack);
+    }
+  });
+}
+
 function drawTile() {
   if (wallDeck.length === 0) {
     statusBar.innerText = "Game Selesai: Tumpukan balok habis (Draw)!";
@@ -129,9 +132,9 @@ function drawTile() {
   const newTile = wallDeck.pop();
   myHand.push(newTile);
   renderHand();
+  statusBar.innerText = `Giliran Anda. Buang 1 balok (Sisa balok meja: ${wallDeck.length})`;
 }
 
-// 5. Aksi Membuang Balok (Discard)
 function discardTile(index) {
   const discarded = myHand.splice(index, 1)[0];
   lastDiscardedTile = discarded;
@@ -140,7 +143,6 @@ function discardTile(index) {
   addDiscardTile(discarded);
   hideActionButtons();
 
-  // Kirim data ke WebSocket Cloudflare
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
       type: "DISCARD",
@@ -148,13 +150,12 @@ function discardTile(index) {
     }));
   }
 
-  // Tarik kartu baru otomatis setelah 1 detik
+  // Simulasi giliran berikutnya: tarik kartu baru otomatis setelah 1 detik
   setTimeout(() => {
     drawTile();
   }, 1000);
 }
 
-// 6. Tampilkan Balok di Area Buangan Meja
 function addDiscardTile(tile) {
   const tileElement = document.createElement("div");
   tileElement.className = "tile discarded";
@@ -162,7 +163,6 @@ function addDiscardTile(tile) {
   discardContainer.appendChild(tileElement);
 }
 
-// 7. Deteksi Aksi Khusus (Pung Checker)
 function checkPossibleActions(discardedTile) {
   const countSame = myHand.filter(t => t.display === discardedTile.display).length;
 
@@ -178,7 +178,6 @@ function hideActionButtons() {
   }
 }
 
-// 8. Handler Tombol Aksi Permainan
 function claimAction(actionName) {
   if (actionName === "PUNG" && lastDiscardedTile) {
     let removed = 0;
@@ -205,14 +204,13 @@ function claimAction(actionName) {
   }
 }
 
-// Inisialisasi Game Baru
 function startNewGame() {
   wallDeck = createFullDeck();
   myHand = wallDeck.splice(0, 13);
   renderHand();
+  renderOpponents();
   drawTile();
   initNetwork();
 }
 
-// Jalankan saat script dimuat
 startNewGame();
