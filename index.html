@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mahjong Web PvP</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-table">
+    <div id="status-bar">Menghubungkan ke server...</div>
+
+    <!-- Area Balok yang Sudah Dibuang -->
+    <div id="discard-pond">
+      <div class="section-title">Area Buangan</div>
+      <div id="discard-tiles" class="tile-row"></div>
+    </div>
+
+    <!-- Tombol Aksi Permainan -->
+    <div id="action-controls">
+      <button class="btn btn-action" onclick="claimAction('CHOW')">CHOW</button>
+      <button class="btn btn-action" onclick="claimAction('PUNG')">PUNG</button>
+      <button class="btn btn-action" onclick="claimAction('KONG')">KONG</button>
+      <button class="btn btn-win" onclick="claimAction('HU')">HU</button>
+    </div>
+
+    <!-- Tangan Pribadi Pemain -->
+    <div id="player-hand-container">
+      <div class="section-title">Tangan Pribadi (Klik balok untuk membuang)</div>
+      <div id="player-hand" class="tile-row"></div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
