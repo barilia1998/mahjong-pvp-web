@@ -2,11 +2,13 @@
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// Elemen Lobi & Room
+// Elemen Lobi & Meja
 const lobbyScreen = document.getElementById("lobby-screen");
 const gameTable = document.getElementById("game-table");
 const roomBadge = document.getElementById("room-badge");
 const inputRoomCode = document.getElementById("input-room-code");
+const btnCreateRoom = document.getElementById("btn-create-room");
+const btnJoinRoom = document.getElementById("btn-join-room");
 
 // Elemen Antarmuka Meja
 const statusBar = document.getElementById("status-bar");
@@ -31,12 +33,11 @@ const seats = [
   document.getElementById("seat-left")
 ];
 
-// State Ruangan & Jaringan
+// State Ruangan
 let socket = null;
 let currentRoomCode = null;
-let mySeatIndex = 0; // 0 = Anda
+let mySeatIndex = 0;
 let isHost = false;
-let roomMembers = []; // Sesi yang bergabung di ruangan
 
 // State Permainan
 let wallDeck = [];
@@ -103,24 +104,23 @@ function shuffleDeck(array) {
   return array;
 }
 
-// 1. Logika Lobi & Pembuatan Ruangan
-function createRoom() {
-  // Buat kode 4 angka acak
+// 1. Logika Pembuatan & Masuk Ruangan
+window.createRoom = function () {
   const code = Math.floor(1000 + Math.random() * 9000).toString();
   isHost = true;
   mySeatIndex = 0;
   enterRoom(code);
-}
+};
 
-function joinRoomByInput() {
-  const code = inputRoomCode.value.trim().toUpperCase();
+window.joinRoomByInput = function () {
+  const code = (inputRoomCode.value || "").trim().toUpperCase();
   if (code.length < 4) {
     alert("Masukkan 4 digit kode ruangan yang valid!");
     return;
   }
   isHost = false;
   enterRoom(code);
-}
+};
 
 function enterRoom(code) {
   currentRoomCode = code;
@@ -131,31 +131,27 @@ function enterRoom(code) {
   initNetwork();
 
   if (isHost) {
-    // Host mengocok balok dan menyiapkannya untuk ruangan
     wallDeck = createFullDeck();
     myHand = wallDeck.splice(0, 13);
     sortMyHand();
     renderOpponents();
     updateSeatsInfo();
 
-    // Beri waktu 1 detik lalu mulai giliran pertama
     setTimeout(() => {
       moveToNextTurn(0);
     }, 1000);
   } else {
-    // Tamu menunggu sinkronisasi balok dari Host
     statusBar.innerText = `Bergabung ke ROOM ${code}. Menunggu Host...`;
     renderOpponents();
   }
 }
 
-// 2. Jaringan WebSocket Khusus Ruangan
+// 2. Hubungkan WebSocket
 function initNetwork() {
   try {
     socket = new WebSocket(WS_SERVER_URL);
 
     socket.onopen = () => {
-      // Daftarkan diri ke ruangan ini
       sendSocketMessage({
         type: "JOIN_ROOM",
         room: currentRoomCode,
@@ -166,12 +162,9 @@ function initNetwork() {
     socket.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-
-        // Abaikan pesan jika bukan dari ruangan yang sama atau dari diri sendiri
         if (msg.room !== currentRoomCode || msg.senderId === CLIENT_ID) return;
 
         if (msg.type === "JOIN_ROOM") {
-          // Jika ada pemain baru masuk dan kita adalah Host, bagikan sisa balok
           if (isHost) {
             sendSocketMessage({
               type: "SYNC_GAME_STATE",
@@ -180,7 +173,6 @@ function initNetwork() {
             });
           }
         } else if (msg.type === "SYNC_GAME_STATE" && !isHost) {
-          // Tamu menerima balok yang seragam
           wallDeck = msg.wallDeck;
           if (myHand.length === 0) {
             myHand = wallDeck.splice(0, 13);
@@ -222,7 +214,7 @@ function updateSeatsInfo() {
   labelLeft.innerText = "P4 (Bot/Pemain)";
 }
 
-// 3. Manajemen Timer & Giliran
+// 3. Kontrol Giliran & Timer
 function startTurnTimer() {
   clearInterval(turnTimerInterval);
   turnTimeRemaining = 15;
@@ -268,7 +260,6 @@ function applyTurn(seatIndex) {
     isProcessingTurn = false;
   } else {
     statusBar.innerText = `Giliran Kursi ${currentTurnSeat + 1}...`;
-    // Jika kursi lain belum ada pemain asli, Host menjalankan giliran bot
     if (isHost) {
       botActionTimer = setTimeout(() => {
         executeBotTurn(currentTurnSeat);
@@ -303,7 +294,7 @@ function executeBotTurn(seatIndex) {
   }, 1500);
 }
 
-// 4. Render Balok & Validasi
+// 4. Render & Interaksi Balok
 function renderHand() {
   handContainer.innerHTML = "";
   myHand.forEach((tile, index) => {
@@ -332,13 +323,13 @@ function renderOpponents() {
   });
 }
 
-function sortMyHand() {
+window.sortMyHand = function () {
   myHand.sort((a, b) => {
     if (a.order !== b.order) return a.order - b.order;
     return a.num - b.num;
   });
   renderHand();
-}
+};
 
 function drawTile() {
   if (wallDeck.length === 0) {
@@ -398,7 +389,7 @@ function hideActionButtons() {
   btnHu.classList.add("hidden");
 }
 
-function claimAction(actionName) {
+window.claimAction = function (actionName) {
   if (actionName === "HU") {
     alert("SELAMAT! ANDA MENANG (HU)!");
     clearInterval(turnTimerInterval);
@@ -425,9 +416,9 @@ function claimAction(actionName) {
     hideActionButtons();
     moveToNextTurn(mySeatIndex);
   }
-}
+};
 
-// Algoritma Validator Kemenangan
+// Algoritma Validasi Kemenangan
 function checkMahjongWin(handTiles) {
   if (handTiles.length % 3 !== 2) return false;
 
@@ -491,4 +482,12 @@ function canFormMelds(counts) {
   }
 
   return false;
+}
+
+// Pasang Listener Langsung untuk Keandalan Mobile
+if (btnCreateRoom) {
+  btnCreateRoom.addEventListener("click", window.createRoom);
+}
+if (btnJoinRoom) {
+  btnJoinRoom.addEventListener("click", window.joinRoomByInput);
 }
