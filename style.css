@@ -18,6 +18,84 @@ html, body {
   touch-action: manipulation;
 }
 
+/* Tampilan Layar Lobi */
+#lobby-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(10, 30, 20, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.lobby-card {
+  background: #1b4d36;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 24px 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.lobby-card h2 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  color: #f1c40f;
+}
+
+.lobby-desc {
+  font-size: 11px;
+  opacity: 0.8;
+  margin: 0 0 18px 0;
+}
+
+.lobby-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lobby-divider {
+  margin: 14px 0;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.lobby-divider span {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1b4d36;
+  padding: 0 8px;
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+#input-room-code {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+/* Meja Permainan */
 #game-table {
   width: 100%;
   height: 100%;
@@ -29,36 +107,42 @@ html, body {
   padding: 6px 6px calc(14px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Header */
 #header-bar {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
   flex-shrink: 0;
 }
 
 #status-bar {
   background: rgba(0, 0, 0, 0.6);
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 14px;
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
+  flex: 1;
+}
+
+.badge-room {
+  background: #2980b9;
+  padding: 4px 8px;
+  border-radius: 14px;
+  font-size: 10px;
+  font-weight: bold;
 }
 
 .timer-box {
   background: #c0392b;
   padding: 4px 10px;
   border-radius: 14px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: bold;
 }
 
-/* Kursi & Indikator Giliran */
 .player-seat {
   display: flex;
   flex-direction: column;
@@ -82,7 +166,6 @@ html, body {
   text-align: center;
 }
 
-/* Area Tengah */
 #middle-board {
   display: flex;
   justify-content: space-between;
@@ -128,7 +211,6 @@ html, body {
   overflow-y: auto;
 }
 
-/* Punggung Balok Lawan */
 .opponent-hand {
   display: flex;
   gap: 2px;
@@ -154,7 +236,6 @@ html, body {
   height: 12px;
 }
 
-/* Tombol Aksi */
 #action-controls {
   display: flex;
   gap: 6px;
@@ -163,11 +244,11 @@ html, body {
 }
 
 .btn {
-  padding: 5px 12px;
+  padding: 8px 12px;
   font-size: 11px;
   font-weight: bold;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -190,7 +271,6 @@ html, body {
   display: none !important;
 }
 
-/* Tangan Pribadi: Grid 2 Baris yang Lega */
 #seat-bottom {
   width: 100%;
   background: rgba(0, 0, 0, 0.2);
