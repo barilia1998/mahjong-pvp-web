@@ -23,9 +23,10 @@ const seats = [
 let socket = null;
 let wallDeck = [];
 let myHand = [];
-let currentTurnSeat = 0; // 0: Anda, 1: Kanan, 2: Atas, 3: Kiri
+let currentTurnSeat = -1;
 let turnTimeRemaining = 15;
 let turnTimerInterval = null;
+let botActionTimeout = null;
 let lastDiscardedTile = null;
 
 // Koleksi Balok Mahjong
@@ -79,7 +80,7 @@ function shuffleDeck(array) {
   return array;
 }
 
-// Manajemen Jaringan WebSocket
+// Inisialisasi Jaringan WebSocket
 function initNetwork() {
   try {
     socket = new WebSocket(WS_SERVER_URL);
@@ -92,10 +93,16 @@ function initNetwork() {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type === "TURN_UPDATE") {
-          setTurn(msg.seat);
+          // Hanya jalankan jika giliran benar-benar berubah
+          if (msg.seat !== currentTurnSeat) {
+            applyTurnState(msg.seat);
+          }
         } else if (msg.type === "DISCARD") {
-          addDiscardTile(msg.tile);
-          checkPossibleActions(msg.tile);
+          // Hindari duplikasi render buangan sendiri dari pantulan socket
+          if (msg.seat !== 0) {
+            addDiscardTile(msg.tile);
+            checkPossibleActions(msg.tile);
+          }
         }
       } catch (e) {}
     };
@@ -108,7 +115,7 @@ function initNetwork() {
   }
 }
 
-// Pengendalian Giliran & Timer
+// Timer Giliran
 function startTurnTimer() {
   clearInterval(turnTimerInterval);
   turnTimeRemaining = 15;
@@ -125,10 +132,17 @@ function startTurnTimer() {
   }, 1000);
 }
 
-function setTurn(seatIndex) {
+// Eksekusi Perpindahan Giliran
+function applyTurnState(seatIndex) {
   currentTurnSeat = seatIndex;
 
-  // Perbarui sorotan warna kursi
+  // Bersihkan timeout bot sebelumnya agar tidak menumpuk
+  if (botActionTimeout) {
+    clearTimeout(botActionTimeout);
+    botActionTimeout = null;
+  }
+
+  // Update visual sorotan kursi
   seats.forEach((seatEl, idx) => {
     if (idx === seatIndex) {
       seatEl.classList.add("active-turn");
@@ -144,19 +158,18 @@ function setTurn(seatIndex) {
     drawTile();
   } else {
     statusBar.innerText = `Menunggu giliran Pemain ${currentTurnSeat + 1}...`;
-    // Simulasi respons otomatis bot lawan (jika bermain solo/tes)
-    setTimeout(() => {
-      if (currentTurnSeat !== 0) {
-        simulateOpponentTurn(currentTurnSeat);
-      }
-    }, 1800);
+    // Beri jeda wajar 2 detik untuk pemain bot/simulasi berpikir
+    botActionTimeout = setTimeout(() => {
+      simulateOpponentTurn(currentTurnSeat);
+    }, 2000);
   }
 }
 
-function nextTurn() {
-  const nextSeat = (currentTurnSeat + 1) % 4;
-  setTurn(nextSeat);
+function dispatchTurn(nextSeat) {
+  // Update lokal
+  applyTurnState(nextSeat);
 
+  // Broadcast ke jaringan
   if (socket && socket.readyState === WebSocket.OPEN) {
     socket.send(JSON.stringify({
       type: "TURN_UPDATE",
@@ -167,23 +180,33 @@ function nextTurn() {
 
 function handleTimeout() {
   if (currentTurnSeat === 0) {
-    // Buang balok paling kanan otomatis jika waktu habis
     discardTile(myHand.length - 1);
   } else {
-    nextTurn();
+    dispatchTurn((currentTurnSeat + 1) % 4);
   }
 }
 
 function simulateOpponentTurn(seatIndex) {
-  if (wallDeck.length === 0) return;
+  if (wallDeck.length === 0) {
+    statusBar.innerText = "Game Selesai: Balok Habis (Draw)";
+    clearInterval(turnTimerInterval);
+    return;
+  }
+
+  // Ambil dan buang balok lawan
   const discarded = wallDeck.pop();
   lastDiscardedTile = discarded;
   addDiscardTile(discarded);
   checkPossibleActions(discarded);
-  nextTurn();
+
+  // Berikan jeda 1.2 detik setelah membuang kartu sebelum pindah giliran
+  botActionTimeout = setTimeout(() => {
+    const nextSeat = (seatIndex + 1) % 4;
+    dispatchTurn(nextSeat);
+  }, 1200);
 }
 
-// Render Balok
+// Render Balok Tangan
 function renderHand() {
   handContainer.innerHTML = "";
   myHand.forEach((tile, index) => {
@@ -240,8 +263,8 @@ function discardTile(index) {
     }));
   }
 
-  // Pindah giliran ke lawan kanan (Seat 1)
-  nextTurn();
+  // Pindah ke Pemain 2 (Kanan / Seat 1)
+  dispatchTurn(1);
 }
 
 function addDiscardTile(tile) {
@@ -279,7 +302,7 @@ function claimAction(actionName) {
     renderHand();
     alert(`Berhasil PUNG balok ${lastDiscardedTile.display}!`);
     hideActionButtons();
-    setTurn(0); // Pemenang klaim langsung mendapatkan giliran jalan
+    dispatchTurn(0);
   } else {
     alert(`Aksi: ${actionName}`);
   }
@@ -291,7 +314,7 @@ function startNewGame() {
   renderHand();
   renderOpponents();
   initNetwork();
-  setTurn(0); // Mulai dari Anda (Seat 0)
+  dispatchTurn(0);
 }
 
 startNewGame();
