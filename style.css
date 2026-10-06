@@ -902,7 +902,7 @@ html, body {
   box-shadow: 0 1px 0 #999;
 }
 
-/* ================= 4. ARENA ULAR TANGGA (SNAKES & LADDERS) ================= */
+/* ================= 4. ARENA ULAR TANGGA & DADU 3D REALISTIS ================= */
 #snakes-screen {
   width: 100%;
   height: 100%;
@@ -911,22 +911,22 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 6px calc(12px + env(safe-area-inset-bottom, 0px));
-  background: #0d2818;
+  padding: 6px 8px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: radial-gradient(circle at center, #1b4931 0%, #081a10 100%);
 }
 
 #snakes-board-container {
   width: 100%;
-  max-width: 380px;
+  max-width: 375px;
   aspect-ratio: 1 / 1;
-  background: #143823;
-  border: 2px solid #2ecc71;
-  border-radius: 10px;
+  background: #f7ede2;
+  border: 4px solid #f39c12;
+  border-radius: 14px;
   padding: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.65), inset 0 0 10px rgba(0,0,0,0.2);
   position: relative;
   overflow: hidden;
 }
@@ -940,88 +940,109 @@ html, body {
   gap: 2px;
 }
 
+/* Kotak Papan Warna-Warni Segar */
 .snakes-cell {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
+  background: #ffffff;
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
   padding: 1px 2px;
-  font-size: 7px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 8px;
+  font-weight: 900;
+  color: #2c3e50;
   position: relative;
   overflow: hidden;
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.06);
 }
 
 .snakes-cell.cell-alt {
-  background: rgba(0, 0, 0, 0.2);
+  background: #fcf4ec;
 }
 
+/* Kotak Tangga (Naik 🪜) */
 .snakes-cell.cell-ladder {
-  background: rgba(46, 204, 113, 0.25);
-  border: 1px dashed #2ecc71;
+  background: linear-gradient(135deg, #e8f8f5 0%, #a3e4d7 100%) !important;
+  border: 1.5px solid #1abc9c;
 }
 
+.snakes-cell.cell-ladder .cell-icon {
+  color: #16a085;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+/* Kotak Ular (Turun 🐍) */
 .snakes-cell.cell-snake {
-  background: rgba(231, 76, 60, 0.25);
-  border: 1px dashed #e74c3c;
+  background: linear-gradient(135deg, #fdedec 0%, #f5b7b1 100%) !important;
+  border: 1.5px solid #e74c3c;
+}
+
+.snakes-cell.cell-snake .cell-icon {
+  color: #c0392b;
+  font-size: 9px;
+  font-weight: bold;
 }
 
 .cell-icon {
   position: absolute;
   right: 1px;
-  bottom: 1px;
-  font-size: 8px;
+  bottom: 0px;
+  line-height: 1;
 }
 
-/* Pion Pemain Ular Tangga */
+/* Pion Bidak Pemain */
 .pawns-holder {
   display: flex;
   flex-wrap: wrap;
-  gap: 1px;
+  gap: 1.5px;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   pointer-events: none;
+  z-index: 5;
 }
 
 .pawn {
-  width: 9px;
-  height: 9px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  border: 1px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.8);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.pawn-0, .dot-red { background: #e74c3c; }
-.pawn-1, .dot-blue { background: #3498db; }
-.pawn-2, .dot-yellow { background: #f1c40f; }
-.pawn-3, .dot-green { background: #2ecc71; }
+.pawn-0, .dot-red { background: radial-gradient(circle at 30% 30%, #ff7675, #d63031); }
+.pawn-1, .dot-blue { background: radial-gradient(circle at 30% 30%, #74b9ff, #0984e3); }
+.pawn-2, .dot-yellow { background: radial-gradient(circle at 30% 30%, #ffeaa7, #fdcb6e); }
+.pawn-3, .dot-green { background: radial-gradient(circle at 30% 30%, #55efc4, #00b894); }
 
-/* Kontrol Dadu & Status Pemain */
+/* Panel Kontrol Dadu Bawah */
 #snakes-controls {
   width: 100%;
-  max-width: 380px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
+  max-width: 375px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
 }
 
 .snakes-players-summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: 5px;
+  width: 100%;
 }
 
 .player-pill {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   padding: 4px 6px;
   border-radius: 6px;
   font-size: 9px;
@@ -1031,56 +1052,121 @@ html, body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border: 1px solid transparent;
 }
 
 .player-pill.active-turn {
-  background: rgba(241, 196, 15, 0.3);
-  border: 1px solid #f1c40f;
+  background: rgba(241, 196, 15, 0.25);
+  border-color: #f1c40f;
   font-weight: bold;
 }
 
 .p-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .dice-interaction-area {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 4px 0 2px;
 }
 
-.dice-box {
-  width: 48px;
-  height: 48px;
-  background: #fdfdfd;
-  color: #111;
-  border-radius: 8px;
+/* Tombol Dadu Interaktif Besar */
+.dice-interactive-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  gap: 6px;
+}
+
+.dice-interactive-wrapper:active .dice-cube-real {
+  transform: scale(0.92);
+}
+
+.dice-tap-hint {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #f1c40f;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* Kubus Dadu Nyata Tebal 3D */
+.dice-cube-real {
+  width: 66px;
+  height: 66px;
+  background: linear-gradient(145deg, #ffffff 0%, #ececec 100%);
+  border-radius: 14px;
+  box-shadow: 
+    0 8px 0 #bdc3c7,
+    0 12px 20px rgba(0, 0, 0, 0.5),
+    inset 0 2px 2px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.15);
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 26px;
-  font-weight: bold;
-  box-shadow: 0 4px 0 #95a5a6, 0 6px 8px rgba(0,0,0,0.4);
-  transition: transform 0.15s;
+  transition: transform 0.15s ease-out;
 }
 
-.dice-box.rolling {
-  animation: dice-shake 0.4s infinite;
+/* Animasi Berdenyut Saat Giliran */
+.dice-interactive-wrapper.my-turn .dice-cube-real {
+  animation: dice-glow-bounce 1.3s infinite alternate ease-in-out;
 }
 
-@keyframes dice-shake {
-  0% { transform: rotate(0deg) scale(1.1); }
-  25% { transform: rotate(15deg) scale(1.15); }
-  50% { transform: rotate(-15deg) scale(1.1); }
-  75% { transform: rotate(10deg) scale(1.15); }
-  100% { transform: rotate(0deg) scale(1.1); }
+@keyframes dice-glow-bounce {
+  from {
+    transform: translateY(0);
+    box-shadow: 0 8px 0 #bdc3c7, 0 10px 16px rgba(0,0,0,0.4), 0 0 10px rgba(241, 196, 15, 0.3);
+  }
+  to {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 0 #bdc3c7, 0 16px 24px rgba(0,0,0,0.5), 0 0 22px rgba(241, 196, 15, 0.9);
+  }
 }
 
-.btn-dice-roll {
-  padding: 12px 24px !important;
-  font-size: 13px !important;
+/* Animasi Mengocok Berputar 3D */
+.dice-cube-real.rolling {
+  animation: dice-roll-spin 0.45s infinite cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+  pointer-events: none;
 }
+
+@keyframes dice-roll-spin {
+  0% { transform: scale(1.15) rotate(0deg) translateY(-8px); }
+  25% { transform: scale(1.2) rotate(90deg) translateY(-14px); }
+  50% { transform: scale(1.15) rotate(180deg) translateY(-6px); }
+  75% { transform: scale(1.2) rotate(270deg) translateY(-12px); }
+  100% { transform: scale(1.15) rotate(360deg) translateY(-8px); }
+}
+
+/* Titik-Titik Dadu */
+.pip {
+  width: 11px;
+  height: 11px;
+  background: radial-gradient(circle, #2c3e50 35%, #1a252f 100%);
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.8);
+}
+
+.pip.pip-red {
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle, #e74c3c 35%, #c0392b 100%);
+}
+
+.pip-tl { top: 11px; left: 11px; }
+.pip-tr { top: 11px; right: 11px; }
+.pip-ml { top: 27px; left: 11px; }
+.pip-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.pip-mr { top: 27px; right: 11px; }
+.pip-bl { bottom: 11px; left: 11px; }
+.pip-br { bottom: 11px; right: 11px; }
