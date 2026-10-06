@@ -8,13 +8,13 @@
 </head>
 <body>
   <div id="game-table">
-    <!-- Header Status & Indikator Timer Global -->
+    <!-- Header Status & Timer -->
     <div id="header-bar">
       <div id="status-bar">Menghubungkan ke server...</div>
       <div id="turn-timer" class="timer-box">Waktu: <span id="timer-count">15</span>s</div>
     </div>
 
-    <!-- Kursi Lawan Atas (Pemain 3 / Indeks 2) -->
+    <!-- Kursi Lawan Atas -->
     <div id="seat-top" class="player-seat">
       <div class="player-info" id="label-top">Pemain 3 (Atas)</div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
@@ -22,7 +22,7 @@
 
     <!-- Area Meja Tengah -->
     <div id="middle-board">
-      <!-- Kursi Lawan Kiri (Pemain 4 / Indeks 3) -->
+      <!-- Kursi Lawan Kiri -->
       <div id="seat-left" class="player-seat">
         <div class="player-info" id="label-left">Pemain 4 (Kiri)</div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
@@ -34,7 +34,7 @@
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Kursi Lawan Kanan (Pemain 2 / Indeks 1) -->
+      <!-- Kursi Lawan Kanan -->
       <div id="seat-right" class="player-seat">
         <div class="player-info" id="label-right">Pemain 2 (Kanan)</div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
@@ -43,13 +43,14 @@
 
     <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
-      <button id="btn-chow" class="btn btn-action" onclick="claimAction('CHOW')">CHOW</button>
-      <button id="btn-pung" class="btn btn-action" onclick="claimAction('PUNG')">PUNG</button>
-      <button id="btn-kong" class="btn btn-action" onclick="claimAction('KONG')">KONG</button>
-      <button id="btn-win" class="btn btn-win" onclick="claimAction('HU')">HU</button>
+      <button id="btn-sort" class="btn btn-secondary" onclick="sortMyHand()">URUTKAN</button>
+      <button id="btn-chow" class="btn btn-action hidden" onclick="claimAction('CHOW')">CHOW</button>
+      <button id="btn-pung" class="btn btn-action hidden" onclick="claimAction('PUNG')">PUNG</button>
+      <button id="btn-kong" class="btn btn-action hidden" onclick="claimAction('KONG')">KONG</button>
+      <button id="btn-win" class="btn btn-win hidden" onclick="claimAction('HU')">HU (MENANG!)</button>
     </div>
 
-    <!-- Kursi Anda (Bawah / Indeks 0) -->
+    <!-- Tangan Pribadi Pemain -->
     <div id="seat-bottom" class="player-seat active-turn">
       <div class="player-info" id="label-bottom">Giliran Anda (Bawah)</div>
       <div id="player-hand" class="tile-row"></div>
