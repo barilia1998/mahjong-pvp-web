@@ -7,22 +7,43 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game-table">
+  <!-- Overlay Lobi Ruangan -->
+  <div id="lobby-screen">
+    <div class="lobby-card">
+      <h2>Mahjong PvP</h2>
+      <p class="lobby-desc">Main bersama teman atau uji coba lawan AI</p>
+
+      <div class="lobby-section">
+        <button id="btn-create-room" class="btn btn-action w-100" onclick="createRoom()">BUAT RUANGAN BARU</button>
+      </div>
+
+      <div class="lobby-divider"><span>ATAU</span></div>
+
+      <div class="lobby-section">
+        <input type="text" id="input-room-code" placeholder="Masukkan 4 Digit Kode" maxlength="4" />
+        <button id="btn-join-room" class="btn btn-secondary w-100" onclick="joinRoomByInput()">GABUNG RUANGAN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Area Meja Permainan -->
+  <div id="game-table" class="hidden">
     <!-- Header: Status dan Timer -->
     <header id="header-bar">
-      <div id="status-bar">Menghubungkan ke server...</div>
+      <div id="status-bar">Menghubungkan...</div>
+      <div id="room-badge" class="badge-room">ROOM: ----</div>
       <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </header>
 
-    <!-- Lawan Atas -->
+    <!-- Lawan Atas (Pemain 3) -->
     <div id="seat-top" class="player-seat">
-      <div class="player-info" id="label-top">Pemain 3 (Atas)</div>
+      <div class="player-info" id="label-top">Pemain 3</div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
     <!-- Area Meja Tengah -->
     <main id="middle-board">
-      <!-- Lawan Kiri -->
+      <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
         <div class="player-info" id="label-left">P4</div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
@@ -34,7 +55,7 @@
         <div id="discard-tiles" class="discard-grid"></div>
       </div>
 
-      <!-- Lawan Kanan -->
+      <!-- Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat side-seat">
         <div class="player-info" id="label-right">P2</div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
@@ -52,7 +73,7 @@
 
     <!-- Tangan Pribadi (Bawah) -->
     <footer id="seat-bottom" class="player-seat active-turn">
-      <div class="player-info" id="label-bottom">Giliran Anda (Sentuh balok untuk buang)</div>
+      <div class="player-info" id="label-bottom">Giliran Anda</div>
       <div id="player-hand" class="hand-grid"></div>
     </footer>
   </div>
