@@ -2,17 +2,20 @@
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// State Aturan & Ruangan
-let currentGameMode = "HK"; // "HK" atau "RIICHI"
+// State Aturan & Level Assist
+let currentGameMode = "HK";           // "HK" atau "RIICHI"
+let assistLevel = "BEGINNER";          // "NEWBIE", "BEGINNER", "INTERMEDIATE"
+
 let socket = null;
 let currentRoomCode = null;
 let mySeatIndex = 0;
 let isHost = false;
 
-// Skor Poin (Riichi standar: 25.000 / HK: 0 / Chips)
+// Skor Poin & Melds
 let playerPoints = [25000, 25000, 25000, 25000];
 let isRiichiDeclared = false;
-let exposedMelds = [[], [], [], []]; // Melds terbuka 4 pemain
+let exposedMelds = [[], [], [], []];
+let botHands = [[], [], [], []];
 
 // State Permainan
 let wallDeck = [];
@@ -21,9 +24,11 @@ let currentTurnSeat = -1;
 let turnTimeRemaining = 15;
 let turnTimerInterval = null;
 let botActionTimer = null;
+let claimTimeoutTimer = null;
 let isProcessingTurn = false;
 let lastDiscardedTile = null;
 let lastDiscarderSeat = -1;
+let lastDiscardElement = null;
 let doraTile = null;
 
 // Koleksi Balok Mahjong
@@ -81,7 +86,7 @@ function shuffleDeck(array) {
   return array;
 }
 
-// 1. Logika Masuk Ruangan
+// 1. Logika Masuk Ruangan & Setting
 function startCreateRoom() {
   const modeRadios = document.getElementsByName("rule-mode");
   for (const r of modeRadios) {
@@ -89,6 +94,11 @@ function startCreateRoom() {
       currentGameMode = r.value;
       break;
     }
+  }
+
+  const selectLevelEl = document.getElementById("select-assist-level");
+  if (selectLevelEl) {
+    assistLevel = selectLevelEl.value;
   }
 
   const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -104,6 +114,12 @@ function startJoinRoom() {
     alert("Masukkan 4 digit kode ruangan yang valid!");
     return;
   }
+
+  const selectLevelEl = document.getElementById("select-assist-level");
+  if (selectLevelEl) {
+    assistLevel = selectLevelEl.value;
+  }
+
   isHost = false;
   enterRoom(code);
 }
@@ -115,10 +131,12 @@ function enterRoom(code) {
   const table = document.getElementById("game-table");
   const badge = document.getElementById("room-badge");
   const ruleBadge = document.getElementById("rule-badge");
+  const levelBadge = document.getElementById("level-badge");
   const doraBar = document.getElementById("dora-bar");
 
   if (badge) badge.innerText = `ROOM: ${code}`;
-  if (ruleBadge) ruleBadge.innerText = `MODE: ${currentGameMode}`;
+  if (ruleBadge) ruleBadge.innerText = currentGameMode;
+  if (levelBadge) levelBadge.innerText = assistLevel;
   if (lobby) lobby.style.display = "none";
   if (table) table.style.display = "flex";
 
@@ -126,11 +144,20 @@ function enterRoom(code) {
     doraBar.classList.remove("hidden");
   }
 
+  // Jika Intermediate: Tombol aksi selalu ditampilkan permanen (manual mode)
+  if (assistLevel === "INTERMEDIATE") {
+    showIntermediateManualButtons();
+  }
+
   initNetwork();
 
   if (isHost) {
     wallDeck = createFullDeck();
     myHand = wallDeck.splice(0, 13);
+    botHands[1] = wallDeck.splice(0, 13);
+    botHands[2] = wallDeck.splice(0, 13);
+    botHands[3] = wallDeck.splice(0, 13);
+
     if (currentGameMode === "RIICHI") {
       doraTile = wallDeck.pop();
       updateDoraUI();
@@ -201,14 +228,16 @@ function initNetwork() {
         } else if (msg.type === "DISCARD") {
           lastDiscarderSeat = msg.seat;
           addDiscardTile(msg.tile);
-          checkPossibleActions(msg.tile);
+          evaluateDiscardForPlayer(msg.tile);
         } else if (msg.type === "MELD_CLAIMED") {
+          removeLastDiscardFromPond();
           handleOpponentMeld(msg.seat, msg.meldTiles);
         } else if (msg.type === "RIICHI_DECLARED") {
           playerPoints[msg.seat] -= 1000;
           updateSeatsInfo();
           alert(`Pemain ${msg.seat + 1} menyatakan RIICHI!`);
         } else if (msg.type === "GAME_OVER") {
+          removeLastDiscardFromPond();
           alert(`Game Selesai! Pemenang: Kursi ${msg.winnerSeat + 1}`);
           clearInterval(turnTimerInterval);
         }
@@ -323,19 +352,28 @@ function executeBotTurn(seatIndex) {
     return;
   }
 
-  const discarded = wallDeck.pop();
+  const drawn = wallDeck.pop();
+  botHands[seatIndex].push(drawn);
+
+  const discarded = botHands[seatIndex].pop();
   lastDiscardedTile = discarded;
   lastDiscarderSeat = seatIndex;
   addDiscardTile(discarded);
-  checkPossibleActions(discarded);
+
+  // Evaluasi balok untuk peluang pemain manusia
+  const canPlayerClaim = evaluateDiscardForPlayer(discarded);
 
   botActionTimer = setTimeout(() => {
     isProcessingTurn = false;
+    hideAssistNotification();
+    if (isHost && checkOtherBotsClaim(seatIndex, discarded)) {
+      return;
+    }
     moveToNextTurn((seatIndex + 1) % 4);
-  }, 1500);
+  }, canPlayerClaim ? 5000 : 1800); // Beri waktu 5 detik bagi pemain untuk berpikir jika ada klaim
 }
 
-// 4. Render Balok & Area Terbuka
+// 4. Render Balok & Area Buangan
 function renderHand() {
   const handContainer = document.getElementById("player-hand");
   if (!handContainer) return;
@@ -397,17 +435,24 @@ function drawTile() {
   myHand.push(newTile);
   renderHand();
 
-  // Mode Riichi: Cek apakah bisa pasang Riichi
+  // Mode Riichi
   if (currentGameMode === "RIICHI" && !isRiichiDeclared && exposedMelds[0].length === 0) {
     if (checkTenpai(myHand) && btnRiichi) {
-      btnRiichi.classList.remove("hidden");
+      if (assistLevel !== "INTERMEDIATE") {
+        btnRiichi.classList.remove("hidden");
+      }
     }
   }
 
   // Cek Menang Tsumo
-  if (validateWin(myHand, true) && btnHu) {
-    btnHu.classList.remove("hidden");
-    if (statusBar) statusBar.innerText = "HU! Tangan lengkap dan menang!";
+  if (validateWin(myHand, true)) {
+    if (assistLevel === "NEWBIE") {
+      showAssistNotification("PELUANG TSUMO (HU)! Tangan Anda Lengkap!");
+      if (btnHu) btnHu.classList.remove("hidden");
+    } else if (assistLevel === "BEGINNER") {
+      if (btnHu) btnHu.classList.remove("hidden");
+    }
+    if (statusBar) statusBar.innerText = "HU! Tangan lengkap dan siap menang!";
   }
 }
 
@@ -419,12 +464,17 @@ function discardTile(index) {
   renderHand();
   addDiscardTile(discarded);
   hideActionButtons();
+  hideAssistNotification();
 
   sendSocketMessage({
     type: "DISCARD",
     tile: discarded,
     seat: mySeatIndex
   });
+
+  if (isHost && checkOtherBotsClaim(0, discarded)) {
+    return;
+  }
 
   moveToNextTurn((mySeatIndex + 1) % 4);
 }
@@ -438,25 +488,35 @@ function addDiscardTile(tile) {
   tileElement.innerText = tile.display || tile;
   discardContainer.appendChild(tileElement);
   discardContainer.scrollTop = discardContainer.scrollHeight;
+  lastDiscardElement = tileElement;
 }
 
-// 5. Logika Klaim Aksi Standar (Pung, Chow, Kong, Win)
-function checkPossibleActions(discardedTile) {
+function removeLastDiscardFromPond() {
+  if (lastDiscardElement && lastDiscardElement.parentNode) {
+    lastDiscardElement.parentNode.removeChild(lastDiscardElement);
+    lastDiscardElement = null;
+  }
+}
+
+// 5. Evaluasi Balok & Sistem Bantuan 3 Level
+function evaluateDiscardForPlayer(discardedTile) {
   const btnPung = document.getElementById("btn-pung");
   const btnChow = document.getElementById("btn-chow");
   const btnKong = document.getElementById("btn-kong");
   const btnHu = document.getElementById("btn-win");
+  const btnSkip = document.getElementById("btn-skip");
 
-  // 1. Cek PUNG (2 balok sama di tangan)
+  let canPung = false;
+  let canKong = false;
+  let canChow = false;
+  let canHu = false;
+
+  // 1. Cek Kemungkinan Pung & Kong
   const countSame = myHand.filter((t) => t.display === discardedTile.display).length;
-  if (countSame >= 2 && btnPung) {
-    btnPung.classList.remove("hidden");
-  }
-  if (countSame === 3 && btnKong) {
-    btnKong.classList.remove("hidden");
-  }
+  if (countSame >= 2) canPung = true;
+  if (countSame === 3) canKong = true;
 
-  // 2. Cek CHOW (HANYA DARI PEMAIN SEBELAH KIRI / Kursi 3)
+  // 2. Cek Kemungkinan Chow (Hanya dari Pemain Kiri / Kursi 3)
   const leftSeatIndex = (mySeatIndex + 3) % 4;
   if (lastDiscarderSeat === leftSeatIndex && discardedTile.suit !== "Honor") {
     const suit = discardedTile.suit;
@@ -464,38 +524,127 @@ function checkPossibleActions(discardedTile) {
     const hasNum = (num) => myHand.some((t) => t.suit === suit && t.num === num);
 
     if ((hasNum(n - 2) && hasNum(n - 1)) || (hasNum(n - 1) && hasNum(n + 1)) || (hasNum(n + 1) && hasNum(n + 2))) {
-      if (btnChow) btnChow.classList.remove("hidden");
+      canChow = true;
     }
   }
 
-  // 3. Cek RON (Menang dari buangan lawan)
+  // 3. Cek Kemungkinan Hu (Ron)
   const testHand = [...myHand, discardedTile];
-  if (validateWin(testHand, false) && btnHu) {
-    btnHu.classList.remove("hidden");
+  if (validateWin(testHand, false)) {
+    canHu = true;
+  }
+
+  const anyAvailable = canPung || canKong || canChow || canHu;
+
+  // === PENERAPAN ATURAN 3 LEVEL ASSIST ===
+  if (assistLevel === "NEWBIE") {
+    // Level 1: Munculkan banner teks notifikasi mencolok + tombol aktif + tombol Lewatkan
+    if (anyAvailable) {
+      let notifyMsg = "Peluang Tersedia: ";
+      if (canHu) notifyMsg += "HU (MENANG)! ";
+      if (canPung) notifyMsg += "PUNG ";
+      if (canChow) notifyMsg += "CHOW ";
+      if (canKong) notifyMsg += "KONG ";
+
+      showAssistNotification(notifyMsg);
+
+      if (canHu && btnHu) btnHu.classList.remove("hidden");
+      if (canPung && btnPung) btnPung.classList.remove("hidden");
+      if (canChow && btnChow) btnChow.classList.remove("hidden");
+      if (canKong && btnKong) btnKong.classList.remove("hidden");
+      if (btnSkip) btnSkip.classList.remove("hidden");
+    }
+  } else if (assistLevel === "BEGINNER") {
+    // Level 2: Banner notifikasi TIDAK muncul, hanya tombol yang otomatis menyala
+    hideAssistNotification();
+    if (anyAvailable) {
+      if (canHu && btnHu) btnHu.classList.remove("hidden");
+      if (canPung && btnPung) btnPung.classList.remove("hidden");
+      if (canChow && btnChow) btnChow.classList.remove("hidden");
+      if (canKong && btnKong) btnKong.classList.remove("hidden");
+      if (btnSkip) btnSkip.classList.remove("hidden");
+    }
+  } else if (assistLevel === "INTERMEDIATE") {
+    // Level 3: Sama sekali TIDAK ADA NOTIFIKASI dan TIDAK ADA AUTO-HIGHLIGHT
+    hideAssistNotification();
+    // Tombol tetap terbuka untuk manual tap
+    showIntermediateManualButtons();
+  }
+
+  return anyAvailable;
+}
+
+function showAssistNotification(text) {
+  const banner = document.getElementById("assist-notify-banner");
+  const textEl = document.getElementById("assist-notify-text");
+  if (banner && textEl) {
+    textEl.innerText = text;
+    banner.classList.remove("hidden");
   }
 }
 
+function hideAssistNotification() {
+  const banner = document.getElementById("assist-notify-banner");
+  if (banner) banner.classList.add("hidden");
+}
+
+function showIntermediateManualButtons() {
+  const btnPung = document.getElementById("btn-pung");
+  const btnChow = document.getElementById("btn-chow");
+  const btnKong = document.getElementById("btn-kong");
+  const btnHu = document.getElementById("btn-win");
+  const btnSkip = document.getElementById("btn-skip");
+
+  if (btnPung) btnPung.classList.remove("hidden");
+  if (btnChow) btnChow.classList.remove("hidden");
+  if (btnKong) btnKong.classList.remove("hidden");
+  if (btnHu) btnHu.classList.remove("hidden");
+  if (btnSkip) btnSkip.classList.remove("hidden");
+}
+
 function hideActionButtons() {
+  if (assistLevel === "INTERMEDIATE") return; // Di intermediate tombol tetap standby
+
   const btnPung = document.getElementById("btn-pung");
   const btnChow = document.getElementById("btn-chow");
   const btnKong = document.getElementById("btn-kong");
   const btnHu = document.getElementById("btn-win");
   const btnRiichi = document.getElementById("btn-riichi");
+  const btnSkip = document.getElementById("btn-skip");
 
   if (btnPung) btnPung.classList.add("hidden");
   if (btnChow) btnChow.classList.add("hidden");
   if (btnKong) btnKong.classList.add("hidden");
   if (btnHu) btnHu.classList.add("hidden");
   if (btnRiichi) btnRiichi.classList.add("hidden");
+  if (btnSkip) btnSkip.classList.add("hidden");
 }
 
+// Fungsi Manual Skip bagi pemain yang menolak klaim
+window.skipClaimAction = function () {
+  hideAssistNotification();
+  hideActionButtons();
+  const statusBar = document.getElementById("status-bar");
+  if (statusBar) statusBar.innerText = "Anda memilih MELEWATKAN balok ini.";
+};
+
+// 6. Eksekusi Aksi Klaim Manual
 function claimAction(actionName) {
+  if (!lastDiscardedTile && actionName !== "RIICHI") {
+    alert("Belum ada balok buangan yang bisa diklaim!");
+    return;
+  }
+
   if (actionName === "RIICHI") {
+    if (!checkTenpai(myHand)) {
+      alert("Gagal Riichi: Tangan belum Tenpai (kurang 1 balok untuk menang)!");
+      return;
+    }
     isRiichiDeclared = true;
     playerPoints[0] -= 1000;
     updateSeatsInfo();
     hideActionButtons();
-    alert("RIICHI diaktifkan! Taruhan 1000 poin dipasang.");
+    alert("RIICHI aktif! Taruhan 1.000 poin dipasang.");
     sendSocketMessage({
       type: "RIICHI_DECLARED",
       seat: mySeatIndex
@@ -504,7 +653,15 @@ function claimAction(actionName) {
   }
 
   if (actionName === "HU") {
-    alert("SELAMAT! ANDA MENANG (HU)!");
+    const testHand = [...myHand, lastDiscardedTile];
+    if (!validateWin(testHand, false)) {
+      alert("CHOMBO! Anda salah klaim HU. Tangan belum memenuhi syarat menang!");
+      return;
+    }
+
+    removeLastDiscardFromPond();
+    hideAssistNotification();
+    alert("SELAMAT! ANDA MENANG (HU)! Balok berhasil diklaim.");
     clearInterval(turnTimerInterval);
     sendSocketMessage({
       type: "GAME_OVER",
@@ -513,7 +670,16 @@ function claimAction(actionName) {
     return;
   }
 
-  if (actionName === "PUNG" && lastDiscardedTile) {
+  if (actionName === "PUNG") {
+    const matching = myHand.filter((tile) => tile.display === lastDiscardedTile.display);
+    if (matching.length < 2) {
+      alert("Gagal PUNG: Anda tidak memiliki 2 balok kembar yang cocok!");
+      return;
+    }
+
+    removeLastDiscardFromPond();
+    hideAssistNotification();
+
     let removed = 0;
     const claimedTiles = [lastDiscardedTile];
     myHand = myHand.filter((tile) => {
@@ -528,16 +694,28 @@ function claimAction(actionName) {
     addExposedMeld(0, claimedTiles);
     renderHand();
     hideActionButtons();
+
     sendSocketMessage({
       type: "MELD_CLAIMED",
       seat: mySeatIndex,
       meldTiles: claimedTiles
     });
-    moveToNextTurn(mySeatIndex);
+
+    // Pemain yang PUNG mendapat giliran jalan
+    isProcessingTurn = false;
+    currentTurnSeat = mySeatIndex;
+    startTurnTimer();
+    const statusBar = document.getElementById("status-bar");
+    if (statusBar) statusBar.innerText = "PUNG berhasil! Silakan buang 1 balok.";
   }
 
-  if (actionName === "CHOW" && lastDiscardedTile) {
-    // Ambil 2 keping balok pembentuk urutan terdekat
+  if (actionName === "CHOW") {
+    const leftSeatIndex = (mySeatIndex + 3) % 4;
+    if (lastDiscarderSeat !== leftSeatIndex) {
+      alert("Gagal CHOW: Aturan resmi hanya membolehkan klaim dari pemain sebelah kiri!");
+      return;
+    }
+
     const suit = lastDiscardedTile.suit;
     const n = lastDiscardedTile.num;
     let t1 = null, t2 = null;
@@ -553,23 +731,111 @@ function claimAction(actionName) {
       t2 = myHand.find(t => t.suit === suit && t.num === n - 1);
     }
 
-    if (t1 && t2) {
-      myHand = myHand.filter(t => t !== t1 && t !== t2);
-      const claimedMeld = [t1, lastDiscardedTile, t2];
-      addExposedMeld(0, claimedMeld);
-      renderHand();
-      hideActionButtons();
-      sendSocketMessage({
-        type: "MELD_CLAIMED",
-        seat: mySeatIndex,
-        meldTiles: claimedMeld
-      });
-      moveToNextTurn(mySeatIndex);
+    if (!t1 || !t2) {
+      alert("Gagal CHOW: Anda tidak memiliki pasangan angka yang bersambung!");
+      return;
     }
+
+    removeLastDiscardFromPond();
+    hideAssistNotification();
+
+    myHand = myHand.filter(t => t !== t1 && t !== t2);
+    const claimedMeld = [t1, lastDiscardedTile, t2];
+    addExposedMeld(0, claimedMeld);
+    renderHand();
+    hideActionButtons();
+
+    sendSocketMessage({
+      type: "MELD_CLAIMED",
+      seat: mySeatIndex,
+      meldTiles: claimedMeld
+    });
+
+    isProcessingTurn = false;
+    currentTurnSeat = mySeatIndex;
+    startTurnTimer();
+    const statusBar = document.getElementById("status-bar");
+    if (statusBar) statusBar.innerText = "CHOW berhasil! Silakan buang 1 balok.";
+  }
+
+  if (actionName === "KONG") {
+    const matching = myHand.filter((tile) => tile.display === lastDiscardedTile.display);
+    if (matching.length < 3) {
+      alert("Gagal KONG: Anda harus memiliki 3 balok kembar di tangan!");
+      return;
+    }
+
+    removeLastDiscardFromPond();
+    hideAssistNotification();
+
+    let removed = 0;
+    const claimedTiles = [lastDiscardedTile];
+    myHand = myHand.filter((tile) => {
+      if (tile.display === lastDiscardedTile.display && removed < 3) {
+        removed++;
+        claimedTiles.push(tile);
+        return false;
+      }
+      return true;
+    });
+
+    addExposedMeld(0, claimedTiles);
+    drawTile();
+    renderHand();
+    hideActionButtons();
+
+    sendSocketMessage({
+      type: "MELD_CLAIMED",
+      seat: mySeatIndex,
+      meldTiles: claimedTiles
+    });
   }
 }
 
-// 6. Penataan Balok Terbuka (Meld UI)
+// 7. Otomatisasi Klaim untuk Bot Meja
+function checkOtherBotsClaim(discarderSeat, discardedTile) {
+  for (let seat = 1; seat <= 3; seat++) {
+    if (seat === discarderSeat) continue;
+
+    const testHand = [...botHands[seat], discardedTile];
+    if (validateWin(testHand, false)) {
+      removeLastDiscardFromPond();
+      alert(`Pemain ${seat + 1} (Bot) mengklaim HU untuk balok ${discardedTile.display}! Permainan Selesai.`);
+      sendSocketMessage({
+        type: "GAME_OVER",
+        winnerSeat: seat
+      });
+      return true;
+    }
+
+    const matching = botHands[seat].filter(t => t.display === discardedTile.display);
+    if (matching.length >= 2) {
+      removeLastDiscardFromPond();
+      let removed = 0;
+      botHands[seat] = botHands[seat].filter(t => {
+        if (t.display === discardedTile.display && removed < 2) {
+          removed++;
+          return false;
+        }
+        return true;
+      });
+
+      const claimedMeld = [discardedTile, matching[0], matching[1]];
+      addExposedMeld(seat, claimedMeld);
+      sendSocketMessage({
+        type: "MELD_CLAIMED",
+        seat: seat,
+        meldTiles: claimedMeld
+      });
+
+      moveToNextTurn(seat);
+      return true;
+    }
+  }
+  return false;
+}
+
+// 8. Tampilan Balok Terbuka (Meld UI)
 function addExposedMeld(seatIndex, tiles) {
   exposedMelds[seatIndex].push(tiles);
   const containerIds = ["melds-bottom", "melds-right", "melds-top", "melds-left"];
@@ -591,15 +857,10 @@ function handleOpponentMeld(seatIndex, meldTiles) {
   addExposedMeld(seatIndex, meldTiles);
 }
 
-// 7. Validator Kemenangan Sesuai Mode
+// 9. Validator Kemenangan Sesuai Mode
 function validateWin(handTiles, isSelfDrawn) {
-  // Verifikasi pola dasar: 4 Melds + 1 Pair
   if (!checkBasicMahjongStructure(handTiles)) return false;
-
-  // Jika mode Hong Kong: Semua bentuk sah menang
   if (currentGameMode === "HK") return true;
-
-  // Jika mode Riichi: Harus punya minimal 1 Yaku
   return checkRiichiYaku(handTiles, isSelfDrawn);
 }
 
@@ -666,19 +927,13 @@ function canFormMelds(counts) {
   return false;
 }
 
-// Cek Syarat Minimal 1 Yaku untuk Riichi
 function checkRiichiYaku(handTiles, isSelfDrawn) {
-  // Yaku 1: Riichi aktif
   if (isRiichiDeclared) return true;
-
-  // Yaku 2: Menzenchin Tsumo (Tangan tertutup dan tarik sendiri)
   if (isSelfDrawn && exposedMelds[0].length === 0) return true;
 
-  // Yaku 3: Tanyao (Semua balok simpel angka 2-8, tanpa ujung 1, 9, angin, atau naga)
   const isTanyao = handTiles.every((t) => t.suit !== "Honor" && t.num >= 2 && t.num <= 8);
   if (isTanyao) return true;
 
-  // Yaku 4: Yakuhai (Memiliki triplet balok naga: Merah, Hijau, Putih)
   const counts = {};
   handTiles.forEach((t) => {
     const key = `${t.suit}_${t.num}`;
@@ -692,7 +947,6 @@ function checkRiichiYaku(handTiles, isSelfDrawn) {
 }
 
 function checkTenpai(handTiles) {
-  // Simulasi cek apakah kurang 1 balok untuk menang
   if (handTiles.length !== 14) return false;
   for (let i = 0; i < handTiles.length; i++) {
     const test13 = [...handTiles];
