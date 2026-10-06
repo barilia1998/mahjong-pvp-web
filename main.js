@@ -87,7 +87,6 @@ function shuffleDeck(array) {
   return array;
 }
 
-// Fitur Urutkan Balok Otomatis (Sortir)
 function sortMyHand() {
   myHand.sort((a, b) => {
     if (a.order !== b.order) return a.order - b.order;
@@ -96,18 +95,15 @@ function sortMyHand() {
   renderHand();
 }
 
-// Algoritma Validasi Kemenangan (4 Melds + 1 Pair = 14 Balok)
 function checkMahjongWin(handTiles) {
   if (handTiles.length % 3 !== 2) return false;
 
-  // Kelompokkan balok berdasarkan representasi string unik
   const counts = {};
   handTiles.forEach(t => {
     const key = `${t.suit}_${t.num}`;
     counts[key] = (counts[key] || 0) + 1;
   });
 
-  // Cari pasangan mata (Pair / 2 balok sama)
   const uniqueKeys = Object.keys(counts);
   for (const pairKey of uniqueKeys) {
     if (counts[pairKey] >= 2) {
@@ -130,7 +126,6 @@ function canFormMelds(counts) {
   const [suit, numStr] = firstKey.split("_");
   const num = parseInt(numStr, 10);
 
-  // Opsi 1: Coba bentuk Triplet (3 Balok Kembar / Pung)
   if (counts[firstKey] >= 3) {
     counts[firstKey] -= 3;
     if (canFormMelds(counts)) {
@@ -140,7 +135,6 @@ function canFormMelds(counts) {
     counts[firstKey] += 3;
   }
 
-  // Opsi 2: Coba bentuk Sequence (Urutan 3 Angka / Chow: num, num+1, num+2)
   if (suit !== "Honor" && num <= 7) {
     const secondKey = `${suit}_${num + 1}`;
     const thirdKey = `${suit}_${num + 2}`;
@@ -166,13 +160,12 @@ function canFormMelds(counts) {
   return false;
 }
 
-// Inisialisasi WebSocket
 function initNetwork() {
   try {
     socket = new WebSocket(WS_SERVER_URL);
 
     socket.onopen = () => {
-      statusBar.innerText = "Terkoneksi ke Meja Cloudflare";
+      statusBar.innerText = "Terkoneksi (Online)";
     };
 
     socket.onmessage = (event) => {
@@ -193,10 +186,10 @@ function initNetwork() {
     };
 
     socket.onerror = () => {
-      statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+      statusBar.innerText = "Mode Offline";
     };
   } catch (err) {
-    statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+    statusBar.innerText = "Mode Offline";
   }
 }
 
@@ -240,11 +233,11 @@ function applyTurn(seatIndex) {
   startTurnTimer();
 
   if (currentTurnSeat === 0) {
-    statusBar.innerText = "Giliran Anda: Pilih 1 balok untuk dibuang";
+    statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
     drawTile();
     isProcessingTurn = false;
   } else {
-    statusBar.innerText = `Menunggu Pemain ${currentTurnSeat + 1} berpikir...`;
+    statusBar.innerText = `Giliran Pemain ${currentTurnSeat + 1}...`;
     botActionTimer = setTimeout(() => {
       executeBotTurn(currentTurnSeat);
     }, 2500);
@@ -264,7 +257,7 @@ function moveToNextTurn(nextSeat) {
 
 function executeBotTurn(seatIndex) {
   if (wallDeck.length === 0) {
-    statusBar.innerText = "Game Selesai: Balok Habis (Draw)";
+    statusBar.innerText = "Game Selesai: Balok Habis";
     clearInterval(turnTimerInterval);
     return;
   }
@@ -310,7 +303,7 @@ function renderOpponents() {
 
 function drawTile() {
   if (wallDeck.length === 0) {
-    statusBar.innerText = "Game Selesai: Balok Habis (Draw)";
+    statusBar.innerText = "Game Selesai: Balok Habis";
     clearInterval(turnTimerInterval);
     return;
   }
@@ -318,10 +311,9 @@ function drawTile() {
   myHand.push(newTile);
   renderHand();
 
-  // Evaluasi kemenangan Tsumo (menang dari tarikan sendiri)
   if (checkMahjongWin(myHand)) {
     btnHu.classList.remove("hidden");
-    statusBar.innerText = "HU! Tangan Anda lengkap dan menang!";
+    statusBar.innerText = "HU! Tangan lengkap dan menang!";
   }
 }
 
@@ -350,16 +342,15 @@ function addDiscardTile(tile) {
   tileElement.className = "tile discarded";
   tileElement.innerText = tile.display || tile;
   discardContainer.appendChild(tileElement);
+  discardContainer.scrollTop = discardContainer.scrollHeight;
 }
 
 function checkPossibleActions(discardedTile) {
-  // 1. Cek PUNG (2 balok sama di tangan)
   const countSame = myHand.filter((t) => t.display === discardedTile.display).length;
   if (countSame >= 2) {
     btnPung.classList.remove("hidden");
   }
 
-  // 2. Cek RON (Menang dari buangan lawan)
   const testHand = [...myHand, discardedTile];
   if (checkMahjongWin(testHand)) {
     btnHu.classList.remove("hidden");
@@ -373,7 +364,7 @@ function hideActionButtons() {
 
 function claimAction(actionName) {
   if (actionName === "HU") {
-    alert("SELAMAT! ANDA MENANG (HU)! Permainan Berakhir.");
+    alert("SELAMAT! ANDA MENANG (HU)!");
     clearInterval(turnTimerInterval);
 
     if (socket && socket.readyState === WebSocket.OPEN) {
@@ -397,7 +388,7 @@ function claimAction(actionName) {
     });
 
     renderHand();
-    alert(`Berhasil PUNG balok ${lastDiscardedTile.display}!`);
+    alert(`Berhasil PUNG ${lastDiscardedTile.display}!`);
     hideActionButtons();
     moveToNextTurn(0);
   }
