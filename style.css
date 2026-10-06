@@ -902,7 +902,7 @@ html, body {
   box-shadow: 0 1px 0 #999;
 }
 
-/* ================= 4. ARENA ULAR TANGGA & DADU 3D REALISTIS ================= */
+/* ================= 4. ARENA ULAR TANGGA & DADU MERAH CASINO ================= */
 #snakes-screen {
   width: 100%;
   height: 100%;
@@ -919,14 +919,14 @@ html, body {
   width: 100%;
   max-width: 375px;
   aspect-ratio: 1 / 1;
-  background: #f7ede2;
+  background: #fcf8f2;
   border: 4px solid #f39c12;
   border-radius: 14px;
   padding: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.65), inset 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.65), inset 0 0 10px rgba(0,0,0,0.15);
   position: relative;
   overflow: hidden;
 }
@@ -940,7 +940,6 @@ html, body {
   gap: 2px;
 }
 
-/* Kotak Papan Warna-Warni Segar */
 .snakes-cell {
   background: #ffffff;
   border-radius: 4px;
@@ -958,10 +957,9 @@ html, body {
 }
 
 .snakes-cell.cell-alt {
-  background: #fcf4ec;
+  background: #fdf5ea;
 }
 
-/* Kotak Tangga (Naik 🪜) */
 .snakes-cell.cell-ladder {
   background: linear-gradient(135deg, #e8f8f5 0%, #a3e4d7 100%) !important;
   border: 1.5px solid #1abc9c;
@@ -973,7 +971,6 @@ html, body {
   font-weight: bold;
 }
 
-/* Kotak Ular (Turun 🐍) */
 .snakes-cell.cell-snake {
   background: linear-gradient(135deg, #fdedec 0%, #f5b7b1 100%) !important;
   border: 1.5px solid #e74c3c;
@@ -992,7 +989,6 @@ html, body {
   line-height: 1;
 }
 
-/* Pion Bidak Pemain */
 .pawns-holder {
   display: flex;
   flex-wrap: wrap;
@@ -1019,7 +1015,6 @@ html, body {
 .pawn-2, .dot-yellow { background: radial-gradient(circle at 30% 30%, #ffeaa7, #fdcb6e); }
 .pawn-3, .dot-green { background: radial-gradient(circle at 30% 30%, #55efc4, #00b894); }
 
-/* Panel Kontrol Dadu Bawah */
 #snakes-controls {
   width: 100%;
   max-width: 375px;
@@ -1076,7 +1071,6 @@ html, body {
   padding: 4px 0 2px;
 }
 
-/* Tombol Dadu Interaktif Besar */
 .dice-interactive-wrapper {
   display: flex;
   flex-direction: column;
@@ -1099,25 +1093,22 @@ html, body {
   text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* Kubus Dadu Nyata Tebal 3D */
+/* DADU 3D MERAH CASINO BERKILAU */
 .dice-cube-real {
-  width: 66px;
-  height: 66px;
-  background: linear-gradient(145deg, #ffffff 0%, #ececec 100%);
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(145deg, #e74c3c 0%, #b03a2e 100%);
   border-radius: 14px;
   box-shadow: 
-    0 8px 0 #bdc3c7,
-    0 12px 20px rgba(0, 0, 0, 0.5),
-    inset 0 2px 2px rgba(255, 255, 255, 0.9),
-    inset 0 -2px 2px rgba(0, 0, 0, 0.15);
+    0 8px 0 #78281f,
+    0 12px 20px rgba(0, 0, 0, 0.6),
+    inset 0 2px 3px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.3);
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
   transition: transform 0.15s ease-out;
 }
 
-/* Animasi Berdenyut Saat Giliran */
 .dice-interactive-wrapper.my-turn .dice-cube-real {
   animation: dice-glow-bounce 1.3s infinite alternate ease-in-out;
 }
@@ -1125,15 +1116,14 @@ html, body {
 @keyframes dice-glow-bounce {
   from {
     transform: translateY(0);
-    box-shadow: 0 8px 0 #bdc3c7, 0 10px 16px rgba(0,0,0,0.4), 0 0 10px rgba(241, 196, 15, 0.3);
+    box-shadow: 0 8px 0 #78281f, 0 10px 16px rgba(0,0,0,0.4), 0 0 10px rgba(241, 196, 15, 0.3);
   }
   to {
     transform: translateY(-4px);
-    box-shadow: 0 12px 0 #bdc3c7, 0 16px 24px rgba(0,0,0,0.5), 0 0 22px rgba(241, 196, 15, 0.9);
+    box-shadow: 0 12px 0 #78281f, 0 16px 24px rgba(0,0,0,0.5), 0 0 24px rgba(241, 196, 15, 0.95);
   }
 }
 
-/* Animasi Mengocok Berputar 3D */
 .dice-cube-real.rolling {
   animation: dice-roll-spin 0.45s infinite cubic-bezier(0.25, 0.1, 0.25, 1) !important;
   pointer-events: none;
@@ -1147,26 +1137,27 @@ html, body {
   100% { transform: scale(1.15) rotate(360deg) translateY(-8px); }
 }
 
-/* Titik-Titik Dadu */
+/* TITIK PUTIH GADING TIMBUL (PIPS) */
 .pip {
-  width: 11px;
-  height: 11px;
-  background: radial-gradient(circle, #2c3e50 35%, #1a252f 100%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #ffffff 40%, #e0e0e0 100%);
   border-radius: 50%;
   position: absolute;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 1px 1px rgba(255,255,255,0.8);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
 }
 
-.pip.pip-red {
+.pip.pip-gold {
   width: 18px;
   height: 18px;
-  background: radial-gradient(circle, #e74c3c 35%, #c0392b 100%);
+  background: radial-gradient(circle, #f1c40f 40%, #d4ac0d 100%);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 0 6px rgba(241, 196, 15, 0.8);
 }
 
-.pip-tl { top: 11px; left: 11px; }
-.pip-tr { top: 11px; right: 11px; }
-.pip-ml { top: 27px; left: 11px; }
+.pip-tl { top: 12px; left: 12px; }
+.pip-tr { top: 12px; right: 12px; }
+.pip-ml { top: 28px; left: 12px; }
 .pip-center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.pip-mr { top: 27px; right: 11px; }
-.pip-bl { bottom: 11px; left: 11px; }
-.pip-br { bottom: 11px; right: 11px; }
+.pip-mr { top: 28px; right: 12px; }
+.pip-bl { bottom: 12px; left: 12px; }
+.pip-br { bottom: 12px; right: 12px; }
