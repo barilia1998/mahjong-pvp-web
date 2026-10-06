@@ -8,25 +8,47 @@
 </head>
 <body>
   <div id="game-table">
+    <!-- Status Server & Info Match -->
     <div id="status-bar">Menghubungkan ke server...</div>
 
-    <!-- Area Balok yang Sudah Dibuang -->
-    <div id="discard-pond">
-      <div class="section-title">Area Buangan</div>
-      <div id="discard-tiles" class="tile-row"></div>
+    <!-- Lawan Atas -->
+    <div class="player-seat seat-top">
+      <div class="player-info">Pemain 3 (Atas)</div>
+      <div id="hand-top" class="opponent-hand horizontal-back"></div>
+    </div>
+
+    <!-- Area Tengah: Lawan Kiri, Pool Buangan, Lawan Kanan -->
+    <div id="middle-board">
+      <!-- Lawan Kiri -->
+      <div class="player-seat seat-left">
+        <div class="player-info">Pemain 4 (Kiri)</div>
+        <div id="hand-left" class="opponent-hand vertical-back"></div>
+      </div>
+
+      <!-- Area Buangan Bersama -->
+      <div id="discard-pond">
+        <div class="section-title">Area Buangan</div>
+        <div id="discard-tiles" class="discard-grid"></div>
+      </div>
+
+      <!-- Lawan Kanan -->
+      <div class="player-seat seat-right">
+        <div class="player-info">Pemain 2 (Kanan)</div>
+        <div id="hand-right" class="opponent-hand vertical-back"></div>
+      </div>
     </div>
 
     <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
-      <button class="btn btn-action" onclick="claimAction('CHOW')">CHOW</button>
-      <button class="btn btn-action" onclick="claimAction('PUNG')">PUNG</button>
-      <button class="btn btn-action" onclick="claimAction('KONG')">KONG</button>
-      <button class="btn btn-win" onclick="claimAction('HU')">HU</button>
+      <button id="btn-chow" class="btn btn-action" onclick="claimAction('CHOW')">CHOW</button>
+      <button id="btn-pung" class="btn btn-action" onclick="claimAction('PUNG')">PUNG</button>
+      <button id="btn-kong" class="btn btn-action" onclick="claimAction('KONG')">KONG</button>
+      <button id="btn-win" class="btn btn-win" onclick="claimAction('HU')">HU</button>
     </div>
 
     <!-- Tangan Pribadi Pemain -->
     <div id="player-hand-container">
-      <div class="section-title">Tangan Pribadi (Klik balok untuk membuang)</div>
+      <div class="section-title">Tangan Anda (Klik balok untuk membuang)</div>
       <div id="player-hand" class="tile-row"></div>
     </div>
   </div>
