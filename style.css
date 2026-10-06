@@ -23,22 +23,52 @@ body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 10px;
   position: relative;
+}
+
+#header-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 10;
 }
 
 #status-bar {
   background: rgba(0, 0, 0, 0.55);
-  padding: 6px 18px;
+  padding: 6px 16px;
   border-radius: 20px;
   font-size: 13px;
-  letter-spacing: 0.5px;
-  z-index: 10;
+}
+
+.timer-box {
+  background: #c0392b;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Indikator Kursi & Giliran Aktif */
+.player-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.player-seat.active-turn {
+  background: rgba(241, 196, 15, 0.25);
+  box-shadow: 0 0 12px rgba(241, 196, 15, 0.6);
+  border: 1px solid #f1c40f;
 }
 
 .player-info {
-  font-size: 11px;
-  opacity: 0.8;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.85;
   margin-bottom: 4px;
   text-align: center;
 }
@@ -49,16 +79,16 @@ body {
   align-items: center;
   width: 100%;
   flex: 1;
-  padding: 10px 0;
+  padding: 6px 0;
 }
 
 #discard-pond {
   flex: 1;
-  max-width: 450px;
-  min-height: 180px;
-  background: rgba(0, 0, 0, 0.15);
+  max-width: 420px;
+  min-height: 170px;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -79,21 +109,21 @@ body {
   justify-content: center;
   align-content: flex-start;
   width: 100%;
-  max-height: 150px;
+  max-height: 140px;
   overflow-y: auto;
 }
 
-/* Balok Tangan Pemain */
+/* Tampilan Balok Pemain */
 .tile-row {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .tile {
-  width: 44px;
-  height: 60px;
+  width: 42px;
+  height: 58px;
   background: #fdfdfd;
   color: #111;
   border: 1px solid #c2c2c2;
@@ -115,29 +145,29 @@ body {
 }
 
 .tile.discarded {
-  width: 32px;
-  height: 44px;
+  width: 30px;
+  height: 42px;
   font-size: 10px;
   background: #f0f0f0;
   box-shadow: 0 2px 0 #aaa;
 }
 
-/* Tampilan Punggung Kartu Lawan */
+/* Punggung Balok Lawan */
 .opponent-hand {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .tile-back {
-  background: #d35400; /* Warna punggung balok oranye kayu */
+  background: #d35400;
   border: 1px solid #a04000;
   border-radius: 4px;
   box-shadow: 0 2px 0 #7e3200;
 }
 
 .horizontal-back .tile-back {
-  width: 24px;
-  height: 36px;
+  width: 22px;
+  height: 32px;
 }
 
 .vertical-back {
@@ -145,20 +175,20 @@ body {
 }
 
 .vertical-back .tile-back {
-  width: 36px;
-  height: 22px;
+  width: 32px;
+  height: 20px;
 }
 
 /* Tombol Aksi */
 #action-controls {
   display: flex;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .btn {
-  padding: 8px 18px;
-  font-size: 13px;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: bold;
   border: none;
   border-radius: 6px;
