@@ -9,10 +9,8 @@ let friendList = [];
 let pendingInviteRoom = null;
 let pendingInviteGame = null;
 
-// Navigasi Game Aktif
-let activeGame = "mahjong"; // 'mahjong' atau 'snakes'
+let activeGame = "mahjong";
 
-// State Room & Jaringan
 let socket = null;
 let currentRoomCode = null;
 let mySeatIndex = 0;
@@ -22,7 +20,6 @@ function generateFriendId() {
   return "#MG-" + Math.floor(1000 + Math.random() * 9000);
 }
 
-// 1. Masuk sebagai Tamu (Guest)
 window.loginAsGuest = function () {
   const guestNum = Math.floor(100 + Math.random() * 900);
   currentUser = {
@@ -188,7 +185,6 @@ function updateUserHubUI() {
   }
 }
 
-// Sistem Teman Cloud
 async function fetchServerFriends() {
   if (!currentUser || currentUser.isGuest) return;
   try {
@@ -329,7 +325,6 @@ window.closeInviteNotification = function () {
   pendingInviteGame = null;
 };
 
-// Hub WebSocket Listener
 let globalHubSocket = null;
 function initLobbyHubSocket() {
   if (globalHubSocket || (currentUser && currentUser.isGuest)) return;
@@ -348,7 +343,6 @@ function initLobbyHubSocket() {
   } catch (err) {}
 }
 
-// ================= NAVIGASI PORTAL GAME =================
 window.selectGame = function (gameName) {
   if (gameName === "mahjong" || gameName === "snakes") {
     activeGame = gameName;
@@ -392,7 +386,6 @@ window.backToHub = function () {
   updateUserHubUI();
 };
 
-// ================= SISTEM ROOM UMUM =================
 function startCreateRoom() {
   const code = Math.floor(1000 + Math.random() * 9000).toString();
   isHost = true;
@@ -434,11 +427,9 @@ function sendSocketMessage(payload) {
   }
 }
 
-// ================= GAME 2: ULAR TANGGA (SNAKES & LADDERS) =================
+// ================= GAME 2: ULAR TANGGA =================
 const SNAKES_LADDERS_MAP = {
-  // Tangga (Naik 🪜)
   4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91,
-  // Ular (Turun 🐍)
   17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78
 };
 
@@ -452,7 +443,7 @@ let snakesPlayerNames = ["Anda", "P2 (Bot)", "P3 (Bot)", "P4 (Bot)"];
 function renderDiceFaceHTML(val) {
   switch (val) {
     case 1:
-      return `<span class="pip pip-center pip-red"></span>`;
+      return `<span class="pip pip-center pip-gold"></span>`;
     case 2:
       return `<span class="pip pip-tl"></span><span class="pip pip-br"></span>`;
     case 3:
@@ -464,7 +455,7 @@ function renderDiceFaceHTML(val) {
     case 6:
       return `<span class="pip pip-tl"></span><span class="pip pip-tr"></span><span class="pip pip-ml"></span><span class="pip pip-mr"></span><span class="pip pip-bl"></span><span class="pip pip-br"></span>`;
     default:
-      return `<span class="pip pip-center pip-red"></span>`;
+      return `<span class="pip pip-center pip-gold"></span>`;
   }
 }
 
@@ -1630,7 +1621,6 @@ function checkTenpai(handTiles) {
   return false;
 }
 
-// Inisialisasi DOM
 document.addEventListener("DOMContentLoaded", () => {
   checkAutoLogin();
 
