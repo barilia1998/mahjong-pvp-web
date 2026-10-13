@@ -11,7 +11,7 @@ html, body {
   height: 100dvh;
   overflow: hidden;
   background-color: #0c1e15;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
   color: #fff;
 }
 
@@ -735,7 +735,7 @@ html, body {
 .discard-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
   justify-content: center;
   align-content: flex-start;
   width: 100%;
@@ -757,7 +757,7 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 1.5px;
+  gap: 2px;
   background: rgba(0, 0, 0, 0.4);
   padding: 2px 3px;
   border-radius: 5px;
@@ -779,15 +779,9 @@ html, body {
   border-top: 1px solid #fff;
 }
 
-.tile-meld .tile-symbol {
-  font-size: 14px;
-  line-height: 1;
-}
-
-.tile-meld .tile-num {
-  font-size: 7px;
-  font-weight: 800;
-  line-height: 1;
+.tile-meld svg {
+  width: 18px;
+  height: 24px;
 }
 
 /* Punggung Balok Lawan 3D */
@@ -874,26 +868,26 @@ html, body {
   max-width: 375px;
 }
 
-/* ================= DESAIN BALOK MAHJONG 3D REALISTIS ================= */
+/* ================= DESAIN BALOK MAHJONG 3D REALISTIS (MAHJONG SOUL STYLE) ================= */
 .tile {
-  height: 52px;
-  background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 75%, #ece4d4 100%);
+  height: 56px;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaf5 60%, #eee4d0 100%);
   border-radius: 6px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 3px 2px;
+  padding: 2px;
   cursor: pointer;
   user-select: none;
   position: relative;
-  /* Lapisan dasar bambu/akrilik hijau 3D */
+  /* Lapisan dasar akrilik hijau giok tebal */
   box-shadow: 
-    0 1px 0 rgba(255,255,255,0.9) inset,
-    0 -1px 0 rgba(0,0,0,0.1) inset,
-    0 4px 0 #196f3d,
-    0 6px 6px rgba(0, 0, 0, 0.45);
-  border: 1px solid #d5cbb8;
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -1px 0 rgba(0, 0, 0, 0.1) inset,
+    0 4px 0 #145a32,
+    0 6px 8px rgba(0, 0, 0, 0.5);
+  border: 1px solid #dcd3c1;
   border-bottom: none;
   transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.12s;
 }
@@ -901,86 +895,48 @@ html, body {
 .tile:active {
   transform: translateY(3px);
   box-shadow: 
-    0 1px 0 rgba(255,255,255,0.9) inset,
-    0 1px 0 #196f3d,
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 1px 0 #145a32,
     0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
-.tile-top-row {
-  width: 100%;
-  display: flex;
-  justify-content: flex-start;
-  padding-left: 2px;
-  line-height: 1;
-}
-
-.tile-num {
+/* Indikator Angka Kecil di Pojok Atas Balok */
+.tile-corner-tag {
+  position: absolute;
+  top: 2px;
+  left: 3px;
   font-size: 8px;
   font-weight: 900;
-  letter-spacing: -0.5px;
+  color: #7f8c8d;
+  line-height: 1;
 }
 
-.tile-symbol {
-  font-size: 24px;
-  line-height: 1;
-  margin-bottom: 2px;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+/* Ilustrasi Grafis Balok di Tengah */
+.tile svg {
+  width: 28px;
+  height: 38px;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
 }
 
 /* Balok Buangan di Meja Tengah */
 .tile.discarded {
-  width: 26px;
-  height: 35px;
-  padding: 2px 1px;
+  width: 28px;
+  height: 38px;
+  padding: 1px;
   border-radius: 4px;
   box-shadow: 
-    0 2px 0 #196f3d,
-    0 3px 4px rgba(0,0,0,0.4);
+    0 2px 0 #145a32,
+    0 3px 5px rgba(0,0,0,0.45);
 }
 
-.tile.discarded .tile-top-row {
+.tile.discarded .tile-corner-tag {
   display: none;
 }
 
-.tile.discarded .tile-symbol {
-  font-size: 16px;
-  margin: auto;
-}
-
-/* Pewarnaan Ukiran Tradisional Sesuai Jenis Balok */
-.suit-wan .tile-symbol {
-  color: #c0392b; /* Karakter Wan: Merah Karmin */
-}
-.suit-wan .tile-num {
-  color: #2980b9;
-}
-
-.suit-pin .tile-symbol {
-  color: #2980b9; /* Pin: Biru Safir */
-}
-.suit-pin .tile-num {
-  color: #e67e22;
-}
-
-.suit-sou .tile-symbol {
-  color: #27ae60; /* Sou: Hijau Zamrud */
-}
-.suit-sou .tile-num {
-  color: #27ae60;
-}
-
-/* Pewarnaan Honor: Naga & Angin */
-.honor-zhong .tile-symbol {
-  color: #e74c3c !important; /* Naga Merah (Zhong) */
-}
-.honor-fa .tile-symbol {
-  color: #2ecc71 !important; /* Naga Hijau (Fa) */
-}
-.honor-bai .tile-symbol {
-  color: #7f8c8d !important; /* Naga Putih (Bai) */
-}
-.honor-wind .tile-symbol {
-  color: #1a5276 !important; /* Balok Angin: Biru Gelap */
+.tile.discarded svg {
+  width: 22px;
+  height: 30px;
 }
 
 /* ================= 4. ARENA ULAR TANGGA & DADU MERAH CASINO ================= */
