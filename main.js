@@ -143,6 +143,7 @@ function backToAuthScreen() {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
   document.getElementById("snakes-screen").classList.add("hidden");
+  checkMahjongOrientationGuard();
 }
 
 function openHubScreen() {
@@ -152,6 +153,7 @@ function openHubScreen() {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
   document.getElementById("snakes-screen").classList.add("hidden");
+  checkMahjongOrientationGuard();
 
   if (currentUser && !currentUser.isGuest) {
     initLobbyHubSocket();
@@ -343,6 +345,26 @@ function initLobbyHubSocket() {
   } catch (err) {}
 }
 
+// ================= ORIENTATION GUARD KHUSUS MAHJONG =================
+function checkMahjongOrientationGuard() {
+  const table = document.getElementById("game-table");
+  const warningOverlay = document.getElementById("landscape-warning-overlay");
+  if (!table || !warningOverlay) return;
+
+  // Hanya periksa rotasi jika pemain sedang berada di dalam meja Mahjong
+  const isMahjongActive = (activeGame === "mahjong" && !table.classList.contains("hidden"));
+  const isPortrait = window.innerHeight > window.innerWidth;
+
+  if (isMahjongActive && isPortrait) {
+    warningOverlay.classList.remove("hidden");
+  } else {
+    warningOverlay.classList.add("hidden");
+  }
+}
+
+window.addEventListener("resize", checkMahjongOrientationGuard);
+window.addEventListener("orientationchange", checkMahjongOrientationGuard);
+
 window.selectGame = function (gameName) {
   if (gameName === "mahjong" || gameName === "snakes") {
     activeGame = gameName;
@@ -354,7 +376,7 @@ window.selectGame = function (gameName) {
     const snakesSettings = document.getElementById("snakes-settings");
 
     if (gameName === "mahjong") {
-      titleEl.innerText = "Lobi Mahjong PvP";
+      titleEl.innerText = "Lobi Mahjong PvP (Landscape)";
       mahjongSettings.classList.remove("hidden");
       snakesSettings.classList.add("hidden");
     } else {
@@ -384,6 +406,7 @@ window.backToHub = function () {
   document.getElementById("hub-screen").classList.remove("hidden");
   currentRoomCode = null;
   updateUserHubUI();
+  checkMahjongOrientationGuard();
 };
 
 function startCreateRoom() {
@@ -577,10 +600,10 @@ function initSnakesNetwork() {
     };
 
     socket.onerror = () => {
-      if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+      statusBar.innerText = "Mode Offline (Simulasi Lokal)";
     };
   } catch (err) {
-    if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+    statusBar.innerText = "Mode Offline (Simulasi Lokal)";
   }
 }
 
@@ -728,7 +751,7 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   }, 1200);
 }
 
-// ================= GAME 1: MAHJONG MEJA =================
+// ================= GAME 1: MAHJONG MEJA VECTOR REALISTIS =================
 let currentGameMode = "HK";
 let assistLevel = "BEGINNER";
 let playerPoints = [25000, 25000, 25000, 25000];
@@ -748,24 +771,130 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-const SUITS = [
-  { name: "Wan", symbol: "🀇", order: 1, count: 9 },
-  { name: "Pin", symbol: "🀙", order: 2, count: 9 },
-  { name: "Sou", symbol: "🀐", order: 3, count: 9 }
-];
-const HONORS = [
-  { name: "Dong", symbol: "🀀", val: 1 },
-  { name: "Nan", symbol: "🀁", val: 2 },
-  { name: "Xi", symbol: "🀂", val: 3 },
-  { name: "Bei", symbol: "🀃", val: 4 },
-  { name: "Zhong", symbol: "🀄", val: 5 },
-  { name: "Fa", symbol: "🀅", val: 6 },
-  { name: "Bai", symbol: "🀆", val: 7 }
-];
+// Desain Grafis Karakter Asli Mahjong
+function generateTileSVG(suit, num, name) {
+  if (suit === "Wan") {
+    const kanjiDigits = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    const digitChar = kanjiDigits[num - 1] || num;
+    const topColor = (num === 5 || num === 1) ? "#c0392b" : "#1a252f";
+    return `
+      <svg viewBox="0 0 30 40">
+        <text x="15" y="16" font-size="14" font-weight="900" fill="${topColor}" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${digitChar}</text>
+        <text x="15" y="34" font-size="15" font-weight="900" fill="#c0392b" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">萬</text>
+      </svg>
+    `;
+  }
+
+  if (suit === "Pin") {
+    if (num === 1) {
+      return `
+        <svg viewBox="0 0 30 40">
+          <circle cx="15" cy="20" r="11" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+          <circle cx="15" cy="20" r="5" fill="#f1c40f"/>
+          <circle cx="15" cy="20" r="2" fill="#e74c3c"/>
+        </svg>
+      `;
+    }
+    if (num === 2) {
+      return `
+        <svg viewBox="0 0 30 40">
+          <circle cx="15" cy="11" r="5" fill="#2980b9"/>
+          <circle cx="15" cy="29" r="5" fill="#27ae60"/>
+        </svg>
+      `;
+    }
+    if (num === 3) {
+      return `
+        <svg viewBox="0 0 30 40">
+          <circle cx="8" cy="9" r="4.5" fill="#2980b9"/>
+          <circle cx="15" cy="20" r="4.5" fill="#e74c3c"/>
+          <circle cx="22" cy="31" r="4.5" fill="#27ae60"/>
+        </svg>
+      `;
+    }
+    if (num === 4) {
+      return `
+        <svg viewBox="0 0 30 40">
+          <circle cx="9" cy="11" r="4.5" fill="#2980b9"/>
+          <circle cx="21" cy="11" r="4.5" fill="#27ae60"/>
+          <circle cx="9" cy="29" r="4.5" fill="#27ae60"/>
+          <circle cx="21" cy="29" r="4.5" fill="#2980b9"/>
+        </svg>
+      `;
+    }
+    return `
+      <svg viewBox="0 0 30 40">
+        <circle cx="15" cy="20" r="4" fill="#e74c3c"/>
+        <circle cx="8" cy="10" r="3.5" fill="#2980b9"/>
+        <circle cx="22" cy="10" r="3.5" fill="#27ae60"/>
+        <circle cx="8" cy="30" r="3.5" fill="#27ae60"/>
+        <circle cx="22" cy="30" r="3.5" fill="#2980b9"/>
+      </svg>
+    `;
+  }
+
+  if (suit === "Sou") {
+    if (num === 1) {
+      return `
+        <svg viewBox="0 0 30 40">
+          <path d="M15 8 C11 8 8 13 8 20 C8 27 12 32 15 32 C18 32 22 27 22 20 C22 13 19 8 15 8 Z" fill="#27ae60"/>
+          <circle cx="15" cy="14" r="3" fill="#e74c3c"/>
+          <circle cx="15" cy="22" r="2" fill="#f1c40f"/>
+        </svg>
+      `;
+    }
+    return `
+      <svg viewBox="0 0 30 40">
+        <rect x="13" y="6" width="4" height="26" rx="2" fill="#27ae60"/>
+        <rect x="7" y="10" width="4" height="20" rx="2" fill="#2980b9"/>
+        <rect x="19" y="10" width="4" height="20" rx="2" fill="#2980b9"/>
+        <circle cx="15" cy="19" r="1.5" fill="#e74c3c"/>
+      </svg>
+    `;
+  }
+
+  if (suit === "Honor") {
+    if (name === "Zhong") {
+      return `
+        <svg viewBox="0 0 30 40">
+          <text x="15" y="28" font-size="24" font-weight="900" fill="#c0392b" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">中</text>
+        </svg>
+      `;
+    }
+    if (name === "Fa") {
+      return `
+        <svg viewBox="0 0 30 40">
+          <text x="15" y="28" font-size="22" font-weight="900" fill="#27ae60" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">發</text>
+        </svg>
+      `;
+    }
+    if (name === "Bai") {
+      return `
+        <svg viewBox="0 0 30 40">
+          <rect x="6" y="8" width="18" height="24" rx="3" fill="none" stroke="#2980b9" stroke-width="2.5"/>
+        </svg>
+      `;
+    }
+    const windMap = { Dong: "東", Nan: "南", Xi: "西", Bei: "北" };
+    return `
+      <svg viewBox="0 0 30 40">
+        <text x="15" y="28" font-size="22" font-weight="900" fill="#1a5276" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${windMap[name] || name}</text>
+      </svg>
+    `;
+  }
+
+  return `<svg viewBox="0 0 30 40"><text x="15" y="25" font-size="12" fill="#333" text-anchor="middle">${name}</text></svg>`;
+}
 
 function createFullDeck() {
   const deck = [];
-  SUITS.forEach((suit) => {
+  const suits = [
+    { name: "Wan", order: 1, count: 9 },
+    { name: "Pin", order: 2, count: 9 },
+    { name: "Sou", order: 3, count: 9 }
+  ];
+
+  suits.forEach((suit) => {
     for (let num = 1; num <= suit.count; num++) {
       for (let i = 0; i < 4; i++) {
         deck.push({
@@ -773,20 +902,21 @@ function createFullDeck() {
           suit: suit.name,
           num: num,
           order: suit.order,
-          display: `${suit.symbol} ${num}${suit.name[0]}`
+          svg: generateTileSVG(suit.name, num, `${num}${suit.name[0]}`)
         });
       }
     }
   });
 
-  HONORS.forEach((honor) => {
+  const honors = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
+  honors.forEach((hName, idx) => {
     for (let i = 0; i < 4; i++) {
       deck.push({
-        id: `honor_${honor.name}_${i}`,
+        id: `honor_${hName}_${i}`,
         suit: "Honor",
-        num: honor.val,
+        num: idx + 1,
         order: 4,
-        display: `${honor.symbol} ${honor.name}`
+        svg: generateTileSVG("Honor", idx + 1, hName)
       });
     }
   });
@@ -824,6 +954,7 @@ function enterMahjongRoom(code) {
     showIntermediateManualButtons();
   }
 
+  checkMahjongOrientationGuard();
   initMahjongNetwork();
 
   if (isHost) {
@@ -854,7 +985,8 @@ function enterMahjongRoom(code) {
 function updateDoraUI() {
   const doraEl = document.getElementById("dora-tile");
   if (doraEl && doraTile) {
-    doraEl.innerText = doraTile.display;
+    doraEl.className = "tile discarded dora-highlight";
+    doraEl.innerHTML = doraTile.svg;
   }
 }
 
@@ -945,10 +1077,10 @@ function updateSeatsInfo() {
   const labelTop = document.getElementById("label-top");
   const labelLeft = document.getElementById("label-left");
 
-  if (labelBottom) labelBottom.innerText = `${playerNames[0]} (${playerPoints[0]} pts)`;
-  if (labelRight) labelRight.innerText = `${playerNames[1]} (${playerPoints[1]} pts)`;
-  if (labelTop) labelTop.innerText = `${playerNames[2]} (${playerPoints[2]} pts)`;
-  if (labelLeft) labelLeft.innerText = `${playerNames[3]} (${playerPoints[3]} pts)`;
+  if (labelBottom) labelBottom.innerText = `${playerNames[0]} (${playerPoints[0]})`;
+  if (labelRight) labelRight.innerText = `${playerNames[1]} (${playerPoints[1]})`;
+  if (labelTop) labelTop.innerText = `${playerNames[2]} (${playerPoints[2]})`;
+  if (labelLeft) labelLeft.innerText = `${playerNames[3]} (${playerPoints[3]})`;
 }
 
 function startTurnTimer() {
@@ -1001,7 +1133,7 @@ function applyTurn(seatIndex) {
 
   const statusBar = document.getElementById("status-bar");
   if (currentTurnSeat === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk membuang";
     drawTile();
     isProcessingTurn = false;
   } else {
@@ -1051,23 +1183,43 @@ function executeBotTurn(seatIndex) {
 }
 
 function renderHand() {
-  const handContainer = document.getElementById("player-hand");
-  if (!handContainer) return;
+  const lineHolder = document.getElementById("player-hand-tiles");
+  const drawnSlot = document.getElementById("player-drawn-slot");
+  if (!lineHolder || !drawnSlot) return;
 
-  handContainer.innerHTML = "";
-  myHand.forEach((tile, index) => {
-    const tileElement = document.createElement("div");
-    tileElement.className = "tile";
-    tileElement.innerText = tile.display;
-    tileElement.addEventListener("click", () => {
-      if (currentTurnSeat === mySeatIndex) {
-        discardTile(index);
-      } else {
-        alert("Bukan giliran Anda!");
-      }
-    });
-    handContainer.appendChild(tileElement);
+  lineHolder.innerHTML = "";
+  drawnSlot.innerHTML = "";
+
+  const mainTilesCount = (myHand.length % 3 === 2) ? (myHand.length - 1) : myHand.length;
+
+  for (let i = 0; i < mainTilesCount; i++) {
+    const tile = myHand[i];
+    const tileEl = createTileElement(tile, i);
+    lineHolder.appendChild(tileEl);
+  }
+
+  if (myHand.length % 3 === 2) {
+    const lastIdx = myHand.length - 1;
+    const drawnTile = myHand[lastIdx];
+    const drawnEl = createTileElement(drawnTile, lastIdx);
+    drawnSlot.appendChild(drawnEl);
+  }
+}
+
+function createTileElement(tile, index) {
+  const tileEl = document.createElement("div");
+  tileEl.className = "tile";
+  tileEl.innerHTML = tile.svg;
+
+  tileEl.addEventListener("click", () => {
+    if (currentTurnSeat === mySeatIndex) {
+      discardTile(index);
+    } else {
+      alert("Bukan giliran Anda!");
+    }
   });
+
+  return tileEl;
 }
 
 function renderOpponents() {
@@ -1159,7 +1311,7 @@ function addDiscardTile(tile) {
 
   const tileElement = document.createElement("div");
   tileElement.className = "tile discarded";
-  tileElement.innerText = tile.display || tile;
+  tileElement.innerHTML = tile.svg;
   discardContainer.appendChild(tileElement);
   discardContainer.scrollTop = discardContainer.scrollHeight;
   lastDiscardElement = tileElement;
@@ -1184,7 +1336,7 @@ function evaluateDiscardForPlayer(discardedTile) {
   let canChow = false;
   let canHu = false;
 
-  const countSame = myHand.filter((t) => t.display === discardedTile.display).length;
+  const countSame = myHand.filter((t) => t.num === discardedTile.num && t.suit === discardedTile.suit).length;
   if (countSame >= 2) canPung = true;
   if (countSame === 3) canKong = true;
 
@@ -1333,7 +1485,7 @@ function claimAction(actionName) {
   }
 
   if (actionName === "PUNG") {
-    const matching = myHand.filter((tile) => tile.display === lastDiscardedTile.display);
+    const matching = myHand.filter((tile) => tile.num === lastDiscardedTile.num && tile.suit === lastDiscardedTile.suit);
     if (matching.length < 2) {
       alert("Gagal PUNG: Tidak ada 2 balok kembar yang cocok!");
       return;
@@ -1345,7 +1497,7 @@ function claimAction(actionName) {
     let removed = 0;
     const claimedTiles = [lastDiscardedTile];
     myHand = myHand.filter((tile) => {
-      if (tile.display === lastDiscardedTile.display && removed < 2) {
+      if (tile.num === lastDiscardedTile.num && tile.suit === lastDiscardedTile.suit && removed < 2) {
         removed++;
         claimedTiles.push(tile);
         return false;
@@ -1420,7 +1572,7 @@ function claimAction(actionName) {
   }
 
   if (actionName === "KONG") {
-    const matching = myHand.filter((tile) => tile.display === lastDiscardedTile.display);
+    const matching = myHand.filter((tile) => tile.num === lastDiscardedTile.num && tile.suit === lastDiscardedTile.suit);
     if (matching.length < 3) {
       alert("Gagal KONG: Butuh 3 balok kembar di tangan!");
       return;
@@ -1432,7 +1584,7 @@ function claimAction(actionName) {
     let removed = 0;
     const claimedTiles = [lastDiscardedTile];
     myHand = myHand.filter((tile) => {
-      if (tile.display === lastDiscardedTile.display && removed < 3) {
+      if (tile.num === lastDiscardedTile.num && tile.suit === lastDiscardedTile.suit && removed < 3) {
         removed++;
         claimedTiles.push(tile);
         return false;
@@ -1460,7 +1612,7 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
     const testHand = [...botHands[seat], discardedTile];
     if (validateWin(testHand, false)) {
       removeLastDiscardFromPond();
-      alert(`${playerNames[seat]} mengklaim HU untuk ${discardedTile.display}!`);
+      alert(`${playerNames[seat]} mengklaim HU!`);
       sendSocketMessage({
         type: "GAME_OVER",
         winnerSeat: seat
@@ -1468,12 +1620,12 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
       return true;
     }
 
-    const matching = botHands[seat].filter(t => t.display === discardedTile.display);
+    const matching = botHands[seat].filter(t => t.num === discardedTile.num && t.suit === discardedTile.suit);
     if (matching.length >= 2) {
       removeLastDiscardFromPond();
       let removed = 0;
       botHands[seat] = botHands[seat].filter(t => {
-        if (t.display === discardedTile.display && removed < 2) {
+        if (t.num === discardedTile.num && t.suit === discardedTile.suit && removed < 2) {
           removed++;
           return false;
         }
@@ -1506,7 +1658,7 @@ function addExposedMeld(seatIndex, tiles) {
   tiles.forEach((t) => {
     const tileDiv = document.createElement("div");
     tileDiv.className = "tile-meld";
-    tileDiv.innerText = t.display;
+    tileDiv.innerHTML = t.svg;
     groupEl.appendChild(tileDiv);
   });
   targetEl.appendChild(groupEl);
@@ -1609,9 +1761,10 @@ function checkTenpai(handTiles) {
   for (let i = 0; i < handTiles.length; i++) {
     const test13 = [...handTiles];
     test13.splice(i, 1);
-    for (const suit of SUITS) {
+    const suits = ["Wan", "Pin", "Sou"];
+    for (const s of suits) {
       for (let n = 1; n <= 9; n++) {
-        const dummyTile = { suit: suit.name, num: n, order: suit.order, display: `${suit.symbol} ${n}` };
+        const dummyTile = { suit: s, num: n };
         if (checkBasicMahjongStructure([...test13, dummyTile])) {
           return true;
         }
@@ -1621,6 +1774,7 @@ function checkTenpai(handTiles) {
   return false;
 }
 
+// Inisialisasi DOM
 document.addEventListener("DOMContentLoaded", () => {
   checkAutoLogin();
 
