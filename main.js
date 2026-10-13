@@ -3,6 +3,9 @@ const SERVER_BASE_URL = "https://mahjong-pvp-server.owning.workers.dev";
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
+// CDN Aset PNG Mahjong Standar Industri
+const TILE_IMG_BASE = "https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@master/regular";
+
 // ================= SISTEM AKUN & AUTENTIKASI =================
 let currentUser = null;
 let friendList = [];
@@ -728,7 +731,7 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   }, 1200);
 }
 
-// ================= GAME 1: MAHJONG MEJA BERSIH & TANGGUH =================
+// ================= GAME 1: MAHJONG MEJA REALISTIS BERBASIS FILE PNG =================
 let currentGameMode = "HK";
 let assistLevel = "BEGINNER";
 let playerPoints = [25000, 25000, 25000, 25000];
@@ -748,82 +751,59 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-// Simbol & Karakter Mahjong Universal (Unicode Standar Bersih)
-const WAN_CHARS = ["🀇", "🀈", "🀉", "🀊", "🀋", "🀌", "🀍", "🀎", "🀏"];
-const PIN_CHARS = ["🀙", "🀚", "🀛", "🀜", "🀝", "🀞", "🀟", "🀠", "🀡"];
-const SOU_CHARS = ["🀐", "🀑", "🀒", "🀓", "🀔", "🀕", "🀖", "🀗", "🀘"];
-
-const HONOR_MAP = {
-  Dong: { char: "🀀", tag: "東", class: "honor-wind" },
-  Nan:  { char: "🀁", tag: "南", class: "honor-wind" },
-  Xi:   { char: "🀂", tag: "西", class: "honor-wind" },
-  Bei:  { char: "🀃", tag: "北", class: "honor-wind" },
-  Zhong:{ char: "🀄", tag: "中", class: "honor-zhong" },
-  Fa:   { char: "🀅", tag: "發", class: "honor-fa" },
-  Bai:  { char: "🀆", tag: "白", class: "honor-bai" }
-};
+// Mapping Nama File Gambar PNG
+function getTileImageFilename(suit, num, name) {
+  if (suit === "Wan") return `man${num}.png`;
+  if (suit === "Pin") return `pin${num}.png`;
+  if (suit === "Sou") return `sou${num}.png`;
+  if (suit === "Honor") {
+    const map = {
+      Dong: "ton.png",
+      Nan: "nan.png",
+      Xi: "shaa.png",
+      Bei: "pei.png",
+      Zhong: "chun.png",
+      Fa: "hatsu.png",
+      Bai: "haku.png"
+    };
+    return map[name] || "back.png";
+  }
+  return "back.png";
+}
 
 function createFullDeck() {
   const deck = [];
+  const suits = [
+    { name: "Wan", order: 1, count: 9 },
+    { name: "Pin", order: 2, count: 9 },
+    { name: "Sou", order: 3, count: 9 }
+  ];
 
-  // 1. Wan
-  for (let n = 1; n <= 9; n++) {
-    for (let i = 0; i < 4; i++) {
-      deck.push({
-        id: `${n}_Wan_${i}`,
-        suit: "Wan",
-        num: n,
-        order: 1,
-        symbol: WAN_CHARS[n - 1],
-        topLabel: `${n}萬`,
-        cssClass: "suit-wan"
-      });
+  suits.forEach((suit) => {
+    for (let num = 1; num <= suit.count; num++) {
+      for (let i = 0; i < 4; i++) {
+        const file = getTileImageFilename(suit.name, num);
+        deck.push({
+          id: `${num}_${suit.name}_${i}`,
+          suit: suit.name,
+          num: num,
+          order: suit.order,
+          imgUrl: `${TILE_IMG_BASE}/${file}`
+        });
+      }
     }
-  }
+  });
 
-  // 2. Pin
-  for (let n = 1; n <= 9; n++) {
-    for (let i = 0; i < 4; i++) {
-      deck.push({
-        id: `${n}_Pin_${i}`,
-        suit: "Pin",
-        num: n,
-        order: 2,
-        symbol: PIN_CHARS[n - 1],
-        topLabel: `${n}筒`,
-        cssClass: "suit-pin"
-      });
-    }
-  }
-
-  // 3. Sou
-  for (let n = 1; n <= 9; n++) {
-    for (let i = 0; i < 4; i++) {
-      deck.push({
-        id: `${n}_Sou_${i}`,
-        suit: "Sou",
-        num: n,
-        order: 3,
-        symbol: SOU_CHARS[n - 1],
-        topLabel: `${n}索`,
-        cssClass: "suit-sou"
-      });
-    }
-  }
-
-  // 4. Honor
-  const honorNames = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
-  honorNames.forEach((hName, idx) => {
-    const meta = HONOR_MAP[hName];
+  const honors = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
+  honors.forEach((hName, idx) => {
+    const file = getTileImageFilename("Honor", idx + 1, hName);
     for (let i = 0; i < 4; i++) {
       deck.push({
         id: `honor_${hName}_${i}`,
         suit: "Honor",
         num: idx + 1,
         order: 4,
-        symbol: meta.char,
-        topLabel: meta.tag,
-        cssClass: meta.class
+        imgUrl: `${TILE_IMG_BASE}/${file}`
       });
     }
   });
@@ -891,8 +871,8 @@ function enterMahjongRoom(code) {
 function updateDoraUI() {
   const doraEl = document.getElementById("dora-tile");
   if (doraEl && doraTile) {
-    doraEl.className = `tile discarded dora-highlight ${doraTile.cssClass}`;
-    doraEl.innerHTML = `<span class="tile-main-symbol">${doraTile.symbol}</span>`;
+    doraEl.className = "tile discarded dora-highlight";
+    doraEl.innerHTML = `<img src="${doraTile.imgUrl}" alt="Dora" />`;
   }
 }
 
@@ -970,10 +950,10 @@ function initMahjongNetwork() {
     };
 
     socket.onerror = () => {
-      if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+      statusBar.innerText = "Mode Offline (Simulasi Lokal)";
     };
   } catch (err) {
-    if (statusBar) statusBar.innerText = "Mode Offline (Simulasi Lokal)";
+    statusBar.innerText = "Mode Offline (Simulasi Lokal)";
   }
 }
 
@@ -1039,7 +1019,7 @@ function applyTurn(seatIndex) {
 
   const statusBar = document.getElementById("status-bar");
   if (currentTurnSeat === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk membuang";
     drawTile();
     isProcessingTurn = false;
   } else {
@@ -1088,7 +1068,7 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
-// Render Balok Tangan Pemain (Anti-Gagal & Terpajang Nyata)
+// Render Balok Tangan Pemain (Gambar PNG)
 function renderHand() {
   const lineHolder = document.getElementById("player-hand-tiles");
   const drawnSlot = document.getElementById("player-drawn-slot");
@@ -1105,7 +1085,6 @@ function renderHand() {
     lineHolder.appendChild(tileEl);
   }
 
-  // Jika memegang 14 balok (balok baru ditarik)
   if (myHand.length % 3 === 2 && drawnSlot) {
     const lastIdx = myHand.length - 1;
     const drawnTile = myHand[lastIdx];
@@ -1116,11 +1095,8 @@ function renderHand() {
 
 function createTileElement(tile, index) {
   const tileEl = document.createElement("div");
-  tileEl.className = `tile ${tile.cssClass || ""}`;
-  tileEl.innerHTML = `
-    <span class="tile-top-label">${tile.topLabel || ""}</span>
-    <span class="tile-main-symbol">${tile.symbol || ""}</span>
-  `;
+  tileEl.className = "tile";
+  tileEl.innerHTML = `<img src="${tile.imgUrl}" alt="${tile.suit}_${tile.num}" loading="eager" />`;
 
   tileEl.addEventListener("click", () => {
     if (currentTurnSeat === mySeatIndex) {
@@ -1144,9 +1120,10 @@ function renderOpponents() {
     if (!holder) return;
     holder.innerHTML = "";
     for (let i = 0; i < 13; i++) {
-      const tileBack = document.createElement("div");
-      tileBack.className = "tile-back";
-      holder.appendChild(tileBack);
+      const img = document.createElement("img");
+      img.className = "tile-back-img";
+      img.src = `${TILE_IMG_BASE}/back.png`;
+      holder.appendChild(img);
     }
   });
 }
@@ -1221,11 +1198,8 @@ function addDiscardTile(tile) {
   if (!discardContainer) return;
 
   const tileElement = document.createElement("div");
-  tileElement.className = `tile discarded ${tile.cssClass || ""}`;
-  tileElement.innerHTML = `
-    <span class="tile-top-label">${tile.topLabel || ""}</span>
-    <span class="tile-main-symbol">${tile.symbol || ""}</span>
-  `;
+  tileElement.className = "tile discarded";
+  tileElement.innerHTML = `<img src="${tile.imgUrl}" alt="${tile.suit}_${tile.num}" />`;
   discardContainer.appendChild(tileElement);
   discardContainer.scrollTop = discardContainer.scrollHeight;
   lastDiscardElement = tileElement;
@@ -1571,8 +1545,8 @@ function addExposedMeld(seatIndex, tiles) {
   groupEl.className = "meld-group";
   tiles.forEach((t) => {
     const tileDiv = document.createElement("div");
-    tileDiv.className = `tile-meld ${t.cssClass || ""}`;
-    tileDiv.innerHTML = `${t.symbol || ""}`;
+    tileDiv.className = "tile-meld";
+    tileDiv.innerHTML = `<img src="${t.imgUrl}" alt="${t.suit}_${t.num}" />`;
     groupEl.appendChild(tileDiv);
   });
   targetEl.appendChild(groupEl);
