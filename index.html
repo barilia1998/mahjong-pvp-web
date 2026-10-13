@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- OVERLAY PERINGATAN ROTASI LAYAR KHUSUS MAHJONG -->
+  <div id="landscape-warning-overlay" class="hidden">
+    <div class="rotate-device-box">
+      <div class="rotate-icon">📱 ➔ 📲</div>
+      <h3>Putar Layar ke Mendatar</h3>
+      <p>Arena permainan Mahjong dirancang khusus dalam mode <b>Landscape</b> untuk kenyamanan melihat 14 balok meja.</p>
+    </div>
+  </div>
+
   <!-- 0. LAYAR AUTENTIKASI AWAL -->
   <div id="auth-screen">
     <div class="auth-card">
@@ -186,12 +195,13 @@
     </div>
   </div>
 
-  <!-- 3. ARENA MAHJONG -->
+  <!-- 3. ARENA MAHJONG (KHUSUS MODE LANDSCAPE RESMI) -->
   <div id="game-table" class="hidden">
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
+    <!-- Header Meja Landscape -->
     <header id="header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
@@ -201,51 +211,60 @@
       <div id="turn-timer" class="timer-box"><span id="timer-count">15</span>s</div>
     </header>
 
-    <div id="seat-top" class="player-seat">
-      <div class="player-info" id="label-top">Pemain 3</div>
+    <!-- Lawan Atas (Pemain 3) -->
+    <div id="seat-top" class="player-seat seat-horizontal">
+      <div class="seat-badge" id="label-top">P3 (25000)</div>
       <div id="melds-top" class="melds-container"></div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
+    <!-- Area Tengah Meja & Kolam Buangan 6-Kolom -->
     <main id="middle-board">
+      <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
-        <div class="player-info" id="label-left">P4</div>
+        <div class="seat-badge" id="label-left">P4<br>(25k)</div>
         <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
+      <!-- Kolam Buangan Landscape Luas -->
       <div id="discard-pond">
         <div id="dora-bar" class="dora-box hidden">
           <span>DORA:</span>
-          <div id="dora-tile" class="tile discarded dora-highlight">🀇 1W</div>
+          <div id="dora-tile" class="tile discarded dora-highlight"></div>
         </div>
-        <div class="section-title">Area Buangan</div>
-        <div id="discard-tiles" class="discard-grid"></div>
+        <div id="discard-tiles" class="discard-grid-pro"></div>
       </div>
 
+      <!-- Lawan Kanan (Pemain 2) -->
       <div id="seat-right" class="player-seat side-seat">
-        <div class="player-info" id="label-right">P2</div>
+        <div class="seat-badge" id="label-right">P2<br>(25k)</div>
         <div id="melds-right" class="melds-container vertical"></div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
     </main>
 
+    <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
-      <button type="button" id="btn-sort" class="btn btn-secondary">URUTKAN</button>
-      <button type="button" id="btn-riichi" class="btn btn-riichi hidden">RIICHI</button>
-      <button type="button" id="btn-chow" class="btn btn-action hidden">CHOW</button>
-      <button type="button" id="btn-pung" class="btn btn-action hidden">PUNG</button>
-      <button type="button" id="btn-kong" class="btn btn-action hidden">KONG</button>
-      <button type="button" id="btn-win" class="btn btn-win hidden">HU</button>
-      <button type="button" id="btn-skip" class="btn btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
+      <button type="button" id="btn-sort" class="btn btn-action-pro btn-sort">URUTKAN</button>
+      <button type="button" id="btn-riichi" class="btn btn-action-pro btn-riichi hidden">RIICHI</button>
+      <button type="button" id="btn-chow" class="btn btn-action-pro btn-chow hidden">CHOW</button>
+      <button type="button" id="btn-pung" class="btn btn-action-pro btn-pung hidden">PUNG</button>
+      <button type="button" id="btn-kong" class="btn btn-action-pro btn-kong hidden">KONG</button>
+      <button type="button" id="btn-win" class="btn btn-action-pro btn-win hidden">HU</button>
+      <button type="button" id="btn-skip" class="btn btn-action-pro btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
     </div>
 
+    <!-- Tangan Pribadi 1 Baris Horizontal Lebar -->
     <footer id="seat-bottom" class="player-seat active-turn">
       <div class="bottom-header">
-        <span class="player-info" id="label-bottom">Anda</span>
+        <div class="seat-badge my-badge" id="label-bottom">Anda (25000)</div>
         <div id="melds-bottom" class="melds-container"></div>
       </div>
-      <div id="player-hand" class="hand-grid"></div>
+      <div class="hand-rack-wrapper">
+        <div id="player-hand-tiles" class="hand-tiles-line"></div>
+        <div id="player-drawn-slot" class="drawn-slot"></div>
+      </div>
     </footer>
   </div>
 
@@ -258,12 +277,10 @@
       <div id="snakes-timer" class="timer-box"><span id="snakes-timer-count">15</span>s</div>
     </header>
 
-    <!-- Papan Ular Tangga 100 Kotak -->
     <div id="snakes-board-container">
       <div id="snakes-board" class="board-10x10"></div>
     </div>
 
-    <!-- Panel Status Pemain & Dadu Nyata -->
     <footer id="snakes-controls">
       <div class="snakes-players-summary">
         <div id="p-pill-0" class="player-pill active-turn">
@@ -283,7 +300,7 @@
       <div class="dice-interaction-area">
         <div id="dice-wrapper" class="dice-interactive-wrapper" onclick="handleRollDiceClick()">
           <div id="dice-visual" class="dice-cube-real">
-            <span class="pip pip-center pip-red"></span>
+            <span class="pip pip-center pip-gold"></span>
           </div>
           <div id="dice-hint" class="dice-tap-hint">KETUK DADU</div>
         </div>
