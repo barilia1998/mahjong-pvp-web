@@ -143,7 +143,6 @@ function backToAuthScreen() {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
   document.getElementById("snakes-screen").classList.add("hidden");
-  checkMahjongOrientationGuard();
 }
 
 function openHubScreen() {
@@ -153,7 +152,6 @@ function openHubScreen() {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("game-table").classList.add("hidden");
   document.getElementById("snakes-screen").classList.add("hidden");
-  checkMahjongOrientationGuard();
 
   if (currentUser && !currentUser.isGuest) {
     initLobbyHubSocket();
@@ -345,26 +343,6 @@ function initLobbyHubSocket() {
   } catch (err) {}
 }
 
-// ================= ORIENTATION GUARD KHUSUS MAHJONG =================
-function checkMahjongOrientationGuard() {
-  const table = document.getElementById("game-table");
-  const warningOverlay = document.getElementById("landscape-warning-overlay");
-  if (!table || !warningOverlay) return;
-
-  // Hanya periksa rotasi jika pemain sedang berada di dalam meja Mahjong
-  const isMahjongActive = (activeGame === "mahjong" && !table.classList.contains("hidden"));
-  const isPortrait = window.innerHeight > window.innerWidth;
-
-  if (isMahjongActive && isPortrait) {
-    warningOverlay.classList.remove("hidden");
-  } else {
-    warningOverlay.classList.add("hidden");
-  }
-}
-
-window.addEventListener("resize", checkMahjongOrientationGuard);
-window.addEventListener("orientationchange", checkMahjongOrientationGuard);
-
 window.selectGame = function (gameName) {
   if (gameName === "mahjong" || gameName === "snakes") {
     activeGame = gameName;
@@ -376,7 +354,7 @@ window.selectGame = function (gameName) {
     const snakesSettings = document.getElementById("snakes-settings");
 
     if (gameName === "mahjong") {
-      titleEl.innerText = "Lobi Mahjong PvP (Landscape)";
+      titleEl.innerText = "Lobi Mahjong PvP";
       mahjongSettings.classList.remove("hidden");
       snakesSettings.classList.add("hidden");
     } else {
@@ -406,7 +384,6 @@ window.backToHub = function () {
   document.getElementById("hub-screen").classList.remove("hidden");
   currentRoomCode = null;
   updateUserHubUI();
-  checkMahjongOrientationGuard();
 };
 
 function startCreateRoom() {
@@ -751,7 +728,7 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   }, 1200);
 }
 
-// ================= GAME 1: MAHJONG MEJA VECTOR REALISTIS =================
+// ================= GAME 1: MAHJONG MEJA BERSIH & TANGGUH =================
 let currentGameMode = "HK";
 let assistLevel = "BEGINNER";
 let playerPoints = [25000, 25000, 25000, 25000];
@@ -771,152 +748,82 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-// Desain Grafis Karakter Asli Mahjong
-function generateTileSVG(suit, num, name) {
-  if (suit === "Wan") {
-    const kanjiDigits = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
-    const digitChar = kanjiDigits[num - 1] || num;
-    const topColor = (num === 5 || num === 1) ? "#c0392b" : "#1a252f";
-    return `
-      <svg viewBox="0 0 30 40">
-        <text x="15" y="16" font-size="14" font-weight="900" fill="${topColor}" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${digitChar}</text>
-        <text x="15" y="34" font-size="15" font-weight="900" fill="#c0392b" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">萬</text>
-      </svg>
-    `;
-  }
+// Simbol & Karakter Mahjong Universal (Unicode Standar Bersih)
+const WAN_CHARS = ["🀇", "🀈", "🀉", "🀊", "🀋", "🀌", "🀍", "🀎", "🀏"];
+const PIN_CHARS = ["🀙", "🀚", "🀛", "🀜", "🀝", "🀞", "🀟", "🀠", "🀡"];
+const SOU_CHARS = ["🀐", "🀑", "🀒", "🀓", "🀔", "🀕", "🀖", "🀗", "🀘"];
 
-  if (suit === "Pin") {
-    if (num === 1) {
-      return `
-        <svg viewBox="0 0 30 40">
-          <circle cx="15" cy="20" r="11" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
-          <circle cx="15" cy="20" r="5" fill="#f1c40f"/>
-          <circle cx="15" cy="20" r="2" fill="#e74c3c"/>
-        </svg>
-      `;
-    }
-    if (num === 2) {
-      return `
-        <svg viewBox="0 0 30 40">
-          <circle cx="15" cy="11" r="5" fill="#2980b9"/>
-          <circle cx="15" cy="29" r="5" fill="#27ae60"/>
-        </svg>
-      `;
-    }
-    if (num === 3) {
-      return `
-        <svg viewBox="0 0 30 40">
-          <circle cx="8" cy="9" r="4.5" fill="#2980b9"/>
-          <circle cx="15" cy="20" r="4.5" fill="#e74c3c"/>
-          <circle cx="22" cy="31" r="4.5" fill="#27ae60"/>
-        </svg>
-      `;
-    }
-    if (num === 4) {
-      return `
-        <svg viewBox="0 0 30 40">
-          <circle cx="9" cy="11" r="4.5" fill="#2980b9"/>
-          <circle cx="21" cy="11" r="4.5" fill="#27ae60"/>
-          <circle cx="9" cy="29" r="4.5" fill="#27ae60"/>
-          <circle cx="21" cy="29" r="4.5" fill="#2980b9"/>
-        </svg>
-      `;
-    }
-    return `
-      <svg viewBox="0 0 30 40">
-        <circle cx="15" cy="20" r="4" fill="#e74c3c"/>
-        <circle cx="8" cy="10" r="3.5" fill="#2980b9"/>
-        <circle cx="22" cy="10" r="3.5" fill="#27ae60"/>
-        <circle cx="8" cy="30" r="3.5" fill="#27ae60"/>
-        <circle cx="22" cy="30" r="3.5" fill="#2980b9"/>
-      </svg>
-    `;
-  }
-
-  if (suit === "Sou") {
-    if (num === 1) {
-      return `
-        <svg viewBox="0 0 30 40">
-          <path d="M15 8 C11 8 8 13 8 20 C8 27 12 32 15 32 C18 32 22 27 22 20 C22 13 19 8 15 8 Z" fill="#27ae60"/>
-          <circle cx="15" cy="14" r="3" fill="#e74c3c"/>
-          <circle cx="15" cy="22" r="2" fill="#f1c40f"/>
-        </svg>
-      `;
-    }
-    return `
-      <svg viewBox="0 0 30 40">
-        <rect x="13" y="6" width="4" height="26" rx="2" fill="#27ae60"/>
-        <rect x="7" y="10" width="4" height="20" rx="2" fill="#2980b9"/>
-        <rect x="19" y="10" width="4" height="20" rx="2" fill="#2980b9"/>
-        <circle cx="15" cy="19" r="1.5" fill="#e74c3c"/>
-      </svg>
-    `;
-  }
-
-  if (suit === "Honor") {
-    if (name === "Zhong") {
-      return `
-        <svg viewBox="0 0 30 40">
-          <text x="15" y="28" font-size="24" font-weight="900" fill="#c0392b" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">中</text>
-        </svg>
-      `;
-    }
-    if (name === "Fa") {
-      return `
-        <svg viewBox="0 0 30 40">
-          <text x="15" y="28" font-size="22" font-weight="900" fill="#27ae60" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">發</text>
-        </svg>
-      `;
-    }
-    if (name === "Bai") {
-      return `
-        <svg viewBox="0 0 30 40">
-          <rect x="6" y="8" width="18" height="24" rx="3" fill="none" stroke="#2980b9" stroke-width="2.5"/>
-        </svg>
-      `;
-    }
-    const windMap = { Dong: "東", Nan: "南", Xi: "西", Bei: "北" };
-    return `
-      <svg viewBox="0 0 30 40">
-        <text x="15" y="28" font-size="22" font-weight="900" fill="#1a5276" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${windMap[name] || name}</text>
-      </svg>
-    `;
-  }
-
-  return `<svg viewBox="0 0 30 40"><text x="15" y="25" font-size="12" fill="#333" text-anchor="middle">${name}</text></svg>`;
-}
+const HONOR_MAP = {
+  Dong: { char: "🀀", tag: "東", class: "honor-wind" },
+  Nan:  { char: "🀁", tag: "南", class: "honor-wind" },
+  Xi:   { char: "🀂", tag: "西", class: "honor-wind" },
+  Bei:  { char: "🀃", tag: "北", class: "honor-wind" },
+  Zhong:{ char: "🀄", tag: "中", class: "honor-zhong" },
+  Fa:   { char: "🀅", tag: "發", class: "honor-fa" },
+  Bai:  { char: "🀆", tag: "白", class: "honor-bai" }
+};
 
 function createFullDeck() {
   const deck = [];
-  const suits = [
-    { name: "Wan", order: 1, count: 9 },
-    { name: "Pin", order: 2, count: 9 },
-    { name: "Sou", order: 3, count: 9 }
-  ];
 
-  suits.forEach((suit) => {
-    for (let num = 1; num <= suit.count; num++) {
-      for (let i = 0; i < 4; i++) {
-        deck.push({
-          id: `${num}_${suit.name}_${i}`,
-          suit: suit.name,
-          num: num,
-          order: suit.order,
-          svg: generateTileSVG(suit.name, num, `${num}${suit.name[0]}`)
-        });
-      }
+  // 1. Wan
+  for (let n = 1; n <= 9; n++) {
+    for (let i = 0; i < 4; i++) {
+      deck.push({
+        id: `${n}_Wan_${i}`,
+        suit: "Wan",
+        num: n,
+        order: 1,
+        symbol: WAN_CHARS[n - 1],
+        topLabel: `${n}萬`,
+        cssClass: "suit-wan"
+      });
     }
-  });
+  }
 
-  const honors = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
-  honors.forEach((hName, idx) => {
+  // 2. Pin
+  for (let n = 1; n <= 9; n++) {
+    for (let i = 0; i < 4; i++) {
+      deck.push({
+        id: `${n}_Pin_${i}`,
+        suit: "Pin",
+        num: n,
+        order: 2,
+        symbol: PIN_CHARS[n - 1],
+        topLabel: `${n}筒`,
+        cssClass: "suit-pin"
+      });
+    }
+  }
+
+  // 3. Sou
+  for (let n = 1; n <= 9; n++) {
+    for (let i = 0; i < 4; i++) {
+      deck.push({
+        id: `${n}_Sou_${i}`,
+        suit: "Sou",
+        num: n,
+        order: 3,
+        symbol: SOU_CHARS[n - 1],
+        topLabel: `${n}索`,
+        cssClass: "suit-sou"
+      });
+    }
+  }
+
+  // 4. Honor
+  const honorNames = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
+  honorNames.forEach((hName, idx) => {
+    const meta = HONOR_MAP[hName];
     for (let i = 0; i < 4; i++) {
       deck.push({
         id: `honor_${hName}_${i}`,
         suit: "Honor",
         num: idx + 1,
         order: 4,
-        svg: generateTileSVG("Honor", idx + 1, hName)
+        symbol: meta.char,
+        topLabel: meta.tag,
+        cssClass: meta.class
       });
     }
   });
@@ -954,7 +861,6 @@ function enterMahjongRoom(code) {
     showIntermediateManualButtons();
   }
 
-  checkMahjongOrientationGuard();
   initMahjongNetwork();
 
   if (isHost) {
@@ -985,8 +891,8 @@ function enterMahjongRoom(code) {
 function updateDoraUI() {
   const doraEl = document.getElementById("dora-tile");
   if (doraEl && doraTile) {
-    doraEl.className = "tile discarded dora-highlight";
-    doraEl.innerHTML = doraTile.svg;
+    doraEl.className = `tile discarded dora-highlight ${doraTile.cssClass}`;
+    doraEl.innerHTML = `<span class="tile-main-symbol">${doraTile.symbol}</span>`;
   }
 }
 
@@ -1133,7 +1039,7 @@ function applyTurn(seatIndex) {
 
   const statusBar = document.getElementById("status-bar");
   if (currentTurnSeat === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk membuang";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk buang";
     drawTile();
     isProcessingTurn = false;
   } else {
@@ -1182,23 +1088,25 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
+// Render Balok Tangan Pemain (Anti-Gagal & Terpajang Nyata)
 function renderHand() {
   const lineHolder = document.getElementById("player-hand-tiles");
   const drawnSlot = document.getElementById("player-drawn-slot");
-  if (!lineHolder || !drawnSlot) return;
+  if (!lineHolder) return;
 
   lineHolder.innerHTML = "";
-  drawnSlot.innerHTML = "";
+  if (drawnSlot) drawnSlot.innerHTML = "";
 
-  const mainTilesCount = (myHand.length % 3 === 2) ? (myHand.length - 1) : myHand.length;
+  const mainCount = (myHand.length % 3 === 2) ? (myHand.length - 1) : myHand.length;
 
-  for (let i = 0; i < mainTilesCount; i++) {
+  for (let i = 0; i < mainCount; i++) {
     const tile = myHand[i];
     const tileEl = createTileElement(tile, i);
     lineHolder.appendChild(tileEl);
   }
 
-  if (myHand.length % 3 === 2) {
+  // Jika memegang 14 balok (balok baru ditarik)
+  if (myHand.length % 3 === 2 && drawnSlot) {
     const lastIdx = myHand.length - 1;
     const drawnTile = myHand[lastIdx];
     const drawnEl = createTileElement(drawnTile, lastIdx);
@@ -1208,8 +1116,11 @@ function renderHand() {
 
 function createTileElement(tile, index) {
   const tileEl = document.createElement("div");
-  tileEl.className = "tile";
-  tileEl.innerHTML = tile.svg;
+  tileEl.className = `tile ${tile.cssClass || ""}`;
+  tileEl.innerHTML = `
+    <span class="tile-top-label">${tile.topLabel || ""}</span>
+    <span class="tile-main-symbol">${tile.symbol || ""}</span>
+  `;
 
   tileEl.addEventListener("click", () => {
     if (currentTurnSeat === mySeatIndex) {
@@ -1310,8 +1221,11 @@ function addDiscardTile(tile) {
   if (!discardContainer) return;
 
   const tileElement = document.createElement("div");
-  tileElement.className = "tile discarded";
-  tileElement.innerHTML = tile.svg;
+  tileElement.className = `tile discarded ${tile.cssClass || ""}`;
+  tileElement.innerHTML = `
+    <span class="tile-top-label">${tile.topLabel || ""}</span>
+    <span class="tile-main-symbol">${tile.symbol || ""}</span>
+  `;
   discardContainer.appendChild(tileElement);
   discardContainer.scrollTop = discardContainer.scrollHeight;
   lastDiscardElement = tileElement;
@@ -1657,8 +1571,8 @@ function addExposedMeld(seatIndex, tiles) {
   groupEl.className = "meld-group";
   tiles.forEach((t) => {
     const tileDiv = document.createElement("div");
-    tileDiv.className = "tile-meld";
-    tileDiv.innerHTML = t.svg;
+    tileDiv.className = `tile-meld ${t.cssClass || ""}`;
+    tileDiv.innerHTML = `${t.symbol || ""}`;
     groupEl.appendChild(tileDiv);
   });
   targetEl.appendChild(groupEl);
