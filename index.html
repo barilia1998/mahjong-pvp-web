@@ -7,15 +7,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- OVERLAY PERINGATAN ROTASI LAYAR KHUSUS MAHJONG -->
-  <div id="landscape-warning-overlay" class="hidden">
-    <div class="rotate-device-box">
-      <div class="rotate-icon">📱 ➔ 📲</div>
-      <h3>Putar Layar ke Mendatar</h3>
-      <p>Arena permainan Mahjong dirancang khusus dalam mode <b>Landscape</b> untuk kenyamanan melihat 14 balok meja.</p>
-    </div>
-  </div>
-
   <!-- 0. LAYAR AUTENTIKASI AWAL -->
   <div id="auth-screen">
     <div class="auth-card">
@@ -195,13 +186,13 @@
     </div>
   </div>
 
-  <!-- 3. ARENA MAHJONG (KHUSUS MODE LANDSCAPE RESMI) -->
+  <!-- 3. ARENA MAHJONG -->
   <div id="game-table" class="hidden">
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
-    <!-- Header Meja Landscape -->
+    <!-- Header Meja -->
     <header id="header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
@@ -218,7 +209,7 @@
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
-    <!-- Area Tengah Meja & Kolam Buangan 6-Kolom -->
+    <!-- Area Tengah Meja & Kolam Buangan -->
     <main id="middle-board">
       <!-- Lawan Kiri (Pemain 4) -->
       <div id="seat-left" class="player-seat side-seat">
@@ -227,7 +218,7 @@
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
-      <!-- Kolam Buangan Landscape Luas -->
+      <!-- Kolam Buangan Karpet Tengah -->
       <div id="discard-pond">
         <div id="dora-bar" class="dora-box hidden">
           <span>DORA:</span>
@@ -255,7 +246,7 @@
       <button type="button" id="btn-skip" class="btn btn-action-pro btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
     </div>
 
-    <!-- Tangan Pribadi 1 Baris Horizontal Lebar -->
+    <!-- Tangan Pribadi Pemain -->
     <footer id="seat-bottom" class="player-seat active-turn">
       <div class="bottom-header">
         <div class="seat-badge my-badge" id="label-bottom">Anda (25000)</div>
