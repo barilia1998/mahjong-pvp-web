@@ -444,7 +444,7 @@ html, body {
 }
 
 .dora-highlight {
-  border: 1.5px solid #f1c40f !important;
+  border: 2px solid #f1c40f !important;
   box-shadow: 0 0 8px rgba(241, 196, 15, 0.8) !important;
 }
 
@@ -471,23 +471,16 @@ html, body {
   gap: 1.5px;
 }
 
-.tile-back {
-  background: linear-gradient(135deg, #1e8449 0%, #115730 100%);
-  border: 1px solid #27ae60;
-  border-radius: 3px;
-  box-shadow: 0 2px 0 #072615, 0 3px 4px rgba(0,0,0,0.6);
-}
-
-.horizontal-back .tile-back {
+/* Gambar Punggung Balok Lawan */
+.tile-back-img {
   width: 16px;
   height: 24px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.vertical-back {
-  flex-direction: column;
-}
-
-.vertical-back .tile-back {
+.vertical-back .tile-back-img {
   width: 24px;
   height: 14px;
 }
@@ -527,7 +520,7 @@ html, body {
 /* ================= RAK BALOK TANGAN PEMAIN ================= */
 #seat-bottom {
   width: 100%;
-  max-width: 520px;
+  max-width: 580px;
   background: rgba(0, 0, 0, 0.45);
   border-radius: 10px 10px 0 0;
   padding: 4px 6px 2px;
@@ -562,106 +555,63 @@ html, body {
   display: flex;
 }
 
-/* ================= DESAIN BALOK 3D IVORY TEBAL BERWARNA ================= */
+/* ================= DESAIN BALOK BERBASIS GAMBAR PNG ================= */
 .tile {
-  min-width: 25px;
-  width: 25px;
-  height: 42px;
-  background: linear-gradient(180deg, #ffffff 0%, #faf6ec 70%, #ebdcb9 100%);
-  border-radius: 4px;
+  min-width: 28px;
+  width: 28px;
+  height: 40px;
+  background: transparent;
+  border-radius: 3px;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 2px 1px;
   cursor: pointer;
   user-select: none;
   position: relative;
-  /* Lapisan tebal giok hijau 3D di dasarnya */
-  box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 3px 0 #115730,
-    0 5px 6px rgba(0, 0, 0, 0.55);
-  border: 1px solid #d5c8af;
-  border-bottom: none;
   transition: transform 0.12s ease-out;
   flex-shrink: 0;
 }
 
 .tile:active {
   transform: translateY(2px);
-  box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 1px 0 #115730,
-    0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
-.tile-top-label {
-  font-size: 7px;
-  font-weight: 900;
-  line-height: 1;
-  align-self: flex-start;
-  padding-left: 1px;
-}
-
-.tile-main-symbol {
-  font-size: 19px;
-  line-height: 1;
-  margin-bottom: 1px;
-  font-weight: bold;
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  border-radius: 3px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.6);
 }
 
 /* Balok Buangan di Meja Tengah */
 .tile.discarded {
-  min-width: 20px;
-  width: 20px;
-  height: 30px;
-  padding: 1px;
-  border-radius: 3px;
-  box-shadow: 0 2px 0 #115730, 0 3px 4px rgba(0,0,0,0.5);
+  min-width: 22px;
+  width: 22px;
+  height: 31px;
 }
 
-.tile.discarded .tile-top-label { display: none; }
-.tile.discarded .tile-main-symbol { font-size: 14px; margin: auto; }
+.tile.discarded img {
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
 
-/* Balok Hasil Klaim Terbuka (Meld) */
+/* Balok Terbuka (Meld) */
 .tile-meld {
-  min-width: 18px;
-  width: 18px;
+  min-width: 20px;
+  width: 20px;
   height: 28px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7f3e8 85%, #d1c7b7 100%);
-  border-radius: 2px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 0 #115730, 0 2px 3px rgba(0,0,0,0.4);
-  border: 1px solid #ccc;
-  border-bottom: none;
-  font-size: 13px;
-  line-height: 1;
 }
 
-/* ================= PEWARNAAN UKIRAN BALOK RESMI ================= */
-.suit-wan .tile-top-label { color: #2980b9; }
-.suit-wan .tile-main-symbol { color: #c0392b; } /* Wan: Merah Karmin */
-
-.suit-pin .tile-top-label { color: #e67e22; }
-.suit-pin .tile-main-symbol { color: #2980b9; } /* Pin: Biru Safir */
-
-.suit-sou .tile-top-label { color: #27ae60; }
-.suit-sou .tile-main-symbol { color: #27ae60; } /* Sou: Hijau Zamrud */
-
-.honor-zhong .tile-top-label { color: #c0392b; }
-.honor-zhong .tile-main-symbol { color: #e74c3c !important; } /* Naga Merah */
-
-.honor-fa .tile-top-label { color: #27ae60; }
-.honor-fa .tile-main-symbol { color: #2ecc71 !important; } /* Naga Hijau */
-
-.honor-bai .tile-top-label { color: #7f8c8d; }
-.honor-bai .tile-main-symbol { color: #95a5a6 !important; } /* Naga Putih */
-
-.honor-wind .tile-top-label { color: #1a5276; }
-.honor-wind .tile-main-symbol { color: #1a5276 !important; } /* Angin: Biru Gelap */
+.tile-meld img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
 
 /* ================= 4. ARENA ULAR TANGGA & DADU ================= */
 #snakes-screen {
