@@ -562,7 +562,7 @@ html, body {
   width: 100%;
 }
 
-/* ================= 3. MAHJONG MEJA ================= */
+/* ================= 3. MAHJONG MEJA DENGAN BALOK 3D REALISTIS ================= */
 #game-table {
   width: 100%;
   height: 100%;
@@ -573,6 +573,7 @@ html, body {
   align-items: center;
   padding: 4px 6px calc(12px + env(safe-area-inset-bottom, 0px));
   position: relative;
+  background: radial-gradient(circle at center, #1b4d36 0%, #0c2317 100%);
 }
 
 .btn-table-home {
@@ -698,15 +699,16 @@ html, body {
 #discard-pond {
   flex: 1;
   height: 100%;
-  max-height: 135px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
-  border: 1px dashed rgba(255, 255, 255, 0.2);
+  max-height: 140px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 4px;
   margin: 0 4px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
 }
 
 .dora-box {
@@ -720,8 +722,8 @@ html, body {
 }
 
 .dora-highlight {
-  border: 1px solid #f1c40f !important;
-  background: #fff9e6 !important;
+  border: 1.5px solid #f1c40f !important;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.7) !important;
 }
 
 .section-title {
@@ -741,6 +743,7 @@ html, body {
   overflow-y: auto;
 }
 
+/* Area Melds Terbuka */
 .melds-container {
   display: flex;
   gap: 4px;
@@ -754,40 +757,55 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 1px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px;
-  border-radius: 4px;
+  gap: 1.5px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 3px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Balok Hasil Klaim (Meld) */
 .tile-meld {
-  width: 18px;
-  height: 25px;
-  font-size: 8px;
-  background: #ffffff;
-  color: #111;
+  width: 22px;
+  height: 30px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f3e8 85%, #d1c7b7 100%);
+  border-radius: 3px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
-  border: 1px solid #aaa;
-  font-weight: bold;
+  box-shadow: 0 2px 0 #1b4d36, 0 3px 4px rgba(0,0,0,0.4);
+  position: relative;
+  border-top: 1px solid #fff;
 }
 
+.tile-meld .tile-symbol {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.tile-meld .tile-num {
+  font-size: 7px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Punggung Balok Lawan 3D */
 .opponent-hand {
   display: flex;
   gap: 2px;
 }
 
 .tile-back {
-  background: #d35400;
-  border: 1px solid #a04000;
-  border-radius: 3px;
+  background: linear-gradient(135deg, #1e8449 0%, #145a32 100%);
+  border: 1px solid #27ae60;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #0b301a, 0 3px 4px rgba(0,0,0,0.5);
 }
 
 .horizontal-back .tile-back {
-  width: 16px;
-  height: 22px;
+  width: 18px;
+  height: 26px;
 }
 
 .vertical-back {
@@ -795,14 +813,14 @@ html, body {
 }
 
 .vertical-back .tile-back {
-  width: 22px;
-  height: 12px;
+  width: 26px;
+  height: 15px;
 }
 
 #action-controls {
   display: flex;
   gap: 4px;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   flex-shrink: 0;
   flex-wrap: wrap;
   justify-content: center;
@@ -821,30 +839,11 @@ html, body {
   opacity: 0.85;
 }
 
-.btn-secondary {
-  background: #34495e;
-  color: #fff;
-}
-
-.btn-action {
-  background: #e67e22;
-  color: #fff;
-}
-
-.btn-riichi {
-  background: #9b59b6;
-  color: #fff;
-}
-
-.btn-win {
-  background: #e74c3c;
-  color: #fff;
-}
-
-.btn-skip {
-  background: #7f8c8d;
-  color: #fff;
-}
+.btn-secondary { background: #34495e; color: #fff; }
+.btn-action { background: #e67e22; color: #fff; }
+.btn-riichi { background: #9b59b6; color: #fff; }
+.btn-win { background: #e74c3c; color: #fff; }
+.btn-skip { background: #7f8c8d; color: #fff; }
 
 .hidden {
   display: none !important;
@@ -852,54 +851,136 @@ html, body {
 
 #seat-bottom {
   width: 100%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px 10px 0 0;
+  padding: 4px 6px;
 }
 
 .bottom-header {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: 360px;
+  max-width: 375px;
   align-items: center;
   padding: 0 4px;
+  margin-bottom: 2px;
 }
 
 .hand-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px;
   width: 100%;
-  max-width: 360px;
+  max-width: 375px;
 }
 
+/* ================= DESAIN BALOK MAHJONG 3D REALISTIS ================= */
 .tile {
-  height: 48px;
-  background: #ffffff;
-  color: #111111;
-  border: 1px solid #cccccc;
-  border-radius: 5px;
-  box-shadow: 0 2px 0 #888888;
+  height: 52px;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbf7 75%, #ece4d4 100%);
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  font-weight: bold;
+  padding: 3px 2px;
   cursor: pointer;
+  user-select: none;
+  position: relative;
+  /* Lapisan dasar bambu/akrilik hijau 3D */
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 -1px 0 rgba(0,0,0,0.1) inset,
+    0 4px 0 #196f3d,
+    0 6px 6px rgba(0, 0, 0, 0.45);
+  border: 1px solid #d5cbb8;
+  border-bottom: none;
+  transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.12s;
 }
 
 .tile:active {
-  transform: translateY(2px);
-  background: #f1f2f6;
+  transform: translateY(3px);
+  box-shadow: 
+    0 1px 0 rgba(255,255,255,0.9) inset,
+    0 1px 0 #196f3d,
+    0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
-.tile.discarded {
-  width: 24px;
-  height: 32px;
+.tile-top-row {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 2px;
+  line-height: 1;
+}
+
+.tile-num {
   font-size: 8px;
-  background: #ececec;
-  border-radius: 3px;
-  box-shadow: 0 1px 0 #999;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+
+.tile-symbol {
+  font-size: 24px;
+  line-height: 1;
+  margin-bottom: 2px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* Balok Buangan di Meja Tengah */
+.tile.discarded {
+  width: 26px;
+  height: 35px;
+  padding: 2px 1px;
+  border-radius: 4px;
+  box-shadow: 
+    0 2px 0 #196f3d,
+    0 3px 4px rgba(0,0,0,0.4);
+}
+
+.tile.discarded .tile-top-row {
+  display: none;
+}
+
+.tile.discarded .tile-symbol {
+  font-size: 16px;
+  margin: auto;
+}
+
+/* Pewarnaan Ukiran Tradisional Sesuai Jenis Balok */
+.suit-wan .tile-symbol {
+  color: #c0392b; /* Karakter Wan: Merah Karmin */
+}
+.suit-wan .tile-num {
+  color: #2980b9;
+}
+
+.suit-pin .tile-symbol {
+  color: #2980b9; /* Pin: Biru Safir */
+}
+.suit-pin .tile-num {
+  color: #e67e22;
+}
+
+.suit-sou .tile-symbol {
+  color: #27ae60; /* Sou: Hijau Zamrud */
+}
+.suit-sou .tile-num {
+  color: #27ae60;
+}
+
+/* Pewarnaan Honor: Naga & Angin */
+.honor-zhong .tile-symbol {
+  color: #e74c3c !important; /* Naga Merah (Zhong) */
+}
+.honor-fa .tile-symbol {
+  color: #2ecc71 !important; /* Naga Hijau (Fa) */
+}
+.honor-bai .tile-symbol {
+  color: #7f8c8d !important; /* Naga Putih (Bai) */
+}
+.honor-wind .tile-symbol {
+  color: #1a5276 !important; /* Balok Angin: Biru Gelap */
 }
 
 /* ================= 4. ARENA ULAR TANGGA & DADU MERAH CASINO ================= */
@@ -1093,7 +1174,6 @@ html, body {
   text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
-/* DADU 3D MERAH CASINO BERKILAU */
 .dice-cube-real {
   width: 68px;
   height: 68px;
@@ -1137,7 +1217,6 @@ html, body {
   100% { transform: scale(1.15) rotate(360deg) translateY(-8px); }
 }
 
-/* TITIK PUTIH GADING TIMBUL (PIPS) */
 .pip {
   width: 12px;
   height: 12px;
