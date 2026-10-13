@@ -11,59 +11,8 @@ html, body {
   height: 100dvh;
   overflow: hidden;
   background-color: #07160e;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #fff;
-}
-
-/* ================= OVERLAY PERINGATAN ROTASI KHUSUS MAHJONG ================= */
-#landscape-warning-overlay {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  background: rgba(5, 18, 12, 0.96);
-  z-index: 999999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  text-align: center;
-  backdrop-filter: blur(6px);
-}
-
-.rotate-device-box {
-  background: #17422d;
-  border: 2px solid #f1c40f;
-  border-radius: 16px;
-  padding: 24px 20px;
-  max-width: 320px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
-}
-
-.rotate-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-  animation: rotate-anim 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes rotate-anim {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.1); }
-  100% { transform: rotate(-90deg) scale(1.15); }
-}
-
-.rotate-device-box h3 {
-  color: #f1c40f;
-  margin: 0 0 8px 0;
-  font-size: 18px;
-}
-
-.rotate-device-box p {
-  font-size: 12px;
-  line-height: 1.5;
-  opacity: 0.9;
-  margin: 0;
 }
 
 /* ================= 0. AUTENTIKASI ================= */
@@ -92,37 +41,11 @@ html, body {
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
 }
 
-.auth-logo {
-  font-size: 40px;
-  margin-bottom: 4px;
-}
-
-.auth-card h2 {
-  margin: 0 0 4px 0;
-  font-size: 22px;
-  color: #f1c40f;
-}
-
-.auth-subtitle {
-  font-size: 11px;
-  opacity: 0.8;
-  margin: 0 0 16px 0;
-}
-
-.btn-guest {
-  background: #27ae60;
-  color: #fff;
-  font-size: 13px;
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 3px 0 #1e8449;
-}
-
-.btn-guest:active {
-  background: #219653;
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #1e8449;
-}
+.auth-logo { font-size: 40px; margin-bottom: 4px; }
+.auth-card h2 { margin: 0 0 4px 0; font-size: 22px; color: #f1c40f; }
+.auth-subtitle { font-size: 11px; opacity: 0.8; margin: 0 0 16px 0; }
+.btn-guest { background: #27ae60; color: #fff; font-size: 13px; padding: 12px; border-radius: 8px; box-shadow: 0 3px 0 #1e8449; }
+.btn-guest:active { background: #219653; transform: translateY(2px); box-shadow: 0 1px 0 #1e8449; }
 
 .auth-divider {
   margin: 16px 0 12px 0;
@@ -161,33 +84,11 @@ html, body {
   cursor: pointer;
 }
 
-.tab-btn.active {
-  background: #e67e22;
-  color: #fff;
-}
+.tab-btn.active { background: #e67e22; color: #fff; }
 
-.input-group {
-  margin-bottom: 10px;
-  text-align: left;
-}
-
-.input-group label {
-  display: block;
-  font-size: 10px;
-  margin-bottom: 4px;
-  opacity: 0.85;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 13px;
-  background: #fff;
-  color: #111;
-  font-weight: bold;
-}
+.input-group { margin-bottom: 10px; text-align: left; }
+.input-group label { display: block; font-size: 10px; margin-bottom: 4px; opacity: 0.85; }
+.input-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; background: #fff; color: #111; font-weight: bold; }
 
 /* ================= MODAL TEMAN ================= */
 .modal-overlay {
@@ -215,11 +116,7 @@ html, body {
   text-align: center;
 }
 
-.modal-card h3 {
-  margin: 0 0 10px 0;
-  font-size: 17px;
-  color: #f1c40f;
-}
+.modal-card h3 { margin: 0 0 10px 0; font-size: 17px; color: #f1c40f; }
 
 .my-friend-code-box {
   background: rgba(0, 0, 0, 0.3);
@@ -232,40 +129,12 @@ html, body {
   margin-bottom: 10px;
 }
 
-.my-friend-code-box b {
-  color: #2ecc71;
-}
+.my-friend-code-box b { color: #2ecc71; }
+.btn-copy-id { background: #2980b9; border: none; color: #fff; font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
-.btn-copy-id {
-  background: #2980b9;
-  border: none;
-  color: #fff;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-friend-bar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.add-friend-bar input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 12px;
-  text-transform: uppercase;
-  color: #111;
-}
-
-.btn-sm {
-  padding: 6px 10px !important;
-  font-size: 11px !important;
-}
+.add-friend-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+.add-friend-bar input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 12px; text-transform: uppercase; color: #111; }
+.btn-sm { padding: 6px 10px !important; font-size: 11px !important; }
 
 .friends-list-container {
   max-height: 150px;
@@ -289,25 +158,10 @@ html, body {
   font-size: 11px;
 }
 
-.friend-info-left {
-  text-align: left;
-}
-
-.friend-name-tag {
-  font-weight: bold;
-  color: #fff;
-}
-
-.friend-id-tag {
-  font-size: 9px;
-  opacity: 0.7;
-}
-
-.empty-friends {
-  font-size: 11px;
-  opacity: 0.7;
-  padding: 12px 0;
-}
+.friend-info-left { text-align: left; }
+.friend-name-tag { font-weight: bold; color: #fff; }
+.friend-id-tag { font-size: 9px; opacity: 0.7; }
+.empty-friends { font-size: 11px; opacity: 0.7; padding: 12px 0; }
 
 .invite-banner {
   position: fixed;
@@ -328,10 +182,7 @@ html, body {
   font-weight: bold;
 }
 
-.invite-actions {
-  display: flex;
-  gap: 4px;
-}
+.invite-actions { display: flex; gap: 4px; }
 
 /* ================= 1. HUB & BAR PROFIL ================= */
 #hub-screen {
@@ -360,129 +211,26 @@ html, body {
   margin-bottom: 16px;
 }
 
-.user-avatar {
-  font-size: 26px;
-  background: rgba(0,0,0,0.3);
-  padding: 4px;
-  border-radius: 50%;
-}
+.user-avatar { font-size: 26px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 50%; }
+.user-info { flex: 1; text-align: left; }
+.user-name { font-size: 13px; font-weight: bold; color: #f1c40f; }
+.user-subtitle { font-size: 9px; opacity: 0.7; }
+.user-right-col { display: flex; align-items: center; gap: 6px; }
+.btn-friends { background: #2980b9; border: none; color: #fff; font-size: 10px; font-weight: bold; padding: 5px 8px; border-radius: 6px; cursor: pointer; }
+.btn-logout { background: rgba(192, 57, 43, 0.85); border: none; color: #fff; font-size: 10px; padding: 5px 8px; border-radius: 6px; cursor: pointer; }
 
-.user-info {
-  flex: 1;
-  text-align: left;
-}
+.hub-header { text-align: center; margin-bottom: 20px; }
+.hub-header h1 { margin: 0 0 4px 0; font-size: 24px; letter-spacing: 1px; color: #f1c40f; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); }
+.hub-header p { margin: 0; font-size: 11px; opacity: 0.8; }
 
-.user-name {
-  font-size: 13px;
-  font-weight: bold;
-  color: #f1c40f;
-}
-
-.user-subtitle {
-  font-size: 9px;
-  opacity: 0.7;
-}
-
-.user-right-col {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-friends {
-  background: #2980b9;
-  border: none;
-  color: #fff;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 5px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.btn-logout {
-  background: rgba(192, 57, 43, 0.85);
-  border: none;
-  color: #fff;
-  font-size: 10px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.hub-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.hub-header h1 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
-  letter-spacing: 1px;
-  color: #f1c40f;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.hub-header p {
-  margin: 0;
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-  width: 100%;
-  max-width: 480px;
-}
-
-.game-card {
-  background: #17422d;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 18px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  transition: transform 0.15s, background-color 0.15s;
-}
-
-.game-card:active {
-  transform: scale(0.96);
-  background: #1f573c;
-}
-
-.game-icon {
-  font-size: 38px;
-  margin-bottom: 8px;
-}
-
-.game-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 4px;
-  color: #fff;
-}
-
-.game-badge {
-  font-size: 9px;
-  font-weight: bold;
-  background: #27ae60;
-  padding: 3px 8px;
-  border-radius: 10px;
-  color: #fff;
-}
-
-.badge-active {
-  background: #2980b9;
-}
-
-.badge-wip {
-  background: #7f8c8d;
-}
+.game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; width: 100%; max-width: 480px; }
+.game-card { background: #17422d; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 18px 10px; display: flex; flex-direction: column; align-items: center; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); transition: transform 0.15s, background-color 0.15s; }
+.game-card:active { transform: scale(0.96); background: #1f573c; }
+.game-icon { font-size: 38px; margin-bottom: 8px; }
+.game-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; color: #fff; }
+.game-badge { font-size: 9px; font-weight: bold; background: #27ae60; padding: 3px 8px; border-radius: 10px; color: #fff; }
+.badge-active { background: #2980b9; }
+.badge-wip { background: #7f8c8d; }
 
 /* ================= 2. LOBI SCREEN ================= */
 #lobby-screen {
@@ -511,73 +259,15 @@ html, body {
   position: relative;
 }
 
-.btn-back {
-  background: none;
-  border: none;
-  color: #bdc3c7;
-  font-size: 11px;
-  cursor: pointer;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.lobby-card h2 {
-  margin: 0 0 4px 0;
-  font-size: 22px;
-  color: #f1c40f;
-}
-
-.lobby-desc {
-  font-size: 11px;
-  opacity: 0.8;
-  margin: 0 0 12px 0;
-}
-
-.setting-group {
-  background: rgba(0, 0, 0, 0.25);
-  padding: 8px 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  text-align: left;
-}
-
-.setting-title {
-  display: block;
-  font-size: 11px;
-  font-weight: bold;
-  color: #f1c40f;
-  margin-bottom: 6px;
-}
-
-.radio-row {
-  display: flex;
-  gap: 16px;
-}
-
-.radio-label {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.level-dropdown {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
-  color: #111;
-  font-size: 11px;
-  font-weight: bold;
-}
-
-.lobby-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.btn-back { background: none; border: none; color: #bdc3c7; font-size: 11px; cursor: pointer; margin-bottom: 8px; display: block; }
+.lobby-card h2 { margin: 0 0 4px 0; font-size: 22px; color: #f1c40f; }
+.lobby-desc { font-size: 11px; opacity: 0.8; margin: 0 0 12px 0; }
+.setting-group { background: rgba(0, 0, 0, 0.25); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; text-align: left; }
+.setting-title { display: block; font-size: 11px; font-weight: bold; color: #f1c40f; margin-bottom: 6px; }
+.radio-row { display: flex; gap: 16px; }
+.radio-label { font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.level-dropdown { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; background: #fff; color: #111; font-size: 11px; font-weight: bold; }
+.lobby-section { display: flex; flex-direction: column; gap: 8px; }
 
 .lobby-divider {
   margin: 12px 0;
@@ -596,38 +286,22 @@ html, body {
   opacity: 0.7;
 }
 
-#input-room-code {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 15px;
-  text-align: center;
-  font-weight: bold;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #111;
-  background: #fff;
-}
+#input-room-code { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #111; background: #fff; }
+.w-100 { width: 100%; }
 
-.w-100 {
-  width: 100%;
-}
-
-/* ================= 3. ARENA MAHJONG (KHUSUS MODE LANDSCAPE RESMI) ================= */
+/* ================= 3. ARENA MAHJONG (MEJA BELUDRU HIJAU) ================= */
 #game-table {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   height: 100dvh;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 4px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+  padding: 4px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   position: relative;
-  /* Meja Beludru Kasino dengan Border Emas & Kayu Mahoni */
-  background: radial-gradient(circle at center, #1e593b 0%, #103422 65%, #05140d 100%);
-  border: 6px solid #2e1a0f;
-  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+  background: radial-gradient(circle at center, #1b5337 0%, #0d2c1e 65%, #05140d 100%);
+  border: 4px solid #3d2314;
 }
 
 .btn-table-home {
@@ -642,7 +316,7 @@ html, body {
 
 #header-bar, #snakes-header-bar {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
   justify-content: space-between;
   width: 100%;
@@ -652,32 +326,32 @@ html, body {
 #status-bar, #snakes-status-bar {
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 4px 12px;
+  padding: 4px 10px;
   border-radius: 12px;
-  font-size: 10px;
+  font-size: 9px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
 }
 
-.badge-level { background: #16a085; padding: 4px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; }
-.badge-mode { background: #8e44ad; padding: 4px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; }
-.badge-room { background: #2980b9; padding: 4px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; }
-.timer-box { background: #c0392b; padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+.badge-level { background: #16a085; padding: 4px 6px; border-radius: 10px; font-size: 9px; font-weight: bold; }
+.badge-mode { background: #8e44ad; padding: 4px 6px; border-radius: 10px; font-size: 9px; font-weight: bold; }
+.badge-room { background: #2980b9; padding: 4px 6px; border-radius: 10px; font-size: 9px; font-weight: bold; }
+.timer-box { background: #c0392b; padding: 4px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; }
 
 .notify-banner {
   position: absolute;
-  top: 40px;
+  top: 44px;
   left: 50%;
   transform: translateX(-50%);
   background: #e67e22;
   color: #fff;
-  padding: 6px 18px;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   z-index: 100;
   animation: bounce 0.6s infinite alternate;
 }
@@ -691,18 +365,18 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2px;
+  padding: 2px 4px;
   border-radius: 8px;
   flex-shrink: 0;
 }
 
 .seat-badge {
   background: rgba(0, 0, 0, 0.75);
-  border: 1px solid rgba(241, 196, 15, 0.5);
+  border: 1px solid rgba(241, 196, 15, 0.4);
   color: #f1c40f;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 9px;
   font-weight: bold;
   margin-bottom: 2px;
   text-align: center;
@@ -710,12 +384,12 @@ html, body {
 
 .seat-badge.my-badge {
   color: #2ecc71;
-  border-color: rgba(46, 204, 113, 0.5);
+  border-color: rgba(46, 204, 113, 0.4);
 }
 
 .player-seat.active-turn .seat-badge {
   border-color: #f1c40f;
-  box-shadow: 0 0 10px rgba(241, 196, 15, 0.9);
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.8);
 }
 
 #middle-board {
@@ -725,44 +399,44 @@ html, body {
   width: 100%;
   flex: 1;
   min-height: 0;
-  padding: 2px 8px;
+  padding: 2px 0;
 }
 
 .side-seat {
-  width: 52px;
+  width: 44px;
 }
 
-/* Kolam Buangan 6-Kolom Meja Resmi Mahjong */
 #discard-pond {
   flex: 1;
   height: 100%;
-  max-height: 130px;
-  background: rgba(6, 22, 14, 0.85);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: 140px;
+  background: rgba(8, 28, 18, 0.75);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 4px;
-  margin: 0 12px;
-  box-shadow: inset 0 2px 10px rgba(0,0,0,0.7);
+  margin: 0 4px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
 }
 
 .discard-grid-pro {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 3px;
-  width: 100%;
-  max-width: 200px;
-  overflow-y: auto;
+  justify-content: center;
   align-content: flex-start;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
   padding: 2px;
 }
 
 .dora-box {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 9px;
   font-weight: bold;
   color: #f1c40f;
@@ -771,12 +445,12 @@ html, body {
 
 .dora-highlight {
   border: 1.5px solid #f1c40f !important;
-  box-shadow: 0 0 10px rgba(241, 196, 15, 0.8) !important;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.8) !important;
 }
 
 .melds-container {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .melds-container.vertical {
@@ -785,8 +459,8 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 1.5px;
-  background: rgba(0, 0, 0, 0.5);
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.4);
   padding: 2px;
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -805,8 +479,8 @@ html, body {
 }
 
 .horizontal-back .tile-back {
-  width: 17px;
-  height: 25px;
+  width: 16px;
+  height: 24px;
 }
 
 .vertical-back {
@@ -814,54 +488,50 @@ html, body {
 }
 
 .vertical-back .tile-back {
-  width: 25px;
-  height: 15px;
+  width: 24px;
+  height: 14px;
 }
 
 #action-controls {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 4px;
   flex-shrink: 0;
   justify-content: center;
   z-index: 50;
+  flex-wrap: wrap;
 }
 
 .btn-action-pro {
-  padding: 7px 14px;
+  padding: 6px 12px;
   font-size: 11px;
   font-weight: 900;
   border: none;
-  border-radius: 18px;
+  border-radius: 14px;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
   text-transform: uppercase;
 }
 
 .btn-action-pro:active { transform: translateY(2px); }
 .btn-sort { background: #34495e; color: #fff; }
-.btn-riichi { background: linear-gradient(135deg, #8e44ad, #6c3483); color: #fff; border: 1px solid #bb8fce; }
-.btn-chow { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; border: 1px solid #7dcea0; }
-.btn-pung { background: linear-gradient(135deg, #e67e22, #d35400); color: #fff; border: 1px solid #f8c471; }
+.btn-riichi { background: linear-gradient(135deg, #8e44ad, #6c3483); color: #fff; }
+.btn-chow { background: linear-gradient(135deg, #27ae60, #1e8449); color: #fff; }
+.btn-pung { background: linear-gradient(135deg, #e67e22, #d35400); color: #fff; }
 .btn-kong { background: linear-gradient(135deg, #e67e22, #b9770e); color: #fff; }
-.btn-win { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border: 1.5px solid #f1948a; animation: pulse 1s infinite alternate; }
+.btn-win { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
 .btn-skip { background: #7f8c8d; color: #fff; }
-
-@keyframes pulse {
-  from { transform: scale(1); }
-  to { transform: scale(1.08); }
-}
 
 .hidden { display: none !important; }
 
-/* ================= RAK BALOK TANGAN PEMAIN 1 BARIS RESMI LANDSCAPE ================= */
+/* ================= RAK BALOK TANGAN PEMAIN ================= */
 #seat-bottom {
   width: 100%;
-  max-width: 680px; /* Luas maksimal horizontal saat mendatar */
+  max-width: 520px;
   background: rgba(0, 0, 0, 0.45);
-  border-radius: 14px 14px 0 0;
-  padding: 4px 10px 2px;
-  box-shadow: 0 -4px 16px rgba(0,0,0,0.6);
+  border-radius: 10px 10px 0 0;
+  padding: 4px 6px 2px;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
 }
 
 .bottom-header {
@@ -870,14 +540,14 @@ html, body {
   width: 100%;
   align-items: center;
   padding: 0 4px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .hand-rack-wrapper {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 12px; /* Jarak renggang balok tarikan baru ke sisi kanan */
+  gap: 6px;
   width: 100%;
   overflow-x: auto;
   padding-bottom: 2px;
@@ -892,24 +562,26 @@ html, body {
   display: flex;
 }
 
-/* ================= WUJUD BALOK 3D RESIN IVORY & BAMBU HIJAU ================= */
+/* ================= DESAIN BALOK 3D IVORY TEBAL BERWARNA ================= */
 .tile {
-  width: 32px; /* Proporsi balok landscape nyaman */
-  height: 48px;
-  background: linear-gradient(180deg, #ffffff 0%, #fefcf9 65%, #f1e9d2 100%);
-  border-radius: 5px;
+  min-width: 25px;
+  width: 25px;
+  height: 42px;
+  background: linear-gradient(180deg, #ffffff 0%, #faf6ec 70%, #ebdcb9 100%);
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  padding: 2px 1px;
   cursor: pointer;
   user-select: none;
   position: relative;
-  /* Lapisan tebal akrilik giok hijau 3D di bawah balok */
+  /* Lapisan tebal giok hijau 3D di dasarnya */
   box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 4px 0 #115730,
-    0 6px 8px rgba(0, 0, 0, 0.6);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 3px 0 #115730,
+    0 5px 6px rgba(0, 0, 0, 0.55);
   border: 1px solid #d5c8af;
   border-bottom: none;
   transition: transform 0.12s ease-out;
@@ -919,50 +591,79 @@ html, body {
 .tile:active {
   transform: translateY(2px);
   box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 2px 0 #115730,
-    0 3px 4px rgba(0, 0, 0, 0.4);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 0 #115730,
+    0 2px 3px rgba(0, 0, 0, 0.35);
 }
 
-.tile svg {
-  width: 27px;
-  height: 38px;
-  display: block;
+.tile-top-label {
+  font-size: 7px;
+  font-weight: 900;
+  line-height: 1;
+  align-self: flex-start;
+  padding-left: 1px;
 }
 
-/* Balok Buangan di Meja */
+.tile-main-symbol {
+  font-size: 19px;
+  line-height: 1;
+  margin-bottom: 1px;
+  font-weight: bold;
+}
+
+/* Balok Buangan di Meja Tengah */
 .tile.discarded {
-  width: 24px;
-  height: 36px;
-  border-radius: 3px;
-  box-shadow: 0 2px 0 #115730, 0 3px 4px rgba(0, 0, 0, 0.5);
-}
-
-.tile.discarded svg {
+  min-width: 20px;
   width: 20px;
-  height: 28px;
+  height: 30px;
+  padding: 1px;
+  border-radius: 3px;
+  box-shadow: 0 2px 0 #115730, 0 3px 4px rgba(0,0,0,0.5);
 }
 
-/* Balok Hasil Terbuka (Meld) */
+.tile.discarded .tile-top-label { display: none; }
+.tile.discarded .tile-main-symbol { font-size: 14px; margin: auto; }
+
+/* Balok Hasil Klaim Terbuka (Meld) */
 .tile-meld {
-  width: 22px;
-  height: 33px;
+  min-width: 18px;
+  width: 18px;
+  height: 28px;
   background: linear-gradient(180deg, #ffffff 0%, #f7f3e8 85%, #d1c7b7 100%);
-  border-radius: 3px;
+  border-radius: 2px;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 0 #115730, 0 2px 4px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 0 #115730, 0 2px 3px rgba(0,0,0,0.4);
   border: 1px solid #ccc;
   border-bottom: none;
+  font-size: 13px;
+  line-height: 1;
 }
 
-.tile-meld svg {
-  width: 19px;
-  height: 26px;
-}
+/* ================= PEWARNAAN UKIRAN BALOK RESMI ================= */
+.suit-wan .tile-top-label { color: #2980b9; }
+.suit-wan .tile-main-symbol { color: #c0392b; } /* Wan: Merah Karmin */
 
-/* ================= 4. ARENA ULAR TANGGA & DADU MERAH CASINO ================= */
+.suit-pin .tile-top-label { color: #e67e22; }
+.suit-pin .tile-main-symbol { color: #2980b9; } /* Pin: Biru Safir */
+
+.suit-sou .tile-top-label { color: #27ae60; }
+.suit-sou .tile-main-symbol { color: #27ae60; } /* Sou: Hijau Zamrud */
+
+.honor-zhong .tile-top-label { color: #c0392b; }
+.honor-zhong .tile-main-symbol { color: #e74c3c !important; } /* Naga Merah */
+
+.honor-fa .tile-top-label { color: #27ae60; }
+.honor-fa .tile-main-symbol { color: #2ecc71 !important; } /* Naga Hijau */
+
+.honor-bai .tile-top-label { color: #7f8c8d; }
+.honor-bai .tile-main-symbol { color: #95a5a6 !important; } /* Naga Putih */
+
+.honor-wind .tile-top-label { color: #1a5276; }
+.honor-wind .tile-main-symbol { color: #1a5276 !important; } /* Angin: Biru Gelap */
+
+/* ================= 4. ARENA ULAR TANGGA & DADU ================= */
 #snakes-screen {
   width: 100%;
   height: 100%;
@@ -1021,7 +722,6 @@ html, body {
 .snakes-cell.cell-ladder .cell-icon { color: #16a085; font-size: 9px; font-weight: bold; }
 .snakes-cell.cell-snake { background: linear-gradient(135deg, #fdedec 0%, #f5b7b1 100%) !important; border: 1.5px solid #e74c3c; }
 .snakes-cell.cell-snake .cell-icon { color: #c0392b; font-size: 9px; font-weight: bold; }
-
 .cell-icon { position: absolute; right: 1px; bottom: 0px; line-height: 1; }
 
 .pawns-holder {
@@ -1091,40 +791,11 @@ html, body {
   font-weight: bold;
 }
 
-.p-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dice-interaction-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 4px 0 2px;
-}
-
-.dice-interactive-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  touch-action: manipulation;
-  gap: 6px;
-}
-
+.p-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dice-interaction-area { display: flex; justify-content: center; align-items: center; width: 100%; padding: 4px 0 2px; }
+.dice-interactive-wrapper { display: flex; flex-direction: column; align-items: center; cursor: pointer; user-select: none; touch-action: manipulation; gap: 6px; }
 .dice-interactive-wrapper:active .dice-cube-real { transform: scale(0.92); }
-
-.dice-tap-hint {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 1.5px;
-  color: #f1c40f;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-}
+.dice-tap-hint { font-size: 11px; font-weight: 900; letter-spacing: 1.5px; color: #f1c40f; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
 .dice-cube-real {
   width: 68px;
@@ -1137,19 +808,14 @@ html, body {
   transition: transform 0.15s ease-out;
 }
 
-.dice-interactive-wrapper.my-turn .dice-cube-real {
-  animation: dice-glow-bounce 1.3s infinite alternate ease-in-out;
-}
+.dice-interactive-wrapper.my-turn .dice-cube-real { animation: dice-glow-bounce 1.3s infinite alternate ease-in-out; }
 
 @keyframes dice-glow-bounce {
   from { transform: translateY(0); box-shadow: 0 8px 0 #78281f, 0 10px 16px rgba(0,0,0,0.4), 0 0 10px rgba(241, 196, 15, 0.3); }
   to { transform: translateY(-4px); box-shadow: 0 12px 0 #78281f, 0 16px 24px rgba(0,0,0,0.5), 0 0 24px rgba(241, 196, 15, 0.95); }
 }
 
-.dice-cube-real.rolling {
-  animation: dice-roll-spin 0.45s infinite cubic-bezier(0.25, 0.1, 0.25, 1) !important;
-  pointer-events: none;
-}
+.dice-cube-real.rolling { animation: dice-roll-spin 0.45s infinite cubic-bezier(0.25, 0.1, 0.25, 1) !important; pointer-events: none; }
 
 @keyframes dice-roll-spin {
   0% { transform: scale(1.15) rotate(0deg) translateY(-8px); }
@@ -1159,21 +825,8 @@ html, body {
   100% { transform: scale(1.15) rotate(360deg) translateY(-8px); }
 }
 
-.pip {
-  width: 12px;
-  height: 12px;
-  background: radial-gradient(circle, #ffffff 40%, #e0e0e0 100%);
-  border-radius: 50%;
-  position: absolute;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4);
-}
-
-.pip.pip-gold {
-  width: 18px;
-  height: 18px;
-  background: radial-gradient(circle, #f1c40f 40%, #d4ac0d 100%);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 0 6px rgba(241, 196, 15, 0.8);
-}
+.pip { width: 12px; height: 12px; background: radial-gradient(circle, #ffffff 40%, #e0e0e0 100%); border-radius: 50%; position: absolute; box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.4); }
+.pip.pip-gold { width: 18px; height: 18px; background: radial-gradient(circle, #f1c40f 40%, #d4ac0d 100%); box-shadow: inset 0 1px 2px rgba(0,0,0,0.4), 0 0 6px rgba(241, 196, 15, 0.8); }
 
 .pip-tl { top: 12px; left: 12px; }
 .pip-tr { top: 12px; right: 12px; }
