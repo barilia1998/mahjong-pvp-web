@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Board Game Hub Multiplayer</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Parameter v=2.5 memaksa browser HP membuang cache lama -->
+  <link rel="stylesheet" href="style.css?v=2.5">
 </head>
 <body>
   <!-- 0. LAYAR AUTENTIKASI AWAL -->
@@ -186,12 +187,13 @@
     </div>
   </div>
 
-  <!-- 3. ARENA MAHJONG (TATA LETAK RESPONSIF ANTI-TABRAKAN) -->
+  <!-- 3. ARENA MAHJONG -->
   <div id="game-table" class="hidden">
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
+    <!-- Header Meja -->
     <header id="header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
@@ -210,8 +212,8 @@
 
     <!-- Area Meja Tengah -->
     <main id="middle-board">
-      <!-- Lawan Kiri (Pemain 4) - Terkunci Tegak Vertikal -->
-      <div id="seat-left" class="player-seat side-seat">
+      <!-- Lawan Kiri (Pemain 4) -->
+      <div id="seat-left" class="side-seat">
         <div class="seat-badge" id="label-left">P4<br>(25k)</div>
         <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
@@ -226,14 +228,15 @@
         <div id="discard-tiles" class="discard-grid-pro"></div>
       </div>
 
-      <!-- Lawan Kanan (Pemain 2) - Terkunci Tegak Vertikal -->
-      <div id="seat-right" class="player-seat side-seat">
+      <!-- Lawan Kanan (Pemain 2) -->
+      <div id="seat-right" class="side-seat">
         <div class="seat-badge" id="label-right">P2<br>(25k)</div>
         <div id="melds-right" class="melds-container vertical"></div>
         <div id="hand-right" class="opponent-hand vertical-back"></div>
       </div>
     </main>
 
+    <!-- Tombol Aksi -->
     <div id="action-controls">
       <button type="button" id="btn-sort" class="btn btn-action-pro btn-sort">URUTKAN</button>
       <button type="button" id="btn-riichi" class="btn btn-action-pro btn-riichi hidden">RIICHI</button>
@@ -297,6 +300,6 @@
     </footer>
   </div>
 
-  <script src="main.js"></script>
+  <script src="main.js?v=2.5"></script>
 </body>
 </html>
