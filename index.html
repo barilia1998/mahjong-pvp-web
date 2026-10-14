@@ -186,13 +186,12 @@
     </div>
   </div>
 
-  <!-- 3. ARENA MAHJONG -->
+  <!-- 3. ARENA MAHJONG (TATA LETAK RESPONSIF ANTI-TABRAKAN) -->
   <div id="game-table" class="hidden">
     <div id="assist-notify-banner" class="notify-banner hidden">
       <span id="assist-notify-text">Peluang Tersedia!</span>
     </div>
 
-    <!-- Header Meja -->
     <header id="header-bar">
       <button type="button" class="btn-table-home" onclick="backToHub()">🏠 Hub</button>
       <div id="status-bar">Menghubungkan...</div>
@@ -203,22 +202,22 @@
     </header>
 
     <!-- Lawan Atas (Pemain 3) -->
-    <div id="seat-top" class="player-seat seat-horizontal">
+    <div id="seat-top" class="player-seat">
       <div class="seat-badge" id="label-top">P3 (25000)</div>
       <div id="melds-top" class="melds-container"></div>
       <div id="hand-top" class="opponent-hand horizontal-back"></div>
     </div>
 
-    <!-- Area Tengah Meja & Kolam Buangan -->
+    <!-- Area Meja Tengah -->
     <main id="middle-board">
-      <!-- Lawan Kiri (Pemain 4) -->
+      <!-- Lawan Kiri (Pemain 4) - Terkunci Tegak Vertikal -->
       <div id="seat-left" class="player-seat side-seat">
         <div class="seat-badge" id="label-left">P4<br>(25k)</div>
         <div id="melds-left" class="melds-container vertical"></div>
         <div id="hand-left" class="opponent-hand vertical-back"></div>
       </div>
 
-      <!-- Kolam Buangan Karpet Tengah -->
+      <!-- Area Buangan Tengah -->
       <div id="discard-pond">
         <div id="dora-bar" class="dora-box hidden">
           <span>DORA:</span>
@@ -227,7 +226,7 @@
         <div id="discard-tiles" class="discard-grid-pro"></div>
       </div>
 
-      <!-- Lawan Kanan (Pemain 2) -->
+      <!-- Lawan Kanan (Pemain 2) - Terkunci Tegak Vertikal -->
       <div id="seat-right" class="player-seat side-seat">
         <div class="seat-badge" id="label-right">P2<br>(25k)</div>
         <div id="melds-right" class="melds-container vertical"></div>
@@ -235,7 +234,6 @@
       </div>
     </main>
 
-    <!-- Tombol Aksi Permainan -->
     <div id="action-controls">
       <button type="button" id="btn-sort" class="btn btn-action-pro btn-sort">URUTKAN</button>
       <button type="button" id="btn-riichi" class="btn btn-action-pro btn-riichi hidden">RIICHI</button>
@@ -246,7 +244,7 @@
       <button type="button" id="btn-skip" class="btn btn-action-pro btn-skip hidden" onclick="skipClaimAction()">LEWATKAN</button>
     </div>
 
-    <!-- Tangan Pribadi Pemain -->
+    <!-- Tangan Bawah Pemain -->
     <footer id="seat-bottom" class="player-seat active-turn">
       <div class="bottom-header">
         <div class="seat-badge my-badge" id="label-bottom">Anda (25000)</div>
