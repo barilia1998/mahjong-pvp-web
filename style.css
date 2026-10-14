@@ -289,7 +289,7 @@ html, body {
 #input-room-code { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #111; background: #fff; }
 .w-100 { width: 100%; }
 
-/* ================= 3. ARENA MAHJONG (MEJA BELUDRU HIJAU) ================= */
+/* ================= 3. ARENA MAHJONG (RESPONSIF POTRET & LANSKAP) ================= */
 #game-table {
   width: 100%;
   height: 100%;
@@ -365,7 +365,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2px 4px;
+  padding: 2px;
   border-radius: 8px;
   flex-shrink: 0;
 }
@@ -400,16 +400,34 @@ html, body {
   flex: 1;
   min-height: 0;
   padding: 2px 0;
+  gap: 4px;
 }
 
+/* Sisi Kursi Kiri & Kanan (P4 & P2) - Kunci Lebar dan Arah Vertikal */
 .side-seat {
-  width: 48px;
+  width: 32px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
 
+.side-seat .opponent-hand.vertical-back {
+  display: flex !important;
+  flex-direction: column !important; /* Susun tegak ke bawah */
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.5px !important;
+  width: 100% !important;
+}
+
+/* Kolam Buangan Karpet Tengah */
 #discard-pond {
   flex: 1;
   height: 100%;
-  max-height: 140px;
+  max-height: 150px;
   background: rgba(8, 28, 18, 0.75);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -417,14 +435,15 @@ html, body {
   flex-direction: column;
   align-items: center;
   padding: 4px;
-  margin: 0 4px;
+  margin: 0 2px;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+  min-width: 0;
 }
 
 .discard-grid-pro {
   display: flex;
   flex-wrap: wrap;
-  gap: 3.5px;
+  gap: 3px;
   justify-content: center;
   align-content: flex-start;
   width: 100%;
@@ -450,7 +469,7 @@ html, body {
 
 .melds-container {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .melds-container.vertical {
@@ -459,16 +478,45 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 2px;
+  gap: 1.5px;
   background: rgba(0, 0, 0, 0.4);
   padding: 2px;
-  border-radius: 6px;
+  border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .opponent-hand {
   display: flex;
   gap: 1.5px;
+}
+
+.opponent-hand.horizontal-back {
+  flex-direction: row;
+}
+
+/* Balok Punggung Lawan 3D Solitaire */
+.tile-back-solitaire {
+  background: linear-gradient(145deg, #27ae60 0%, #1e8449 60%, #145a32 100%);
+  border-radius: 4px;
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 2px 0 #0d381f,
+    0 3px 4px rgba(0, 0, 0, 0.55);
+  border: 1px solid #2ecc71;
+  border-bottom: none;
+  flex-shrink: 0;
+}
+
+/* Ukuran balok atas (P3) */
+.horizontal-back .tile-back-solitaire {
+  width: 16px;
+  height: 23px;
+}
+
+/* Ukuran balok samping kiri & kanan (P4 & P2) tertata rapi vertikal */
+.vertical-back .tile-back-solitaire {
+  width: 24px;
+  height: 12px;
 }
 
 #action-controls {
@@ -506,10 +554,10 @@ html, body {
 /* ================= RAK BALOK TANGAN PEMAIN ================= */
 #seat-bottom {
   width: 100%;
-  max-width: 600px;
+  max-width: 620px;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 12px 12px 0 0;
-  padding: 6px 8px 3px;
+  padding: 6px 6px 3px;
   box-shadow: 0 -4px 14px rgba(0,0,0,0.5);
 }
 
@@ -526,7 +574,7 @@ html, body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   overflow-x: auto;
   padding-bottom: 4px;
@@ -534,7 +582,7 @@ html, body {
 
 .hand-tiles-line {
   display: flex;
-  gap: 3px;
+  gap: 2px;
 }
 
 .drawn-slot {
@@ -543,36 +591,35 @@ html, body {
 
 /* ================= BALOK MAHJONG SOLITAIRE (ICONIC DAILY STYLE) ================= */
 .tile {
-  min-width: 27px;
-  width: 27px;
-  height: 40px;
+  min-width: 25px;
+  width: 25px;
+  height: 38px;
   background: #ffffff;
-  border-radius: 7px; /* Lengkungan bulat gemuk persis Solitaire Daily */
+  border-radius: 6px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   user-select: none;
   position: relative;
-  /* Lapisan pondasi giok hijau tebal di bawah + highlight atas */
   box-shadow: 
     0 -1px 1px rgba(255, 255, 255, 0.9) inset,
     0 1px 2px rgba(0, 0, 0, 0.08) inset,
-    0 3px 0 #1b7a42,
-    0 4.5px 0 #0d4224,
-    0 7px 8px rgba(0, 0, 0, 0.55);
+    0 2.5px 0 #1b7a42,
+    0 4px 0 #0d4224,
+    0 6px 7px rgba(0, 0, 0, 0.55);
   border: 1px solid #e1dbce;
   border-bottom: none;
   transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
   flex-shrink: 0;
-  padding: 2px 1px 3px 1px;
+  padding: 1px;
 }
 
 .tile:active {
-  transform: translateY(3px);
+  transform: translateY(2px);
   box-shadow: 
     0 1px 0 #1b7a42,
-    0 2px 4px rgba(0, 0, 0, 0.4);
+    0 2px 3px rgba(0, 0, 0, 0.4);
 }
 
 .tile-icon-svg {
@@ -581,35 +628,11 @@ html, body {
   display: block;
 }
 
-/* Punggung Balok Lawan Tebal 3D */
-.tile-back-solitaire {
-  width: 18px;
-  height: 26px;
-  background: linear-gradient(145deg, #27ae60 0%, #1e8449 60%, #145a32 100%);
-  border-radius: 6px;
-  box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 2.5px 0 #0d381f,
-    0 4px 5px rgba(0, 0, 0, 0.55);
-  border: 1px solid #2ecc71;
-  border-bottom: none;
-}
-
-.horizontal-back .tile-back-solitaire {
-  width: 17px;
-  height: 25px;
-}
-
-.vertical-back .tile-back-solitaire {
-  width: 25px;
-  height: 17px;
-}
-
 /* Balok Buangan di Meja Tengah */
 .tile.discarded {
-  min-width: 21px;
-  width: 21px;
-  height: 31px;
+  min-width: 20px;
+  width: 20px;
+  height: 30px;
   border-radius: 5px;
   box-shadow: 
     0 2px 0 #1b7a42,
@@ -620,9 +643,9 @@ html, body {
 
 /* Balok Hasil Klaim (Meld) */
 .tile-meld {
-  min-width: 21px;
-  width: 21px;
-  height: 31px;
+  min-width: 20px;
+  width: 20px;
+  height: 30px;
   background: #ffffff;
   border-radius: 5px;
   display: flex;
