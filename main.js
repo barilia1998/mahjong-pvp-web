@@ -3,9 +3,6 @@ const SERVER_BASE_URL = "https://mahjong-pvp-server.owning.workers.dev";
 const WS_SERVER_URL = "wss://mahjong-pvp-server.owning.workers.dev/ws";
 const CLIENT_ID = "client_" + Math.random().toString(36).substring(2, 9);
 
-// CDN Aset PNG Mahjong Standar Industri
-const TILE_IMG_BASE = "https://cdn.jsdelivr.net/gh/FluffyStuff/riichi-mahjong-tiles@master/regular";
-
 // ================= SISTEM AKUN & AUTENTIKASI =================
 let currentUser = null;
 let friendList = [];
@@ -731,7 +728,7 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   }, 1200);
 }
 
-// ================= GAME 1: MAHJONG MEJA REALISTIS BERBASIS FILE PNG =================
+// ================= GAME 1: MAHJONG MEJA REALISTIS SOLITAIRE ICONIC =================
 let currentGameMode = "HK";
 let assistLevel = "BEGINNER";
 let playerPoints = [25000, 25000, 25000, 25000];
@@ -751,24 +748,130 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-// Mapping Nama File Gambar PNG
-function getTileImageFilename(suit, num, name) {
-  if (suit === "Wan") return `man${num}.png`;
-  if (suit === "Pin") return `pin${num}.png`;
-  if (suit === "Sou") return `sou${num}.png`;
-  if (suit === "Honor") {
-    const map = {
-      Dong: "ton.png",
-      Nan: "nan.png",
-      Xi: "shaa.png",
-      Bei: "pei.png",
-      Zhong: "chun.png",
-      Fa: "hatsu.png",
-      Bai: "haku.png"
-    };
-    return map[name] || "back.png";
+// Generator Ikon Solitaire Grafis Vektor (Bold, Timbul, & Penuh)
+function renderSolitaireTileSVG(suit, num, name) {
+  // 1. WAN (Karakter Tulang Kanji + 萬 Merah Penuh)
+  if (suit === "Wan") {
+    const kanjiNumbers = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    const digit = kanjiNumbers[num - 1] || num;
+    const digitColor = (num === 1 || num === 5) ? "#c0392b" : "#1a252f";
+    return `
+      <svg class="tile-icon-svg" viewBox="0 0 32 44">
+        <text x="16" y="17" font-size="16" font-weight="900" fill="${digitColor}" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${digit}</text>
+        <text x="16" y="37" font-size="18" font-weight="900" fill="#d63031" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">萬</text>
+      </svg>
+    `;
   }
-  return "back.png";
+
+  // 2. PIN (Ornamen Roda Koin Bundar Emas/Biru/Merah)
+  if (suit === "Pin") {
+    if (num === 1) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <circle cx="16" cy="22" r="13" fill="#d63031" stroke="#c0392b" stroke-width="1.5"/>
+          <circle cx="16" cy="22" r="7" fill="#f1c40f"/>
+          <circle cx="16" cy="22" r="3" fill="#d63031"/>
+        </svg>
+      `;
+    }
+    if (num === 2) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <circle cx="16" cy="12" r="6" fill="#0984e3"/>
+          <circle cx="16" cy="32" r="6" fill="#00b894"/>
+        </svg>
+      `;
+    }
+    if (num === 3) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <circle cx="8" cy="10" r="5" fill="#0984e3"/>
+          <circle cx="16" cy="22" r="5" fill="#d63031"/>
+          <circle cx="24" cy="34" r="5" fill="#00b894"/>
+        </svg>
+      `;
+    }
+    if (num === 4) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <circle cx="9" cy="12" r="5" fill="#0984e3"/>
+          <circle cx="23" cy="12" r="5" fill="#00b894"/>
+          <circle cx="9" cy="32" r="5" fill="#00b894"/>
+          <circle cx="23" cy="32" r="5" fill="#0984e3"/>
+        </svg>
+      `;
+    }
+    return `
+      <svg class="tile-icon-svg" viewBox="0 0 32 44">
+        <circle cx="16" cy="22" r="4.5" fill="#d63031"/>
+        <circle cx="8.5" cy="11" r="4" fill="#0984e3"/>
+        <circle cx="23.5" cy="11" r="4" fill="#00b894"/>
+        <circle cx="8.5" cy="33" r="4" fill="#00b894"/>
+        <circle cx="23.5" cy="33" r="4" fill="#0984e3"/>
+      </svg>
+    `;
+  }
+
+  // 3. SOU (Batang Bambu Beruas Hijau)
+  if (suit === "Sou") {
+    if (num === 1) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <path d="M16 8 C11 8 8 14 8 22 C8 30 13 36 16 36 C19 36 24 30 24 22 C24 14 21 8 16 8 Z" fill="#00b894"/>
+          <circle cx="16" cy="15" r="3.5" fill="#d63031"/>
+          <circle cx="16" cy="25" r="2.5" fill="#f1c40f"/>
+        </svg>
+      `;
+    }
+    return `
+      <svg class="tile-icon-svg" viewBox="0 0 32 44">
+        <rect x="14" y="6" width="4.5" height="32" rx="2" fill="#00b894"/>
+        <rect x="7" y="10" width="4.5" height="24" rx="2" fill="#0984e3"/>
+        <rect x="21" y="10" width="4.5" height="24" rx="2" fill="#0984e3"/>
+        <circle cx="16.25" cy="22" r="2" fill="#d63031"/>
+      </svg>
+    `;
+  }
+
+  // 4. HONOR (Zhong / Fa / Bai / Angin)
+  if (suit === "Honor") {
+    if (name === "Zhong" || num === 5) {
+      // Naga Merah Besar Solitaire
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <text x="16" y="32" font-size="30" font-weight="900" fill="#d63031" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">中</text>
+        </svg>
+      `;
+    }
+    if (name === "Fa" || num === 6) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <text x="16" y="32" font-size="28" font-weight="900" fill="#00b894" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">發</text>
+        </svg>
+      `;
+    }
+    if (name === "Bai" || num === 7) {
+      return `
+        <svg class="tile-icon-svg" viewBox="0 0 32 44">
+          <rect x="6" y="8" width="20" height="28" rx="4" fill="none" stroke="#0984e3" stroke-width="3"/>
+        </svg>
+      `;
+    }
+    const windMap = { Dong: "東", Nan: "南", Xi: "西", Bei: "北" };
+    return `
+      <svg class="tile-icon-svg" viewBox="0 0 32 44">
+        <text x="16" y="32" font-size="28" font-weight="900" fill="#1b4f72" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">${windMap[name] || name}</text>
+      </svg>
+    `;
+  }
+
+  return `<svg class="tile-icon-svg" viewBox="0 0 32 44"><text x="16" y="26" font-size="14" fill="#333" text-anchor="middle">${name}</text></svg>`;
+}
+
+function getTileHTML(tile) {
+  if (!tile) return "";
+  if (tile.svg) return tile.svg;
+  return renderSolitaireTileSVG(tile.suit, tile.num, tile.name);
 }
 
 function createFullDeck() {
@@ -782,13 +885,12 @@ function createFullDeck() {
   suits.forEach((suit) => {
     for (let num = 1; num <= suit.count; num++) {
       for (let i = 0; i < 4; i++) {
-        const file = getTileImageFilename(suit.name, num);
         deck.push({
           id: `${num}_${suit.name}_${i}`,
           suit: suit.name,
           num: num,
           order: suit.order,
-          imgUrl: `${TILE_IMG_BASE}/${file}`
+          svg: renderSolitaireTileSVG(suit.name, num, `${num}${suit.name[0]}`)
         });
       }
     }
@@ -796,14 +898,14 @@ function createFullDeck() {
 
   const honors = ["Dong", "Nan", "Xi", "Bei", "Zhong", "Fa", "Bai"];
   honors.forEach((hName, idx) => {
-    const file = getTileImageFilename("Honor", idx + 1, hName);
     for (let i = 0; i < 4; i++) {
       deck.push({
         id: `honor_${hName}_${i}`,
         suit: "Honor",
+        name: hName,
         num: idx + 1,
         order: 4,
-        imgUrl: `${TILE_IMG_BASE}/${file}`
+        svg: renderSolitaireTileSVG("Honor", idx + 1, hName)
       });
     }
   });
@@ -872,7 +974,7 @@ function updateDoraUI() {
   const doraEl = document.getElementById("dora-tile");
   if (doraEl && doraTile) {
     doraEl.className = "tile discarded dora-highlight";
-    doraEl.innerHTML = `<img src="${doraTile.imgUrl}" alt="Dora" />`;
+    doraEl.innerHTML = getTileHTML(doraTile);
   }
 }
 
@@ -1068,7 +1170,7 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
-// Render Balok Tangan Pemain (Gambar PNG)
+// Render Balok Tangan Pemain (Tampilan Solitaire Gemuk & Tebal)
 function renderHand() {
   const lineHolder = document.getElementById("player-hand-tiles");
   const drawnSlot = document.getElementById("player-drawn-slot");
@@ -1096,7 +1198,7 @@ function renderHand() {
 function createTileElement(tile, index) {
   const tileEl = document.createElement("div");
   tileEl.className = "tile";
-  tileEl.innerHTML = `<img src="${tile.imgUrl}" alt="${tile.suit}_${tile.num}" loading="eager" />`;
+  tileEl.innerHTML = getTileHTML(tile);
 
   tileEl.addEventListener("click", () => {
     if (currentTurnSeat === mySeatIndex) {
@@ -1120,10 +1222,9 @@ function renderOpponents() {
     if (!holder) return;
     holder.innerHTML = "";
     for (let i = 0; i < 13; i++) {
-      const img = document.createElement("img");
-      img.className = "tile-back-img";
-      img.src = `${TILE_IMG_BASE}/back.png`;
-      holder.appendChild(img);
+      const tileBack = document.createElement("div");
+      tileBack.className = "tile-back-solitaire";
+      holder.appendChild(tileBack);
     }
   });
 }
@@ -1199,7 +1300,7 @@ function addDiscardTile(tile) {
 
   const tileElement = document.createElement("div");
   tileElement.className = "tile discarded";
-  tileElement.innerHTML = `<img src="${tile.imgUrl}" alt="${tile.suit}_${tile.num}" />`;
+  tileElement.innerHTML = getTileHTML(tile);
   discardContainer.appendChild(tileElement);
   discardContainer.scrollTop = discardContainer.scrollHeight;
   lastDiscardElement = tileElement;
@@ -1535,6 +1636,7 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
   return false;
 }
 
+// Render Balok Terbuka (Meld) Gaya Mahjong Solitaire
 function addExposedMeld(seatIndex, tiles) {
   exposedMelds[seatIndex].push(tiles);
   const containerIds = ["melds-bottom", "melds-right", "melds-top", "melds-left"];
@@ -1546,7 +1648,7 @@ function addExposedMeld(seatIndex, tiles) {
   tiles.forEach((t) => {
     const tileDiv = document.createElement("div");
     tileDiv.className = "tile-meld";
-    tileDiv.innerHTML = `<img src="${t.imgUrl}" alt="${t.suit}_${t.num}" />`;
+    tileDiv.innerHTML = getTileHTML(t);
     groupEl.appendChild(tileDiv);
   });
   targetEl.appendChild(groupEl);
