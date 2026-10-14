@@ -849,3 +849,18 @@ html, body {
 .pip-mr { top: 28px; right: 12px; }
 .pip-bl { bottom: 12px; left: 12px; }
 .pip-br { bottom: 12px; right: 12px; }
+
+
+/* Efek Visual Balok Saat Sedang Digeser (Dragging) */
+.tile.dragging {
+  opacity: 0.65;
+  transform: scale(1.18) translateY(-10px) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7), 0 0 10px rgba(241, 196, 15, 0.8) !important;
+  z-index: 999;
+}
+
+/* Efek Sorot Pada Balok Target yang Hendak Ditempati (Drag Over) */
+.tile.drag-over {
+  border: 2px dashed #f1c40f !important;
+  transform: scale(1.08);
+}
