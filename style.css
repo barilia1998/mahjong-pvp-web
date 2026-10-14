@@ -406,7 +406,6 @@ html, body {
   gap: 2px !important;
 }
 
-/* Kunci Sisi Samping Kiri (P4) dan Kanan (P2) agar tidak membentang */
 .side-seat {
   width: 32px !important;
   max-width: 32px !important;
@@ -420,10 +419,9 @@ html, body {
   overflow: visible !important;
 }
 
-/* KUNCI MUTLAK: Tatanan vertikal dari atas ke bawah untuk P2 & P4 */
 .side-seat .opponent-hand.vertical-back {
   display: flex !important;
-  flex-direction: column !important; /* Wajib kolom tegak */
+  flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 1.5px !important;
@@ -432,7 +430,6 @@ html, body {
   flex-wrap: nowrap !important;
 }
 
-/* Balok Punggung P2 & P4 berbentuk balok pipih tidur yang ditumpuk ke bawah */
 .vertical-back .tile-back-solitaire {
   width: 26px !important;
   height: 10px !important;
@@ -441,14 +438,14 @@ html, body {
   margin: 0 !important;
 }
 
-/* Kolam Buangan Karpet Tengah */
+/* Kolam Buangan Karpet Tengah (Interaktif untuk Buang Balok) */
 #discard-pond {
   flex: 1 !important;
   height: 100% !important;
   max-height: 170px !important;
   background: rgba(8, 28, 18, 0.75) !important;
   border-radius: 10px !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -456,6 +453,16 @@ html, body {
   margin: 0 2px !important;
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.5) !important;
   overflow: hidden !important;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#discard-pond.pond-ready {
+  border-color: rgba(46, 204, 113, 0.4) !important;
+}
+
+#discard-pond:active {
+  background: rgba(14, 45, 30, 0.85) !important;
 }
 
 .discard-grid-pro {
@@ -468,6 +475,7 @@ html, body {
   height: 100% !important;
   overflow-y: auto !important;
   padding: 2px !important;
+  pointer-events: none; /* Klik diteruskan ke wadah meja */
 }
 
 .dora-box {
@@ -512,13 +520,11 @@ html, body {
   gap: 1.5px;
 }
 
-/* Balok Punggung Lawan Atas (P3) */
 .horizontal-back .tile-back-solitaire {
   width: 16px !important;
   height: 23px !important;
 }
 
-/* Material Punggung Balok Solitaire Giok */
 .tile-back-solitaire {
   background: linear-gradient(145deg, #27ae60 0%, #1e8449 60%, #145a32 100%);
   border-radius: 3px;
@@ -627,11 +633,30 @@ html, body {
   padding: 1px;
 }
 
-.tile:active {
-  transform: translateY(2px);
+/* Status Balok Dipilih (Langkah 1: Terangkat ke Atas) */
+.tile.tile-selected {
+  transform: translateY(-8px) !important;
   box-shadow: 
-    0 1px 0 #1b7a42,
-    0 2px 3px rgba(0, 0, 0, 0.4);
+    0 -1px 1px rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(0, 0, 0, 0.08) inset,
+    0 4px 0 #1b7a42,
+    0 6px 0 #0d4224,
+    0 10px 14px rgba(0, 0, 0, 0.7),
+    0 0 10px rgba(46, 204, 113, 0.8) !important;
+  border-color: #2ecc71 !important;
+}
+
+/* Efek Dragging */
+.tile.dragging {
+  opacity: 0.65;
+  transform: scale(1.15) translateY(-12px) !important;
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7), 0 0 10px rgba(241, 196, 15, 0.8) !important;
+  z-index: 999;
+}
+
+.tile.drag-over {
+  border: 2px dashed #f1c40f !important;
+  transform: scale(1.08);
 }
 
 .tile-icon-svg {
@@ -849,18 +874,3 @@ html, body {
 .pip-mr { top: 28px; right: 12px; }
 .pip-bl { bottom: 12px; left: 12px; }
 .pip-br { bottom: 12px; right: 12px; }
-
-
-/* Efek Visual Balok Saat Sedang Digeser (Dragging) */
-.tile.dragging {
-  opacity: 0.65;
-  transform: scale(1.18) translateY(-10px) !important;
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.7), 0 0 10px rgba(241, 196, 15, 0.8) !important;
-  z-index: 999;
-}
-
-/* Efek Sorot Pada Balok Target yang Hendak Ditempati (Drag Over) */
-.tile.drag-over {
-  border: 2px dashed #f1c40f !important;
-  transform: scale(1.08);
-}
