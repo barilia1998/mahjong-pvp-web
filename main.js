@@ -383,6 +383,7 @@ window.backToHub = function () {
   document.getElementById("lobby-screen").classList.add("hidden");
   document.getElementById("hub-screen").classList.remove("hidden");
   currentRoomCode = null;
+  selectedTileIndex = null;
   updateUserHubUI();
 };
 
@@ -728,7 +729,7 @@ function applyDiceRollResult(playerSeat, diceValue, finalPosition) {
   }, 1200);
 }
 
-// ================= GAME 1: MAHJONG MEJA REALISTIS SOLITAIRE ICONIC =================
+// ================= GAME 1: MAHJONG MEJA REALISTIS DUA LANGKAH (MANUAL BUANG) =================
 let currentGameMode = "HK";
 let assistLevel = "BEGINNER";
 let playerPoints = [25000, 25000, 25000, 25000];
@@ -748,7 +749,10 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-// Variabel Kontrol Drag and Drop
+// State Balok yang Terpilih untuk Dibuang (Two-Step Action)
+let selectedTileIndex = null;
+
+// State Drag and Drop Bebas
 let draggedIndex = null;
 let touchStartX = 0;
 let touchStartY = 0;
@@ -944,6 +948,9 @@ function enterMahjongRoom(code) {
     showIntermediateManualButtons();
   }
 
+  // Pasang Listener Meja untuk Buang Balok Dua Langkah
+  initDiscardPondClickListener();
+
   initMahjongNetwork();
 
   if (isHost) {
@@ -969,6 +976,22 @@ function enterMahjongRoom(code) {
     if (statusBar) statusBar.innerText = `Bergabung ke ROOM ${code}. Menunggu Host...`;
     renderOpponents();
   }
+}
+
+// Mekanik Langkah 2: Mengetuk Area Meja Tengah Untuk Membuang
+function initDiscardPondClickListener() {
+  const pond = document.getElementById("discard-pond");
+  if (!pond || pond.dataset.hasListener) return;
+
+  pond.dataset.hasListener = "true";
+  pond.addEventListener("click", () => {
+    // Hanya buang jika giliran Anda dan ada balok yang sedang dipilih
+    if (selectedTileIndex !== null && currentTurnSeat === mySeatIndex) {
+      const idx = selectedTileIndex;
+      selectedTileIndex = null;
+      discardTile(idx);
+    }
+  });
 }
 
 function updateDoraUI() {
@@ -1085,7 +1108,9 @@ function startTurnTimer() {
     if (turnTimeRemaining <= 0) {
       clearInterval(turnTimerInterval);
       if (currentTurnSeat === mySeatIndex) {
-        discardTile(myHand.length - 1);
+        const autoDiscardIdx = (selectedTileIndex !== null) ? selectedTileIndex : (myHand.length - 1);
+        selectedTileIndex = null;
+        discardTile(autoDiscardIdx);
       }
     }
   }, 1000);
@@ -1121,12 +1146,16 @@ function applyTurn(seatIndex) {
   startTurnTimer();
 
   const statusBar = document.getElementById("status-bar");
+  const pond = document.getElementById("discard-pond");
+
   if (currentTurnSeat === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh untuk buang, atau geser untuk urutkan";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Pilih balok lalu ketuk meja untuk buang";
+    if (pond) pond.classList.add("pond-ready");
     drawTile();
     isProcessingTurn = false;
   } else {
     if (statusBar) statusBar.innerText = `Giliran ${playerNames[currentTurnSeat]}...`;
+    if (pond) pond.classList.remove("pond-ready");
     if (isHost) {
       botActionTimer = setTimeout(() => {
         executeBotTurn(currentTurnSeat);
@@ -1171,7 +1200,7 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
-// Render Balok Tangan dengan Integrasi Drag and Drop (Mouse & Touch Jari)
+// Render Balok Tangan dengan Dukungan Drag Bebas Kapan Saja + Seleksi Buang
 function renderHand() {
   const lineHolder = document.getElementById("player-hand-tiles");
   const drawnSlot = document.getElementById("player-drawn-slot");
@@ -1196,7 +1225,6 @@ function renderHand() {
   }
 }
 
-// Helper Pembuatan Balok Interaktif (Tap Buang vs Drag Urutkan)
 function createInteractiveTileElement(tile, index) {
   const tileEl = document.createElement("div");
   tileEl.className = "tile";
@@ -1204,7 +1232,12 @@ function createInteractiveTileElement(tile, index) {
   tileEl.draggable = true;
   tileEl.innerHTML = getTileHTML(tile);
 
-  // 1. DRAG AND DROP DESKTOP (HTML5 DRAG API)
+  // Jika balok ini sedang terpilih (Langkah 1)
+  if (selectedTileIndex === index) {
+    tileEl.classList.add("tile-selected");
+  }
+
+  // 1. DRAG AND DROP DESKTOP (BEBAS AKTIF SETIAP SAAT)
   tileEl.addEventListener("dragstart", (e) => {
     draggedIndex = index;
     tileEl.classList.add("dragging");
@@ -1234,7 +1267,7 @@ function createInteractiveTileElement(tile, index) {
     }
   });
 
-  // 2. DRAG AND DROP SENTUHAN JARI DI HP (TOUCH EVENTS)
+  // 2. DRAG AND DROP TOUCH JARI (BEBAS AKTIF SETIAP SAAT TANPA SYARAT GILIRAN)
   tileEl.addEventListener("touchstart", (e) => {
     const touch = e.touches[0];
     touchStartX = touch.clientX;
@@ -1249,12 +1282,10 @@ function createInteractiveTileElement(tile, index) {
     const deltaX = Math.abs(touch.clientX - touchStartX);
     const deltaY = Math.abs(touch.clientY - touchStartY);
 
-    // Jika jari bergeser lebih dari 8 pixel, ubah mode menjadi dragging
     if (deltaX > 8 || deltaY > 8) {
       isTouchDragging = true;
       tileEl.classList.add("dragging");
 
-      // Cari elemen balok di bawah koordinat ujung jari saat ini
       const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       const targetTile = elemBelow ? elemBelow.closest(".tile") : null;
 
@@ -1281,38 +1312,47 @@ function createInteractiveTileElement(tile, index) {
         }
       }
     } else {
-      // Jika tidak digeser (hanya ketukan biasa / tap), jalankan aksi buang
-      if (currentTurnSeat === mySeatIndex) {
-        discardTile(index);
-      } else {
-        alert("Bukan giliran Anda!");
-      }
+      // Ketukan biasa: Pilih balok (Langkah 1)
+      handleTileSelectClick(index);
     }
     isTouchDragging = false;
     activeDragElement = null;
     draggedIndex = null;
   });
 
-  // Klik mouse desktop biasa jika tidak di-drag
+  // Klik Mouse Biasa
   tileEl.addEventListener("click", () => {
     if (!isTouchDragging && draggedIndex === null) {
-      if (currentTurnSeat === mySeatIndex) {
-        discardTile(index);
-      } else {
-        alert("Bukan giliran Anda!");
-      }
+      handleTileSelectClick(index);
     }
   });
 
   return tileEl;
 }
 
-// Logika Menukar Posisi Balok Secara Manual
+// Mekanik Langkah 1: Memilih / Membatalkan Balok
+function handleTileSelectClick(index) {
+  if (selectedTileIndex === index) {
+    selectedTileIndex = null; // Batal pilih jika ditekan kembali
+  } else {
+    selectedTileIndex = index; // Pilih balok ini
+  }
+  renderHand();
+}
+
 function swapHandTiles(fromIdx, toIdx) {
   if (fromIdx < 0 || fromIdx >= myHand.length || toIdx < 0 || toIdx >= myHand.length) return;
   const temp = myHand[fromIdx];
   myHand[fromIdx] = myHand[toIdx];
   myHand[toIdx] = temp;
+
+  // Sesuaikan penanda balok yang sedang dipilih jika ikut tertukar
+  if (selectedTileIndex === fromIdx) {
+    selectedTileIndex = toIdx;
+  } else if (selectedTileIndex === toIdx) {
+    selectedTileIndex = fromIdx;
+  }
+
   renderHand();
 }
 
@@ -1339,6 +1379,7 @@ function sortMyHand() {
     if (a.order !== b.order) return a.order - b.order;
     return a.num - b.num;
   });
+  selectedTileIndex = null;
   renderHand();
 }
 
@@ -1380,6 +1421,7 @@ function discardTile(index) {
   const discarded = myHand.splice(index, 1)[0];
   lastDiscardedTile = discarded;
   lastDiscarderSeat = mySeatIndex;
+  selectedTileIndex = null;
 
   renderHand();
   addDiscardTile(discarded);
@@ -1613,7 +1655,7 @@ function claimAction(actionName) {
     currentTurnSeat = mySeatIndex;
     startTurnTimer();
     const statusBar = document.getElementById("status-bar");
-    if (statusBar) statusBar.innerText = "PUNG berhasil! Silakan buang 1 balok.";
+    if (statusBar) statusBar.innerText = "PUNG berhasil! Pilih balok lalu ketuk meja untuk buang.";
   }
 
   if (actionName === "CHOW") {
@@ -1662,7 +1704,7 @@ function claimAction(actionName) {
     currentTurnSeat = mySeatIndex;
     startTurnTimer();
     const statusBar = document.getElementById("status-bar");
-    if (statusBar) statusBar.innerText = "CHOW berhasil! Silakan buang 1 balok.";
+    if (statusBar) statusBar.innerText = "CHOW berhasil! Pilih balok lalu ketuk meja untuk buang.";
   }
 
   if (actionName === "KONG") {
