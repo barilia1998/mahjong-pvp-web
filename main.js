@@ -748,9 +748,14 @@ let lastDiscarderSeat = -1;
 let lastDiscardElement = null;
 let doraTile = null;
 
-// Generator Ikon Solitaire Grafis Vektor (Bold, Timbul, & Penuh)
+// Variabel Kontrol Drag and Drop
+let draggedIndex = null;
+let touchStartX = 0;
+let touchStartY = 0;
+let isTouchDragging = false;
+let activeDragElement = null;
+
 function renderSolitaireTileSVG(suit, num, name) {
-  // 1. WAN (Karakter Tulang Kanji + 萬 Merah Penuh)
   if (suit === "Wan") {
     const kanjiNumbers = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
     const digit = kanjiNumbers[num - 1] || num;
@@ -763,7 +768,6 @@ function renderSolitaireTileSVG(suit, num, name) {
     `;
   }
 
-  // 2. PIN (Ornamen Roda Koin Bundar Emas/Biru/Merah)
   if (suit === "Pin") {
     if (num === 1) {
       return `
@@ -812,7 +816,6 @@ function renderSolitaireTileSVG(suit, num, name) {
     `;
   }
 
-  // 3. SOU (Batang Bambu Beruas Hijau)
   if (suit === "Sou") {
     if (num === 1) {
       return `
@@ -833,10 +836,8 @@ function renderSolitaireTileSVG(suit, num, name) {
     `;
   }
 
-  // 4. HONOR (Zhong / Fa / Bai / Angin)
   if (suit === "Honor") {
     if (name === "Zhong" || num === 5) {
-      // Naga Merah Besar Solitaire
       return `
         <svg class="tile-icon-svg" viewBox="0 0 32 44">
           <text x="16" y="32" font-size="30" font-weight="900" fill="#d63031" text-anchor="middle" font-family="'Noto Sans SC', sans-serif">中</text>
@@ -1121,7 +1122,7 @@ function applyTurn(seatIndex) {
 
   const statusBar = document.getElementById("status-bar");
   if (currentTurnSeat === mySeatIndex) {
-    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh balok untuk membuang";
+    if (statusBar) statusBar.innerText = "Giliran Anda: Sentuh untuk buang, atau geser untuk urutkan";
     drawTile();
     isProcessingTurn = false;
   } else {
@@ -1170,7 +1171,7 @@ function executeBotTurn(seatIndex) {
   }, canPlayerClaim ? 5000 : 1800);
 }
 
-// Render Balok Tangan Pemain (Tampilan Solitaire Gemuk & Tebal)
+// Render Balok Tangan dengan Integrasi Drag and Drop (Mouse & Touch Jari)
 function renderHand() {
   const lineHolder = document.getElementById("player-hand-tiles");
   const drawnSlot = document.getElementById("player-drawn-slot");
@@ -1183,32 +1184,136 @@ function renderHand() {
 
   for (let i = 0; i < mainCount; i++) {
     const tile = myHand[i];
-    const tileEl = createTileElement(tile, i);
+    const tileEl = createInteractiveTileElement(tile, i);
     lineHolder.appendChild(tileEl);
   }
 
   if (myHand.length % 3 === 2 && drawnSlot) {
     const lastIdx = myHand.length - 1;
     const drawnTile = myHand[lastIdx];
-    const drawnEl = createTileElement(drawnTile, lastIdx);
+    const drawnEl = createInteractiveTileElement(drawnTile, lastIdx);
     drawnSlot.appendChild(drawnEl);
   }
 }
 
-function createTileElement(tile, index) {
+// Helper Pembuatan Balok Interaktif (Tap Buang vs Drag Urutkan)
+function createInteractiveTileElement(tile, index) {
   const tileEl = document.createElement("div");
   tileEl.className = "tile";
+  tileEl.setAttribute("data-index", index);
+  tileEl.draggable = true;
   tileEl.innerHTML = getTileHTML(tile);
 
-  tileEl.addEventListener("click", () => {
-    if (currentTurnSeat === mySeatIndex) {
-      discardTile(index);
+  // 1. DRAG AND DROP DESKTOP (HTML5 DRAG API)
+  tileEl.addEventListener("dragstart", (e) => {
+    draggedIndex = index;
+    tileEl.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", index);
+  });
+
+  tileEl.addEventListener("dragend", () => {
+    tileEl.classList.remove("dragging");
+    document.querySelectorAll(".tile").forEach(el => el.classList.remove("drag-over"));
+  });
+
+  tileEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    tileEl.classList.add("drag-over");
+  });
+
+  tileEl.addEventListener("dragleave", () => {
+    tileEl.classList.remove("drag-over");
+  });
+
+  tileEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    tileEl.classList.remove("drag-over");
+    const targetIdx = index;
+    if (draggedIndex !== null && draggedIndex !== targetIdx) {
+      swapHandTiles(draggedIndex, targetIdx);
+    }
+  });
+
+  // 2. DRAG AND DROP SENTUHAN JARI DI HP (TOUCH EVENTS)
+  tileEl.addEventListener("touchstart", (e) => {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    isTouchDragging = false;
+    draggedIndex = index;
+    activeDragElement = tileEl;
+  }, { passive: true });
+
+  tileEl.addEventListener("touchmove", (e) => {
+    const touch = e.touches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartX);
+    const deltaY = Math.abs(touch.clientY - touchStartY);
+
+    // Jika jari bergeser lebih dari 8 pixel, ubah mode menjadi dragging
+    if (deltaX > 8 || deltaY > 8) {
+      isTouchDragging = true;
+      tileEl.classList.add("dragging");
+
+      // Cari elemen balok di bawah koordinat ujung jari saat ini
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetTile = elemBelow ? elemBelow.closest(".tile") : null;
+
+      document.querySelectorAll(".tile").forEach(el => el.classList.remove("drag-over"));
+      if (targetTile && targetTile !== tileEl) {
+        targetTile.classList.add("drag-over");
+      }
+    }
+  }, { passive: true });
+
+  tileEl.addEventListener("touchend", (e) => {
+    if (isTouchDragging) {
+      tileEl.classList.remove("dragging");
+      const touch = e.changedTouches[0];
+      const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetTile = elemBelow ? elemBelow.closest(".tile") : null;
+
+      document.querySelectorAll(".tile").forEach(el => el.classList.remove("drag-over"));
+
+      if (targetTile && targetTile !== tileEl) {
+        const targetIdx = parseInt(targetTile.getAttribute("data-index"), 10);
+        if (!isNaN(targetIdx) && draggedIndex !== null) {
+          swapHandTiles(draggedIndex, targetIdx);
+        }
+      }
     } else {
-      alert("Bukan giliran Anda!");
+      // Jika tidak digeser (hanya ketukan biasa / tap), jalankan aksi buang
+      if (currentTurnSeat === mySeatIndex) {
+        discardTile(index);
+      } else {
+        alert("Bukan giliran Anda!");
+      }
+    }
+    isTouchDragging = false;
+    activeDragElement = null;
+    draggedIndex = null;
+  });
+
+  // Klik mouse desktop biasa jika tidak di-drag
+  tileEl.addEventListener("click", () => {
+    if (!isTouchDragging && draggedIndex === null) {
+      if (currentTurnSeat === mySeatIndex) {
+        discardTile(index);
+      } else {
+        alert("Bukan giliran Anda!");
+      }
     }
   });
 
   return tileEl;
+}
+
+// Logika Menukar Posisi Balok Secara Manual
+function swapHandTiles(fromIdx, toIdx) {
+  if (fromIdx < 0 || fromIdx >= myHand.length || toIdx < 0 || toIdx >= myHand.length) return;
+  const temp = myHand[fromIdx];
+  myHand[fromIdx] = myHand[toIdx];
+  myHand[toIdx] = temp;
+  renderHand();
 }
 
 function renderOpponents() {
@@ -1636,7 +1741,6 @@ function checkOtherBotsClaim(discarderSeat, discardedTile) {
   return false;
 }
 
-// Render Balok Terbuka (Meld) Gaya Mahjong Solitaire
 function addExposedMeld(seatIndex, tiles) {
   exposedMelds[seatIndex].push(tiles);
   const containerIds = ["melds-bottom", "melds-right", "melds-top", "melds-left"];
