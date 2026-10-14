@@ -403,7 +403,7 @@ html, body {
 }
 
 .side-seat {
-  width: 44px;
+  width: 48px;
 }
 
 #discard-pond {
@@ -411,7 +411,7 @@ html, body {
   height: 100%;
   max-height: 140px;
   background: rgba(8, 28, 18, 0.75);
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   flex-direction: column;
@@ -424,7 +424,7 @@ html, body {
 .discard-grid-pro {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 3.5px;
   justify-content: center;
   align-content: flex-start;
   width: 100%;
@@ -445,12 +445,12 @@ html, body {
 
 .dora-highlight {
   border: 2px solid #f1c40f !important;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.8) !important;
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.85) !important;
 }
 
 .melds-container {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 
 .melds-container.vertical {
@@ -459,30 +459,16 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 1px;
+  gap: 2px;
   background: rgba(0, 0, 0, 0.4);
   padding: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .opponent-hand {
   display: flex;
   gap: 1.5px;
-}
-
-/* Gambar Punggung Balok Lawan */
-.tile-back-img {
-  width: 16px;
-  height: 24px;
-  object-fit: cover;
-  border-radius: 2px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.vertical-back .tile-back-img {
-  width: 24px;
-  height: 14px;
 }
 
 #action-controls {
@@ -520,11 +506,11 @@ html, body {
 /* ================= RAK BALOK TANGAN PEMAIN ================= */
 #seat-bottom {
   width: 100%;
-  max-width: 580px;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 10px 10px 0 0;
-  padding: 4px 6px 2px;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
+  max-width: 600px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px 12px 0 0;
+  padding: 6px 8px 3px;
+  box-shadow: 0 -4px 14px rgba(0,0,0,0.5);
 }
 
 .bottom-header {
@@ -540,77 +526,120 @@ html, body {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
 }
 
 .hand-tiles-line {
   display: flex;
-  gap: 2px;
+  gap: 3px;
 }
 
 .drawn-slot {
   display: flex;
 }
 
-/* ================= DESAIN BALOK BERBASIS GAMBAR PNG ================= */
+/* ================= BALOK MAHJONG SOLITAIRE (ICONIC DAILY STYLE) ================= */
 .tile {
-  min-width: 28px;
-  width: 28px;
+  min-width: 27px;
+  width: 27px;
   height: 40px;
-  background: transparent;
-  border-radius: 3px;
+  background: #ffffff;
+  border-radius: 7px; /* Lengkungan bulat gemuk persis Solitaire Daily */
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   user-select: none;
   position: relative;
-  transition: transform 0.12s ease-out;
+  /* Lapisan pondasi giok hijau tebal di bawah + highlight atas */
+  box-shadow: 
+    0 -1px 1px rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(0, 0, 0, 0.08) inset,
+    0 3px 0 #1b7a42,
+    0 4.5px 0 #0d4224,
+    0 7px 8px rgba(0, 0, 0, 0.55);
+  border: 1px solid #e1dbce;
+  border-bottom: none;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
   flex-shrink: 0;
+  padding: 2px 1px 3px 1px;
 }
 
 .tile:active {
-  transform: translateY(2px);
+  transform: translateY(3px);
+  box-shadow: 
+    0 1px 0 #1b7a42,
+    0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-.tile img {
+.tile-icon-svg {
   width: 100%;
   height: 100%;
-  object-fit: fill;
-  pointer-events: none;
-  border-radius: 3px;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.6);
+  display: block;
+}
+
+/* Punggung Balok Lawan Tebal 3D */
+.tile-back-solitaire {
+  width: 18px;
+  height: 26px;
+  background: linear-gradient(145deg, #27ae60 0%, #1e8449 60%, #145a32 100%);
+  border-radius: 6px;
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 2.5px 0 #0d381f,
+    0 4px 5px rgba(0, 0, 0, 0.55);
+  border: 1px solid #2ecc71;
+  border-bottom: none;
+}
+
+.horizontal-back .tile-back-solitaire {
+  width: 17px;
+  height: 25px;
+}
+
+.vertical-back .tile-back-solitaire {
+  width: 25px;
+  height: 17px;
 }
 
 /* Balok Buangan di Meja Tengah */
 .tile.discarded {
-  min-width: 22px;
-  width: 22px;
+  min-width: 21px;
+  width: 21px;
   height: 31px;
+  border-radius: 5px;
+  box-shadow: 
+    0 2px 0 #1b7a42,
+    0 3px 0 #0d4224,
+    0 4px 5px rgba(0, 0, 0, 0.5);
+  padding: 1px;
 }
 
-.tile.discarded img {
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
-}
-
-/* Balok Terbuka (Meld) */
+/* Balok Hasil Klaim (Meld) */
 .tile-meld {
-  min-width: 20px;
-  width: 20px;
-  height: 28px;
+  min-width: 21px;
+  width: 21px;
+  height: 31px;
+  background: #ffffff;
+  border-radius: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 
+    0 2px 0 #1b7a42,
+    0 3px 0 #0d4224,
+    0 4px 5px rgba(0, 0, 0, 0.5);
+  border: 1px solid #e1dbce;
+  border-bottom: none;
+  padding: 1px;
 }
 
-.tile-meld img {
+.tile-meld .tile-icon-svg {
   width: 100%;
   height: 100%;
-  object-fit: fill;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* ================= 4. ARENA ULAR TANGGA & DADU ================= */
