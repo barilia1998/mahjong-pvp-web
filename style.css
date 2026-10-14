@@ -289,7 +289,7 @@ html, body {
 #input-room-code { padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 15px; text-align: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; color: #111; background: #fff; }
 .w-100 { width: 100%; }
 
-/* ================= 3. ARENA MAHJONG (RESPONSIF POTRET & LANSKAP) ================= */
+/* ================= 3. ARENA MAHJONG (MEJA BELUDRU HIJAU) ================= */
 #game-table {
   width: 100%;
   height: 100%;
@@ -380,6 +380,7 @@ html, body {
   font-weight: bold;
   margin-bottom: 2px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .seat-badge.my-badge {
@@ -392,64 +393,81 @@ html, body {
   box-shadow: 0 0 8px rgba(241, 196, 15, 0.8);
 }
 
+/* ================= AREA TENGAH MEJA & SISI PEMAIN 2 & 4 ================= */
 #middle-board {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  padding: 2px 0;
-  gap: 4px;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  padding: 0 2px !important;
+  gap: 2px !important;
 }
 
-/* Sisi Kursi Kiri & Kanan (P4 & P2) - Kunci Lebar dan Arah Vertikal */
+/* Kunci Sisi Samping Kiri (P4) dan Kanan (P2) agar tidak membentang */
 .side-seat {
-  width: 32px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+  width: 32px !important;
+  max-width: 32px !important;
+  min-width: 32px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
 }
 
+/* KUNCI MUTLAK: Tatanan vertikal dari atas ke bawah untuk P2 & P4 */
 .side-seat .opponent-hand.vertical-back {
   display: flex !important;
-  flex-direction: column !important; /* Susun tegak ke bawah */
+  flex-direction: column !important; /* Wajib kolom tegak */
   align-items: center !important;
   justify-content: center !important;
   gap: 1.5px !important;
   width: 100% !important;
+  max-width: 32px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Balok Punggung P2 & P4 berbentuk balok pipih tidur yang ditumpuk ke bawah */
+.vertical-back .tile-back-solitaire {
+  width: 26px !important;
+  height: 10px !important;
+  min-height: 10px !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
 }
 
 /* Kolam Buangan Karpet Tengah */
 #discard-pond {
-  flex: 1;
-  height: 100%;
-  max-height: 150px;
-  background: rgba(8, 28, 18, 0.75);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4px;
-  margin: 0 2px;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
-  min-width: 0;
+  flex: 1 !important;
+  height: 100% !important;
+  max-height: 170px !important;
+  background: rgba(8, 28, 18, 0.75) !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 4px !important;
+  margin: 0 2px !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.5) !important;
+  overflow: hidden !important;
 }
 
 .discard-grid-pro {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  justify-content: center;
-  align-content: flex-start;
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding: 2px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 3px !important;
+  justify-content: center !important;
+  align-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  padding: 2px !important;
 }
 
 .dora-box {
@@ -464,7 +482,7 @@ html, body {
 
 .dora-highlight {
   border: 2px solid #f1c40f !important;
-  box-shadow: 0 0 10px rgba(241, 196, 15, 0.85) !important;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.85) !important;
 }
 
 .melds-container {
@@ -478,45 +496,39 @@ html, body {
 
 .meld-group {
   display: flex;
-  gap: 1.5px;
+  gap: 1px;
   background: rgba(0, 0, 0, 0.4);
   padding: 2px;
-  border-radius: 5px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .opponent-hand {
   display: flex;
-  gap: 1.5px;
 }
 
 .opponent-hand.horizontal-back {
-  flex-direction: row;
+  flex-direction: row !important;
+  gap: 1.5px;
 }
 
-/* Balok Punggung Lawan 3D Solitaire */
+/* Balok Punggung Lawan Atas (P3) */
+.horizontal-back .tile-back-solitaire {
+  width: 16px !important;
+  height: 23px !important;
+}
+
+/* Material Punggung Balok Solitaire Giok */
 .tile-back-solitaire {
   background: linear-gradient(145deg, #27ae60 0%, #1e8449 60%, #145a32 100%);
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: 
-    0 1px 0 rgba(255, 255, 255, 0.4) inset,
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
     0 2px 0 #0d381f,
     0 3px 4px rgba(0, 0, 0, 0.55);
   border: 1px solid #2ecc71;
   border-bottom: none;
   flex-shrink: 0;
-}
-
-/* Ukuran balok atas (P3) */
-.horizontal-back .tile-back-solitaire {
-  width: 16px;
-  height: 23px;
-}
-
-/* Ukuran balok samping kiri & kanan (P4 & P2) tertata rapi vertikal */
-.vertical-back .tile-back-solitaire {
-  width: 24px;
-  height: 12px;
 }
 
 #action-controls {
@@ -554,10 +566,10 @@ html, body {
 /* ================= RAK BALOK TANGAN PEMAIN ================= */
 #seat-bottom {
   width: 100%;
-  max-width: 620px;
+  max-width: 600px;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 12px 12px 0 0;
-  padding: 6px 6px 3px;
+  padding: 6px 4px 2px;
   box-shadow: 0 -4px 14px rgba(0,0,0,0.5);
 }
 
@@ -577,7 +589,7 @@ html, body {
   gap: 6px;
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 3px;
 }
 
 .hand-tiles-line {
